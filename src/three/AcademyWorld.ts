@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { getCharacterSpec } from '../characters';
 import { CharacterModel3D } from './CharacterModel3D';
 import type { AcademyWorldObjects, Obstacle } from './WorldTypes';
 import { REGIONS } from './WorldHelpers';
@@ -668,13 +669,13 @@ export class AcademyWorld {
   }
 
   private addCharacters(): void {
-    this.playerRig = new CharacterModel3D('player');
+    this.playerRig = new CharacterModel3D(getCharacterSpec('player'));
     this.player = this.playerRig.root;
     this.player.position.set(-5.1, 0, 2.5);
     this.player.rotation.y = Math.PI * 0.78;
     this.scene.add(this.player);
 
-    this.lyraRig = new CharacterModel3D('lyra');
+    this.lyraRig = new CharacterModel3D(getCharacterSpec('lyra'));
     this.lyra = this.lyraRig.root;
     this.lyra.position.set(5.35, 0, -1.35);
     this.lyra.rotation.y = -Math.PI * 0.18;

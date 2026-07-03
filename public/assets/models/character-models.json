@@ -1,10 +1,39 @@
 {
-  "player": {
-    "enabled": false,
-    "url": "player.vrm"
+  "version": "character-assets-v1",
+  "loadStrategy": {
+    "lazyLoad": true,
+    "preloadDistanceMeters": 18,
+    "maxActiveHeroCharacters": 2,
+    "keepFallbackUntilAssetReady": true
   },
-  "lyra": {
-    "enabled": false,
-    "url": "lyra.vrm"
-  }
+  "assets": [
+    {
+      "id": "player-hero-v1",
+      "characterId": "player",
+      "enabled": true,
+      "format": "glb",
+      "quality": "hero",
+      "url": "/assets/models/player.glb",
+      "animationClips": ["idle", "walk", "run", "turn", "talk", "interact"],
+      "materialProfile": "toon",
+      "supportsFacialMorphs": true,
+      "supportsSpringBones": false,
+      "triangleBudget": 32000,
+      "textureBudgetKb": 4096
+    },
+    {
+      "id": "lyra-hero-v1",
+      "characterId": "lyra",
+      "enabled": true,
+      "format": "glb",
+      "quality": "hero",
+      "url": "/assets/models/lyra.glb",
+      "animationClips": ["idle", "walk", "turn", "talk", "smile", "thinking"],
+      "materialProfile": "toon",
+      "supportsFacialMorphs": true,
+      "supportsSpringBones": false,
+      "triangleBudget": 36000,
+      "textureBudgetKb": 4096
+    }
+  ]
 }
