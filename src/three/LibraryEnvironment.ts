@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { Geo, MatLib, getStandardMaterial, makeSharedWoodTexture } from './RenderResources';
+import { addWorldPrefabRegion } from './WorldPrefabLayer';
 
 interface LooseBookSpec {
   x: number;
@@ -17,10 +18,41 @@ export class LibraryEnvironment {
   constructor(private readonly scene: THREE.Scene) {}
 
   build(): void {
+    addWorldPrefabRegion(this.scene, 'library');
+    this.addContactShadows();
     this.addInstancedLooseBooks();
     this.addScrollClusters();
     this.addReadingProps();
     this.addShelfSignage();
+    this.addAtmosphere();
+  }
+
+  private addContactShadows(): void {
+    const specs = [
+      [5.65, -5.78, 5.8, 0.62, 0, 0.18],
+      [8.16, -2.62, 0.72, 5.3, 0, 0.16],
+      [5.2, -0.12, 2.95, 1.55, 0.04, 0.17],
+      [4.6, 2.3, 3.55, 2.5, 0, 0.1],
+      [7.25, 1.28, 1.28, 0.82, -0.42, 0.13],
+      [3.18, -2.86, 1.0, 0.72, 0.32, 0.12],
+    ] as Array<[number, number, number, number, number, number]>;
+
+    for (const [x, z, width, depth, rotation, opacity] of specs) {
+      const material = new THREE.MeshBasicMaterial({
+        color: 0x120d12,
+        transparent: true,
+        opacity,
+        depthWrite: false,
+      });
+      material.polygonOffset = true;
+      material.polygonOffsetFactor = -3;
+
+      const shadow = new THREE.Mesh(Geo.plane(width, depth), material);
+      shadow.position.set(x, 0.14, z);
+      shadow.rotation.x = -Math.PI / 2;
+      shadow.rotation.z = rotation;
+      this.scene.add(shadow);
+    }
   }
 
   private addInstancedLooseBooks(): void {
@@ -161,6 +193,52 @@ export class LibraryEnvironment {
       plaque.position.set(x, 2.72, z);
       plaque.rotation.y = rot;
       this.scene.add(plaque);
+    }
+  }
+
+  private addAtmosphere(): void {
+    const warmFloorLight = new THREE.MeshBasicMaterial({
+      color: 0xffd28a,
+      transparent: true,
+      opacity: 0.1,
+      depthWrite: false,
+    });
+    warmFloorLight.polygonOffset = true;
+    warmFloorLight.polygonOffsetFactor = -4;
+
+    for (const [x, z, width, depth, rotation] of [
+      [5.35, -2.65, 2.3, 4.4, -0.34],
+      [7.2, -3.25, 1.5, 3.1, 0.25],
+    ] as Array<[number, number, number, number, number]>) {
+      const patch = new THREE.Mesh(Geo.plane(width, depth), warmFloorLight.clone());
+      patch.position.set(x, 0.148, z);
+      patch.rotation.x = -Math.PI / 2;
+      patch.rotation.z = rotation;
+      this.scene.add(patch);
+    }
+
+    for (const [x, y, z, intensity, distance] of [
+      [5.2, 1.05, 0.52, 0.55, 3.2],
+      [7.9, 2.25, -2.6, 0.42, 4.1],
+    ] as Array<[number, number, number, number, number]>) {
+      const light = new THREE.PointLight(0xffc982, intensity, distance, 2);
+      light.position.set(x, y, z);
+      this.scene.add(light);
+    }
+
+    const rand = seededRandom(91001);
+    const dustMat = getStandardMaterial({
+      color: 0xffe7b0,
+      emissive: 0xffcc7a,
+      emissiveIntensity: 0.85,
+      transparent: true,
+      opacity: 0.36,
+      roughness: 0.5,
+    });
+    for (let i = 0; i < 30; i += 1) {
+      const mote = new THREE.Mesh(Geo.sphere(0.008 + rand() * 0.014, 5, 4), dustMat);
+      mote.position.set(3.3 + rand() * 4.9, 1.15 + rand() * 2.0, -4.75 + rand() * 5.65);
+      this.scene.add(mote);
     }
   }
 }

@@ -48,18 +48,26 @@ const materials = {
 };
 
 addPrefab('wall_segment', makeWallSegment());
+addPrefab('weathered_floor_slab', makeWeatheredFloorSlab());
+addPrefab('wall_pilaster_panel', makeWallPilasterPanel());
+addPrefab('tapestry_banner', makeTapestryBanner());
+addPrefab('window_light_beam', makeWindowLightBeam());
 addPrefab('floor_inlay_tile', makeFloorInlayTile());
 addPrefab('ornate_column', makeOrnateColumn(2.8));
 addPrefab('grand_column', makeOrnateColumn(4.8));
 addPrefab('arched_window', makeArchedWindow());
 addPrefab('library_bookshelf', makeBookshelf());
 addPrefab('reading_table_set', makeReadingTableSet());
+addPrefab('library_cart', makeLibraryCart());
 addPrefab('book_stack', makeBookStack());
 addPrefab('scroll_bundle', makeScrollBundle());
 addPrefab('dining_table_set', makeDiningTableSet());
+addPrefab('dining_service_set', makeDiningServiceSet());
 addPrefab('food_counter', makeFoodCounter());
 addPrefab('fireplace', makeFireplace());
 addPrefab('chandelier', makeChandelier());
+addPrefab('candelabra', makeCandelabra());
+addPrefab('rug_runner', makeRugRunner());
 addPrefab('fountain_prefab', makeFountain());
 addPrefab('oak_tree', makeTree('oak'));
 addPrefab('willow_tree', makeTree('willow'));
@@ -113,6 +121,74 @@ function makeWallSegment() {
   g.add(box('middle_trim', [2.7, 0.06, 0.24], [0, 1.06, 0.07], materials.gold));
   for (let y = 1.55; y < 2.8; y += 0.42) g.add(box('stone_seam_h', [2.55, 0.018, 0.03], [0, y, 0.11], materials.stoneDark));
   for (let x = -1.0; x <= 1.0; x += 1.0) g.add(box('stone_seam_v', [0.018, 1.2, 0.03], [x, 2.1, 0.12], materials.stoneDark));
+  return g;
+}
+
+function makeWeatheredFloorSlab() {
+  const g = new THREE.Group();
+  g.add(box('stone_base', [1.36, 0.045, 1.36], [0, 0.022, 0], materials.stone));
+  g.add(box('left_bevel_shadow', [0.035, 0.014, 1.28], [-0.68, 0.052, 0], materials.stoneDark));
+  g.add(box('top_bevel_shadow', [1.28, 0.014, 0.035], [0, 0.054, -0.68], materials.stoneDark));
+  g.add(box('worn_edge_a', [0.36, 0.01, 0.025], [-0.32, 0.064, 0.54], materials.plasterWarm));
+  g.add(box('worn_edge_b', [0.03, 0.012, 0.42], [0.48, 0.066, -0.24], materials.plasterWarm));
+  for (let i = 0; i < 5; i += 1) {
+    const crack = box('hairline_crack', [0.015 + Math.random() * 0.012, 0.012, 0.34 + Math.random() * 0.22], [(Math.random() - 0.5) * 0.9, 0.07, (Math.random() - 0.5) * 0.9], materials.stoneDark);
+    crack.rotation.y = (Math.random() - 0.5) * 1.3;
+    g.add(crack);
+  }
+  return g;
+}
+
+function makeWallPilasterPanel() {
+  const g = new THREE.Group();
+  g.add(box('backing_plaster', [1.6, 2.8, 0.12], [0, 1.4, 0], materials.plasterWarm));
+  g.add(box('inset_shadow', [1.22, 1.92, 0.035], [0, 1.58, 0.075], materials.stoneDark));
+  g.add(box('inset_face', [1.08, 1.76, 0.04], [0, 1.58, 0.095], materials.plaster));
+  g.add(box('top_trim', [1.72, 0.12, 0.18], [0, 2.78, 0.09], materials.gold));
+  g.add(box('bottom_trim', [1.72, 0.12, 0.18], [0, 0.34, 0.09], materials.gold));
+  g.add(box('left_trim', [0.12, 2.5, 0.18], [-0.84, 1.5, 0.09], materials.gold));
+  g.add(box('right_trim', [0.12, 2.5, 0.18], [0.84, 1.5, 0.09], materials.gold));
+  const medallion = new THREE.Mesh(new THREE.TorusGeometry(0.28, 0.025, 8, 28), materials.gold);
+  medallion.name = 'medallion';
+  medallion.position.set(0, 1.74, 0.13);
+  g.add(medallion);
+  return g;
+}
+
+function makeTapestryBanner() {
+  const g = new THREE.Group();
+  const cloth = mat(0x7c2d3d, 0.82, 0.01, { side: THREE.DoubleSide });
+  const darkCloth = mat(0x421d2a, 0.88, 0.01, { side: THREE.DoubleSide });
+  g.add(box('top_rod', [1.18, 0.05, 0.07], [0, 1.6, 0], materials.darkWood));
+  g.add(box('cloth_panel', [0.98, 1.42, 0.026], [0, 0.86, 0.018], cloth));
+  g.add(box('left_border', [0.06, 1.32, 0.03], [-0.46, 0.84, 0.04], materials.gold));
+  g.add(box('right_border', [0.06, 1.32, 0.03], [0.46, 0.84, 0.04], materials.gold));
+  g.add(box('bottom_fringe', [0.9, 0.08, 0.03], [0, 0.13, 0.045], darkCloth));
+  const emblem = new THREE.Mesh(new THREE.OctahedronGeometry(0.18, 0), materials.gold);
+  emblem.name = 'embroidered_emblem';
+  emblem.position.set(0, 0.9, 0.065);
+  emblem.scale.set(1, 1.35, 0.18);
+  g.add(emblem);
+  return g;
+}
+
+function makeWindowLightBeam() {
+  const g = new THREE.Group();
+  const beamMat = new THREE.MeshBasicMaterial({
+    color: 0xffe0a4,
+    transparent: true,
+    opacity: 0.16,
+    side: THREE.DoubleSide,
+    depthWrite: false,
+  });
+  for (let i = 0; i < 3; i += 1) {
+    const beam = new THREE.Mesh(new THREE.PlaneGeometry(1.0 + i * 0.18, 3.8), beamMat);
+    beam.name = 'warm_light_beam';
+    beam.position.set((i - 1) * 0.18, 0.55, i * 0.02);
+    beam.rotation.x = -0.95;
+    beam.rotation.z = (i - 1) * 0.08;
+    g.add(beam);
+  }
   return g;
 }
 
@@ -192,6 +268,19 @@ function makeReadingTableSet() {
   return g;
 }
 
+function makeLibraryCart() {
+  const g = new THREE.Group();
+  g.add(box('cart_tray', [1.05, 0.12, 0.54], [0, 0.62, 0], materials.wood));
+  g.add(box('cart_back', [1.08, 0.75, 0.08], [0, 0.98, -0.28], materials.darkWood));
+  for (const x of [-0.44, 0.44]) for (const z of [-0.22, 0.22]) g.add(cyl('wheel', [0.09, 0.09], 0.045, [x, 0.18, z], materials.stoneDark, 14));
+  for (let i = 0; i < 9; i += 1) {
+    const book = box('cart_book', [0.07, 0.32 + (i % 3) * 0.04, 0.18], [-0.36 + i * 0.09, 0.84 + (i % 2) * 0.02, 0.17], mat([0x7651b9, 0xb9505c, 0xd2ad5f, 0x4f94a7][i % 4], 0.58, 0.02));
+    book.rotation.z = (i % 3 - 1) * 0.035;
+    g.add(book);
+  }
+  return g;
+}
+
 function makeBookStack() {
   const g = new THREE.Group();
   const colors = [0x7d4fd6, 0xd16d85, 0xf0c56c, 0x4c9fb8];
@@ -221,6 +310,23 @@ function makeDiningTableSet() {
   for (const x of [-1.55, 1.55]) for (const z of [-0.3, 0.3]) g.add(box('leg', [0.12, 0.68, 0.12], [x, 0.34, z], materials.darkWood));
   for (const z of [-0.72, 0.72]) g.add(box('bench', [3.2, 0.08, 0.28], [0, 0.43, z], materials.darkWood));
   for (let i = 0; i < 5; i += 1) for (const z of [-0.25, 0.25]) g.add(cyl('plate', [0.12, 0.13], 0.025, [-1.35 + i * 0.68, 0.86, z], materials.page, 18));
+  return g;
+}
+
+function makeDiningServiceSet() {
+  const g = new THREE.Group();
+  for (const x of [-0.62, 0, 0.62]) {
+    const plate = cyl('plate', [0.15, 0.17], 0.025, [x, 0.03, 0], materials.page, 24);
+    g.add(plate);
+    const cup = cyl('cup', [0.055, 0.07], 0.14, [x + 0.18, 0.105, -0.18], materials.gold, 14);
+    g.add(cup);
+    const bread = new THREE.Mesh(new THREE.SphereGeometry(0.09, 10, 6), mat(0xc58d45, 0.72, 0.01));
+    bread.name = 'bread_roll';
+    bread.position.set(x - 0.12, 0.085, 0.16);
+    bread.scale.set(1.35, 0.58, 0.82);
+    bread.castShadow = true;
+    g.add(bread);
+  }
   return g;
 }
 
@@ -268,6 +374,32 @@ function makeChandelier() {
     flame.position.set(Math.cos(a) * 0.36, 0.1, Math.sin(a) * 0.36);
     g.add(flame);
   }
+  return g;
+}
+
+function makeCandelabra() {
+  const g = new THREE.Group();
+  g.add(cyl('stem', [0.025, 0.035], 0.42, [0, 0.21, 0], materials.gold, 10));
+  g.add(cyl('base', [0.18, 0.22], 0.055, [0, 0.03, 0], materials.gold, 18));
+  for (const x of [-0.22, 0, 0.22]) {
+    g.add(cyl('candle', [0.033, 0.036], 0.22, [x, 0.48, 0], materials.page, 10));
+    const flame = new THREE.Mesh(new THREE.SphereGeometry(0.035, 8, 6), materials.fire);
+    flame.name = 'flame';
+    flame.position.set(x, 0.62, 0);
+    g.add(flame);
+  }
+  return g;
+}
+
+function makeRugRunner() {
+  const g = new THREE.Group();
+  const cloth = mat(0x67365b, 0.86, 0.01);
+  const dark = mat(0x351c38, 0.9, 0.01);
+  g.add(box('rug_cloth', [1.2, 0.026, 3.1], [0, 0.013, 0], cloth));
+  g.add(box('rug_border_left', [0.08, 0.032, 2.92], [-0.52, 0.032, 0], materials.gold));
+  g.add(box('rug_border_right', [0.08, 0.032, 2.92], [0.52, 0.032, 0], materials.gold));
+  g.add(box('rug_end_a', [1.0, 0.032, 0.08], [0, 0.033, -1.42], dark));
+  g.add(box('rug_end_b', [1.0, 0.032, 0.08], [0, 0.033, 1.42], dark));
   return g;
 }
 
