@@ -19,7 +19,7 @@ export class GameHud {
           : '亲密';
     this.root.innerHTML = `
       <div>Lyra 好感: <strong>${save.affection}</strong> ${level}</div>
-      <div>事件: ${save.completedEvents.length}/2</div>
+      <div>事件: ${save.completedEvents.length}</div>
       <div class="hud-help">WASD 移动 · 鼠标拖拽视角 · 滚轮缩放 · 靠近 Lyra 按 E</div>
     `;
   }

@@ -170,10 +170,4 @@ export class DialogueSystem {
   getCurrentTree(): DialogueTree | null {
     return this.currentTree;
   }
-
-  /** 获取即将结束的对话树（在 advance 返回 ended 时使用） */
-  getLastTree(): DialogueTree | null {
-    return this._lastTree;
-  }
-  private _lastTree: DialogueTree | null = null;
 }

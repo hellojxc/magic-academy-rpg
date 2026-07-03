@@ -10,7 +10,6 @@
     "preview:update": "scripts/update-preview.sh"
   },
   "dependencies": {
-    "phaser": "^3.90.0",
     "three": "^0.185.1"
   },
   "devDependencies": {
