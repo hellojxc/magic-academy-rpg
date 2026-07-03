@@ -8,6 +8,50 @@
   "runtimeAuditUrl": "/assets/character-reviews/lyra-runtime-audit.json",
   "sourceModelPath": "assets/characters/lyra/source/lyra.blend",
   "targetRuntimeFile": "public/assets/models/lyra.glb",
+  "referenceStatus": [
+    {
+      "type": "portrait",
+      "exists": true,
+      "sourcePath": "public/assets/portraits/lyra-3d.png",
+      "publicUrl": "/assets/portraits/lyra-3d.png"
+    },
+    {
+      "type": "front",
+      "exists": false,
+      "sourcePath": "assets/characters/lyra/references/front.png"
+    },
+    {
+      "type": "side",
+      "exists": false,
+      "sourcePath": "assets/characters/lyra/references/side.png"
+    },
+    {
+      "type": "back",
+      "exists": false,
+      "sourcePath": "assets/characters/lyra/references/back.png"
+    },
+    {
+      "type": "model-sheet",
+      "exists": true,
+      "sourcePath": "assets/characters/lyra/references/model-sheet.png",
+      "publicUrl": "/assets/character-reviews/lyra-model-sheet.png"
+    },
+    {
+      "type": "face-detail",
+      "exists": false,
+      "sourcePath": "assets/characters/lyra/references/face-detail.png"
+    },
+    {
+      "type": "hair-breakdown",
+      "exists": false,
+      "sourcePath": "assets/characters/lyra/references/hair-breakdown.png"
+    },
+    {
+      "type": "outfit-breakdown",
+      "exists": false,
+      "sourcePath": "assets/characters/lyra/references/outfit-breakdown.png"
+    }
+  ],
   "targetIdentity": {
     "style": "mainstream Japanese RPG heroine",
     "silhouette": "petite academy mage heroine with long layered lavender hair",

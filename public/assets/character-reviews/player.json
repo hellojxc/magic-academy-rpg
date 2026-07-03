@@ -8,6 +8,49 @@
   "runtimeAuditUrl": "/assets/character-reviews/player-runtime-audit.json",
   "sourceModelPath": "assets/characters/player/source/player.blend",
   "targetRuntimeFile": "public/assets/models/player.glb",
+  "referenceStatus": [
+    {
+      "type": "portrait",
+      "exists": true,
+      "sourcePath": "public/assets/portraits/player-3d.png",
+      "publicUrl": "/assets/portraits/player-3d.png"
+    },
+    {
+      "type": "front",
+      "exists": false,
+      "sourcePath": "assets/characters/player/references/front.png"
+    },
+    {
+      "type": "side",
+      "exists": false,
+      "sourcePath": "assets/characters/player/references/side.png"
+    },
+    {
+      "type": "back",
+      "exists": false,
+      "sourcePath": "assets/characters/player/references/back.png"
+    },
+    {
+      "type": "model-sheet",
+      "exists": false,
+      "sourcePath": "assets/characters/player/references/model-sheet.png"
+    },
+    {
+      "type": "face-detail",
+      "exists": false,
+      "sourcePath": "assets/characters/player/references/face-detail.png"
+    },
+    {
+      "type": "hair-breakdown",
+      "exists": false,
+      "sourcePath": "assets/characters/player/references/hair-breakdown.png"
+    },
+    {
+      "type": "outfit-breakdown",
+      "exists": false,
+      "sourcePath": "assets/characters/player/references/outfit-breakdown.png"
+    }
+  ],
   "targetIdentity": {
     "style": "mainstream Japanese RPG young male protagonist",
     "silhouette": "slim academy mage hero with short layered dark hair",

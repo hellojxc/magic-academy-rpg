@@ -15,6 +15,42 @@ function firstExistingUrl(paths) {
   return paths[0];
 }
 
+function referenceStatus(id, type, brief) {
+  if (type === 'portrait') {
+    const portraitPath = brief.referenceImages.portrait.startsWith('/')
+      ? `public${brief.referenceImages.portrait}`
+      : brief.referenceImages.portrait;
+    return {
+      type,
+      exists: existsSync(resolve(portraitPath)),
+      sourcePath: portraitPath,
+      publicUrl: brief.referenceImages.portrait,
+    };
+  }
+
+  const allowedExtensions = ['png', 'jpg', 'jpeg', 'webp'];
+  for (const extension of allowedExtensions) {
+    const sourcePath = `assets/characters/${id}/references/${type}.${extension}`;
+    const publicUrl = `/assets/character-reviews/${id}-${type}.${extension}`;
+    if (existsSync(resolve(sourcePath))) {
+      return {
+        type,
+        exists: true,
+        sourcePath,
+        publicUrl: existsSync(resolve(`public${publicUrl}`)) ? publicUrl : undefined,
+      };
+    }
+    if (existsSync(resolve(`public${publicUrl}`))) {
+      return { type, exists: true, sourcePath, publicUrl };
+    }
+  }
+  return {
+    type,
+    exists: false,
+    sourcePath: `assets/characters/${id}/references/${type}.png`,
+  };
+}
+
 mkdirSync(resolve('public/assets/character-reviews'), { recursive: true });
 
 for (const id of characterIds) {
@@ -39,6 +75,16 @@ for (const id of characterIds) {
     runtimeAuditUrl: `/assets/character-reviews/${id}-runtime-audit.json`,
     sourceModelPath: brief.sourceModelRequirements.sourceFile,
     targetRuntimeFile: brief.sourceModelRequirements.targetRuntimeFile,
+    referenceStatus: [
+      referenceStatus(id, 'portrait', brief),
+      referenceStatus(id, 'front', brief),
+      referenceStatus(id, 'side', brief),
+      referenceStatus(id, 'back', brief),
+      referenceStatus(id, 'model-sheet', brief),
+      referenceStatus(id, 'face-detail', brief),
+      referenceStatus(id, 'hair-breakdown', brief),
+      referenceStatus(id, 'outfit-breakdown', brief),
+    ],
     targetIdentity: brief.targetIdentity,
     requirements: brief.sourceModelRequirements,
     aiCandidatePlan: brief.aiCandidatePlan,

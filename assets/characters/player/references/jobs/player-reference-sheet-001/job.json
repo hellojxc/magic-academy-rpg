@@ -1,0 +1,28 @@
+{
+  "version": "character-reference-sheet-job-v1",
+  "jobId": "player-reference-sheet-001",
+  "characterId": "player",
+  "displayName": "Academy Protagonist",
+  "tool": "imagegen",
+  "viewSet": "complete",
+  "status": "ready-to-run",
+  "input": {
+    "portraitUrl": "/assets/portraits/player-3d.png",
+    "localPortraitPath": "public/assets/portraits/player-3d.png",
+    "sourceBrief": "assets/characters/player/character-model-brief.json"
+  },
+  "files": {
+    "prompt": "assets/characters/player/references/jobs/player-reference-sheet-001/prompt.md",
+    "runbook": "assets/characters/player/references/jobs/player-reference-sheet-001/RUNBOOK.md",
+    "outputsDir": "assets/characters/player/references/jobs/player-reference-sheet-001/outputs"
+  },
+  "expectedReferenceTypes": [
+    "model-sheet",
+    "front",
+    "side",
+    "back",
+    "face-detail",
+    "hair-breakdown",
+    "outfit-breakdown"
+  ]
+}

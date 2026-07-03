@@ -94,6 +94,20 @@ Register a generated candidate after an external AI tool writes a mesh:
 npm run assets:characters:candidate:register -- --character lyra --tool charactergen --job lyra-charactergen-001 --input /path/to/generated.glb
 ```
 
+Prepare a front/side/back modeling reference-sheet job:
+
+```sh
+npm run assets:characters:reference:prepare -- --character lyra --tool imagegen --job lyra-reference-sheet-001
+```
+
+Register completed reference images:
+
+```sh
+npm run assets:characters:reference:register -- --character lyra --type front --input /path/to/front.png
+npm run assets:characters:reference:register -- --character lyra --type side --input /path/to/side.png
+npm run assets:characters:reference:register -- --character lyra --type back --input /path/to/back.png
+```
+
 Export a production source `.blend`:
 
 ```sh

@@ -1,0 +1,28 @@
+{
+  "version": "character-reference-sheet-job-v1",
+  "jobId": "lyra-comfyui-reference-001",
+  "characterId": "lyra",
+  "displayName": "Lyra",
+  "tool": "comfyui",
+  "viewSet": "complete",
+  "status": "ready-to-run",
+  "input": {
+    "portraitUrl": "/assets/portraits/lyra-3d.png",
+    "localPortraitPath": "public/assets/portraits/lyra-3d.png",
+    "sourceBrief": "assets/characters/lyra/character-model-brief.json"
+  },
+  "files": {
+    "prompt": "assets/characters/lyra/references/jobs/lyra-comfyui-reference-001/prompt.md",
+    "runbook": "assets/characters/lyra/references/jobs/lyra-comfyui-reference-001/RUNBOOK.md",
+    "outputsDir": "assets/characters/lyra/references/jobs/lyra-comfyui-reference-001/outputs"
+  },
+  "expectedReferenceTypes": [
+    "model-sheet",
+    "front",
+    "side",
+    "back",
+    "face-detail",
+    "hair-breakdown",
+    "outfit-breakdown"
+  ]
+}

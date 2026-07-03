@@ -13,6 +13,8 @@
     "assets:characters:source:export": "node scripts/character-pipeline/export-source-character.mjs",
     "assets:characters:candidate:prepare": "node scripts/character-pipeline/prepare-ai-candidate-job.mjs",
     "assets:characters:candidate:register": "node scripts/character-pipeline/register-ai-candidate.mjs",
+    "assets:characters:reference:prepare": "node scripts/character-pipeline/prepare-reference-sheet-job.mjs",
+    "assets:characters:reference:register": "node scripts/character-pipeline/register-reference-image.mjs",
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",

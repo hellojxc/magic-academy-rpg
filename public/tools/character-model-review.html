@@ -132,6 +132,30 @@
       color: #ffb0a8;
       white-space: pre-wrap;
     }
+    .reference-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .reference-grid figure {
+      margin: 0;
+      border: 1px solid #303643;
+      border-radius: 8px;
+      overflow: hidden;
+      background: #101219;
+    }
+    .reference-grid img {
+      display: block;
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      object-fit: cover;
+    }
+    .reference-grid figcaption {
+      padding: 7px 8px;
+      color: #b8bfce;
+      font-size: 12px;
+    }
     @media (max-width: 1050px) {
       .layout,
       .comparison {
@@ -167,6 +191,21 @@
 
     function keyValues(rows) {
       return `<dl class="kv">${rows.map(([key, value]) => `<dt>${key}</dt><dd>${value}</dd>`).join('')}</dl>`;
+    }
+
+    function referenceStatus(items) {
+      return `<ul>${items.map((item) => `<li>${item.exists ? 'ready' : 'missing'}: ${item.type} (${item.sourcePath})</li>`).join('')}</ul>`;
+    }
+
+    function referenceGallery(items) {
+      const ready = items.filter((item) => item.exists && item.publicUrl);
+      if (ready.length === 0) return '';
+      return `<div class="reference-grid">${ready.map((item) => `
+        <figure>
+          <img src="${item.publicUrl}" alt="${item.type} reference">
+          <figcaption>${item.type}</figcaption>
+        </figure>
+      `).join('')}</div>`;
     }
 
     fetch(`/assets/character-reviews/${character}.json`, { cache: 'no-cache' })
@@ -206,6 +245,11 @@
                 ...data.targetIdentity.hairPriorities,
                 ...data.targetIdentity.outfitPriorities
               ])}
+            </section>
+            <section class="section">
+              <h2>Modeling References</h2>
+              ${referenceStatus(data.referenceStatus || [])}
+              ${referenceGallery(data.referenceStatus || [])}
             </section>
             <section class="section">
               <h2>Required Runtime Features</h2>

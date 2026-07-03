@@ -1,0 +1,12 @@
+{
+  "version": "character-reference-index-v1",
+  "characterId": "lyra",
+  "displayName": "Lyra",
+  "references": {
+    "model-sheet": {
+      "path": "assets/characters/lyra/references/model-sheet.png",
+      "publicUrl": "/assets/character-reviews/lyra-model-sheet.png",
+      "registeredAt": "2026-07-03T20:23:42.512Z"
+    }
+  }
+}
