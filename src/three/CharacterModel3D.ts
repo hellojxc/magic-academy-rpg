@@ -37,6 +37,9 @@ export class CharacterModel3D {
   private vrmModule?: ThreeVRMModule;
   private vrm?: VRM;
   private bones: BoneSet = {};
+  private gltfMixer?: THREE.AnimationMixer;
+  private readonly gltfActions = new Map<string, THREE.AnimationAction>();
+  private activeGLTFAction?: THREE.AnimationAction;
   private buildPlan: CharacterBuildPlan;
   private moving = false;
   private movementBlend = 0;
@@ -65,16 +68,24 @@ export class CharacterModel3D {
   }
 
   update(elapsedTime: number, delta: number, lookAtWorldPosition?: THREE.Vector3): void {
+    if (this.vrm) {
+      this.movementBlend = THREE.MathUtils.lerp(this.movementBlend, this.moving ? 1 : 0, 0.14);
+      this.updateLookTarget(lookAtWorldPosition);
+      this.applyHumanoidPose(elapsedTime);
+      this.applyExpressions(elapsedTime, delta);
+      this.vrm.update(delta);
+      return;
+    }
+
+    if (this.gltfMixer) {
+      this.updateGLTFAnimation(delta);
+      return;
+    }
+
     if (!this.vrm) {
       this.fallback.update(elapsedTime);
       return;
     }
-
-    this.movementBlend = THREE.MathUtils.lerp(this.movementBlend, this.moving ? 1 : 0, 0.14);
-    this.updateLookTarget(lookAtWorldPosition);
-    this.applyHumanoidPose(elapsedTime);
-    this.applyExpressions(elapsedTime, delta);
-    this.vrm.update(delta);
   }
 
   private async loadModel(): Promise<void> {
@@ -99,7 +110,7 @@ export class CharacterModel3D {
       if (vrm && vrmModule) {
         this.installVRM(vrm, vrmModule);
       } else {
-        this.installGLTF(gltf.scene);
+        this.installGLTF(gltf.scene, gltf.animations);
       }
     } catch (error) {
       this.setAssetState('failed');
@@ -156,13 +167,40 @@ export class CharacterModel3D {
     }
   }
 
-  private installGLTF(scene: THREE.Group): void {
+  private installGLTF(scene: THREE.Group, animations: THREE.AnimationClip[]): void {
     this.setAssetState('gltf');
     this.fallback.root.visible = false;
     this.prepareModelRoot(scene, this.spec.body.heightMeters);
     scene.rotation.y = Math.PI;
     this.root.add(scene);
     this.setVRMShadows(scene);
+
+    if (animations.length > 0) {
+      this.gltfMixer = new THREE.AnimationMixer(scene);
+      this.gltfActions.clear();
+      for (const clip of animations) {
+        const action = this.gltfMixer.clipAction(clip);
+        action.enabled = true;
+        this.gltfActions.set(clip.name.toLowerCase(), action);
+      }
+      this.playGLTFAction('idle', 0);
+    }
+  }
+
+  private updateGLTFAnimation(delta: number): void {
+    this.playGLTFAction(this.moving ? 'walk' : 'idle', 0.22);
+    this.gltfMixer?.update(delta);
+  }
+
+  private playGLTFAction(name: string, fadeDuration: number): void {
+    const next = this.gltfActions.get(name) ?? this.gltfActions.get('idle');
+    if (!next || next === this.activeGLTFAction) return;
+
+    next.reset().play();
+    if (this.activeGLTFAction && fadeDuration > 0) {
+      this.activeGLTFAction.crossFadeTo(next, fadeDuration, false);
+    }
+    this.activeGLTFAction = next;
   }
 
   private prepareModelRoot(model: THREE.Object3D, targetHeight: number): void {

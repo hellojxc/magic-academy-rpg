@@ -10,7 +10,7 @@
     {
       "id": "player-hero-v1",
       "characterId": "player",
-      "enabled": false,
+      "enabled": true,
       "format": "glb",
       "quality": "hero",
       "url": "/assets/models/player.glb",
@@ -24,14 +24,14 @@
     {
       "id": "lyra-hero-v1",
       "characterId": "lyra",
-      "enabled": false,
-      "format": "vrm",
+      "enabled": true,
+      "format": "glb",
       "quality": "hero",
-      "url": "/assets/models/lyra.vrm",
+      "url": "/assets/models/lyra.glb",
       "animationClips": ["idle", "walk", "turn", "talk", "smile", "thinking"],
-      "materialProfile": "mtoon",
+      "materialProfile": "toon",
       "supportsFacialMorphs": true,
-      "supportsSpringBones": true,
+      "supportsSpringBones": false,
       "triangleBudget": 36000,
       "textureBudgetKb": 4096
     }

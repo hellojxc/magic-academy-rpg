@@ -4,6 +4,7 @@
   "description": "2D Magic Academy Dating RPG prototype",
   "type": "module",
   "scripts": {
+    "assets:characters": "node scripts/generate-character-glb.mjs",
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
