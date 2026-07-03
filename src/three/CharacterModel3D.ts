@@ -66,7 +66,7 @@ export class CharacterModel3D {
     }
 
     this.movementBlend = THREE.MathUtils.lerp(this.movementBlend, this.moving ? 1 : 0, 0.14);
-    this.updateLookTarget(lookAtWorldPosition);
+    this.updateLookTarget(lookAtWorldPosition, elapsedTime);
     this.applyHumanoidPose(elapsedTime);
     this.applyExpressions(elapsedTime, delta);
     this.vrm.update(delta);
@@ -191,7 +191,7 @@ export class CharacterModel3D {
     };
   }
 
-  private updateLookTarget(lookAtWorldPosition?: THREE.Vector3): void {
+  private updateLookTarget(lookAtWorldPosition: THREE.Vector3 | undefined, elapsedTime: number): void {
     if (!this.vrm?.lookAt) return;
 
     if (lookAtWorldPosition) {
@@ -203,7 +203,7 @@ export class CharacterModel3D {
     } else {
       this.root.getWorldPosition(this.lookTarget.position);
       this.lookTarget.position.y += 1.42;
-      this.lookTarget.position.x += Math.sin(performance.now() * 0.00035) * 0.42;
+      this.lookTarget.position.x += Math.sin(elapsedTime * 0.35) * 0.42;
       this.lookTarget.position.z += 1.6;
     }
     this.lookTarget.updateMatrixWorld(true);

@@ -4,6 +4,7 @@ import {
   addBox, addPointLight,
   makeMarbleTexture, makePlasterTexture,
 } from './WorldHelpers';
+import { MatLib, getStandardMaterial, Geo } from './RenderResources';
 
 /**
  * 大厅 — 中庭北面 (x:[-13,13], z:[-22,-7])
@@ -19,7 +20,7 @@ export class GrandHall {
 
     const marbleTex = makeMarbleTexture({ light: '#e8dcc8', mid: '#c9b896', dark: '#f0e8d8' });
     const plasterTex = makePlasterTexture({ light: '#d4c9b8', mid: '#b8a898', dark: '#d8cdb8' });
-    const goldMat = new THREE.MeshStandardMaterial({ color: 0xc7a060, roughness: 0.24, metalness: 0.48 });
+    const goldMat = MatLib.gold;
     const stoneMat = new THREE.MeshStandardMaterial({ color: 0x80706a, roughness: 0.42, metalness: 0.12 });
 
     // 地板
@@ -91,7 +92,7 @@ export class GrandHall {
     // 穹顶顶部水晶
     const crystal = new THREE.Mesh(
       new THREE.OctahedronGeometry(0.6, 0),
-      new THREE.MeshStandardMaterial({ color: 0xbfe7ff, emissive: 0x5c8eda, emissiveIntensity: 1.5, transparent: true, opacity: 0.75 })
+      MatLib.crystal
     );
     crystal.position.set(0, 5.8, -14.5);
     this.scene.add(crystal);
@@ -118,7 +119,7 @@ export class GrandHall {
     for (const [x, z] of [[-7, -18], [7, -18], [-7, -11], [7, -11], [0, -14.5]] as Array<[number, number]>) {
       const lamp = new THREE.Mesh(
         new THREE.OctahedronGeometry(0.2, 1),
-        new THREE.MeshStandardMaterial({ color: 0xffd674, emissive: 0xffb847, emissiveIntensity: 1.8 })
+        MatLib.warmLight
       );
       lamp.position.set(x, 3.2, z);
       this.scene.add(lamp);
@@ -154,24 +155,28 @@ export class GrandHall {
   }
 
   private addColumn(x: number, z: number, stoneMat: THREE.Material, trimMat: THREE.Material): void {
-    const base = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 0.52, 0.2, 28), stoneMat);
+    const baseGeo = Geo.cylinder(0.45, 0.52, 0.2, 28);
+    const base = new THREE.Mesh(baseGeo, stoneMat);
     base.position.set(x, 0.1, z); base.castShadow = true; base.receiveShadow = true;
     this.scene.add(base);
 
-    const pillar = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.27, 4.5, 28), stoneMat);
+    const pillarGeo = Geo.cylinder(0.24, 0.27, 4.5, 28);
+    const pillar = new THREE.Mesh(pillarGeo, stoneMat);
     pillar.position.set(x, 2.35, z); pillar.castShadow = true; pillar.receiveShadow = true;
     this.scene.add(pillar);
 
+    const ringGeo = Geo.cylinder(0.34, 0.36, 0.09, 28);
     for (const y of [0.36, 4.3]) {
-      const ring = new THREE.Mesh(new THREE.CylinderGeometry(0.34, 0.36, 0.09, 28), trimMat);
+      const ring = new THREE.Mesh(ringGeo, trimMat);
       ring.position.set(x, y, z); ring.castShadow = true; ring.receiveShadow = true;
       this.scene.add(ring);
     }
 
-    const grooveMat = new THREE.MeshStandardMaterial({ color: 0x514844, roughness: 0.68, metalness: 0.02 });
+    const grooveMat = getStandardMaterial({ color: 0x514844, roughness: 0.68, metalness: 0.02 });
+    const grooveGeo = Geo.box(0.025, 3.65, 0.035);
     for (let i = 0; i < 8; i += 1) {
       const angle = (i / 8) * Math.PI * 2;
-      const groove = new THREE.Mesh(new THREE.BoxGeometry(0.025, 3.65, 0.035), grooveMat);
+      const groove = new THREE.Mesh(grooveGeo, grooveMat);
       groove.position.set(x + Math.cos(angle) * 0.265, 2.34, z + Math.sin(angle) * 0.265);
       groove.rotation.y = -angle;
       groove.castShadow = true;
@@ -180,7 +185,7 @@ export class GrandHall {
     }
 
     for (const [dy, angle, width] of [[1.35, 0.4, 0.18], [2.55, 2.1, 0.14], [3.52, 4.3, 0.16]] as Array<[number, number, number]>) {
-      const scar = new THREE.Mesh(new THREE.BoxGeometry(width, 0.022, 0.026), grooveMat);
+      const scar = new THREE.Mesh(Geo.box(width, 0.022, 0.026), grooveMat);
       scar.position.set(x + Math.cos(angle) * 0.286, dy, z + Math.sin(angle) * 0.286);
       scar.rotation.set(0, -angle + 0.35, 0.38);
       scar.castShadow = true;
@@ -256,18 +261,12 @@ export class GrandHall {
 
   private addStainedGlass(x: number, y: number, z: number, w: number, h: number): void {
     const colors = [0x7356d9, 0xf1c45f, 0x57b9d8, 0xd85f9e, 0x88bd64];
+    const segMats = colors.map((c) => getStandardMaterial({ color: c, emissive: c, emissiveIntensity: 0.25, transparent: true, opacity: 0.7, roughness: 0.15 }));
     const segW = w / 5;
     for (let i = 0; i < 5; i++) {
       const seg = new THREE.Mesh(
         new THREE.PlaneGeometry(segW * 0.95, h),
-        new THREE.MeshStandardMaterial({
-          color: colors[i],
-          emissive: colors[i],
-          emissiveIntensity: 0.25,
-          transparent: true,
-          opacity: 0.7,
-          roughness: 0.15,
-        })
+        segMats[i]
       );
       seg.position.set(x - w / 2 + segW * (i + 0.5), y, z);
       this.scene.add(seg);

@@ -14,6 +14,11 @@ export class Minimap {
   private playerPos = new THREE.Vector3();
   private playerYaw = 0;
   private currentRegion: RegionEntry | null = null;
+  // 脏重绘缓存 — 只在玩家移动/转向/换区域时重绘
+  private lastPlayerX = NaN;
+  private lastPlayerZ = NaN;
+  private lastYaw = NaN;
+  private lastRegionId: string | null = null;
 
   constructor(parent: HTMLElement) {
     this.canvas = document.createElement('canvas');
@@ -30,9 +35,21 @@ export class Minimap {
   }
 
   update(playerPos: THREE.Vector3, playerYaw: number): void {
+    const region = getRegion(playerPos.x, playerPos.z);
+    const regionId = region?.id ?? null;
+    const moved = Math.abs(playerPos.x - this.lastPlayerX) > 0.3
+      || Math.abs(playerPos.z - this.lastPlayerZ) > 0.3;
+    const turned = Math.abs(playerYaw - this.lastYaw) > 0.02;
+    const regionChanged = regionId !== this.lastRegionId;
+    if (!moved && !turned && !regionChanged) return;
+
+    this.lastPlayerX = playerPos.x;
+    this.lastPlayerZ = playerPos.z;
+    this.lastYaw = playerYaw;
+    this.lastRegionId = regionId;
     this.playerPos.copy(playerPos);
     this.playerYaw = playerYaw;
-    this.currentRegion = getRegion(playerPos.x, playerPos.z);
+    this.currentRegion = region;
     this.draw();
   }
 

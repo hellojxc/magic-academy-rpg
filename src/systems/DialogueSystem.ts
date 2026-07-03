@@ -157,10 +157,12 @@ export class DialogueSystem {
     };
   }
 
-  /** 结束对话 */
+  /**
+   * 结束对话，清空当前对话状态。
+   * 注意：currentTree 在此处被清空。调用者如需检查 completesEvent，
+   * 必须在调用 advance()/endDialogue() 之前通过 getCurrentTree() 捕获引用。
+   */
   endDialogue(): void {
-    // 保存 tree 引用供调用者在 endDialogue 后检查
-    // 注意：currentTree 在此处被清空
     this.currentTree = null;
     this.currentPage = null;
     this.state = { phase: 'ended' };

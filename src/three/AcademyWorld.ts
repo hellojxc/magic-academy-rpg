@@ -1,12 +1,13 @@
 import * as THREE from 'three';
 import { CharacterModel3D } from './CharacterModel3D';
 import type { AcademyWorldObjects, Obstacle } from './WorldTypes';
+import { REGIONS, getRegion } from './WorldHelpers';
 import { GrandHall } from './GrandHall';
 import { DiningHall } from './DiningHall';
 import { Lawn } from './Lawn';
 import { Lake } from './Lake';
 import {
-  Geo, UNIT_BOX,
+  Geo, UNIT_BOX, getStandardMaterial,
   makeSharedMarbleTexture, makeSharedPlasterTexture, makeSharedWoodTexture, makeSharedCarpetTexture,
 } from './RenderResources';
 
@@ -18,9 +19,27 @@ interface AnimatedObject {
   phase: number;
 }
 
+interface LightGroup {
+  center: THREE.Vector3;
+  radiusSq: number;
+  lights: THREE.PointLight[];
+}
+
+interface RegionUpdateGroup {
+  id: string;
+  center: THREE.Vector3;
+  radiusSq: number;
+  update: (elapsedTime: number, delta: number) => void;
+}
+
 export class AcademyWorld {
   private readonly obstacles: Obstacle[] = [];
   private readonly animatedObjects: AnimatedObject[] = [];
+  private readonly lightGroups: LightGroup[] = [];
+  private readonly regionUpdateGroups: RegionUpdateGroup[] = [];
+  private readonly sunTarget = new THREE.Object3D();
+  private sun!: THREE.DirectionalLight;
+  private readonly sunOffset = new THREE.Vector3(-8, 12, 6);
   private playerRig!: CharacterModel3D;
   private lyraRig!: CharacterModel3D;
   private player!: THREE.Object3D;
@@ -61,6 +80,11 @@ export class AcademyWorld {
     // 区域间通道 — 移除阻挡通行的障碍
     this.clearPassages();
 
+    // 收集点光源并按区域分组，用于动态开关
+    this.collectPointLightsByRegion();
+    // 注册区域动画更新组，用于按距离裁剪
+    this.registerRegionUpdateGroups();
+
     return {
       player: this.player,
       lyra: this.lyra,
@@ -69,24 +93,113 @@ export class AcademyWorld {
   }
 
   update(elapsedTime: number, delta: number, playerMoving: boolean): void {
-    for (const item of this.animatedObjects) {
-      item.object.position.y = item.baseY + Math.sin(elapsedTime * item.speed + item.phase) * item.amplitude;
-      item.object.rotation.y += 0.006;
-    }
-
     this.playerRig.setMoving(playerMoving);
     this.playerRig.update(elapsedTime, delta);
     this.lyraRig.setMoving(false);
     this.lyraRig.update(elapsedTime, delta, this.player.position);
 
-    this.grandHall.update(elapsedTime);
-    this.diningHall.update(elapsedTime);
-    this.lawn.update(elapsedTime);
-    this.lake.update(elapsedTime);
+    // 阴影相机跟随玩家
+    this.sunTarget.position.copy(this.player.position);
+    this.sun.position.copy(this.player.position).add(this.sunOffset);
+
+    // 按距离裁剪区域动画 + 动态开关点光源
+    this.updateRegions(elapsedTime, delta);
+    this.updatePointLights();
   }
 
   getPlayerPosition(): THREE.Object3D {
     return this.player;
+  }
+
+  /**
+   * 遍历场景中所有 PointLight，按所在区域分组。
+   * 运行时根据玩家位置动态开关光源，减少同时活跃的光源数量。
+   */
+  private collectPointLightsByRegion(): void {
+    const lightsByRegion = new Map<string, THREE.PointLight[]>();
+    this.scene.traverse((obj) => {
+      if (!(obj instanceof THREE.PointLight)) return;
+      const region = getRegion(obj.position.x, obj.position.z);
+      const id = region?.id ?? '__global__';
+      const arr = lightsByRegion.get(id);
+      if (arr) arr.push(obj);
+      else lightsByRegion.set(id, [obj]);
+    });
+
+    for (const region of REGIONS) {
+      const lights = lightsByRegion.get(region.id);
+      if (!lights || lights.length === 0) continue;
+      const cx = (region.bounds.minX + region.bounds.maxX) / 2;
+      const cz = (region.bounds.minZ + region.bounds.maxZ) / 2;
+      const w = region.bounds.maxX - region.bounds.minX;
+      const d = region.bounds.maxZ - region.bounds.minZ;
+      // 启用半径 = 区域较窄边的一半 + 余量，保证区域内部完全覆盖且边缘略有重叠
+      const radius = Math.min(w, d) / 2 + 4;
+      this.lightGroups.push({
+        center: new THREE.Vector3(cx, 0, cz),
+        radiusSq: radius * radius,
+        lights,
+      });
+    }
+  }
+
+  private updatePointLights(): void {
+    const px = this.player.position.x;
+    const pz = this.player.position.z;
+    for (const group of this.lightGroups) {
+      const dx = px - group.center.x;
+      const dz = pz - group.center.z;
+      const near = dx * dx + dz * dz < group.radiusSq;
+      for (const light of group.lights) {
+        light.visible = near;
+      }
+    }
+  }
+
+  /**
+   * 把每个区域的 update 函数注册为按距离裁剪的更新组。
+   * 玩家附近的区域每帧更新动画，远处区域冻结以节省 CPU/GPU。
+   */
+  private registerRegionUpdateGroups(): void {
+    const make = (id: string, fn: (t: number, d: number) => void): RegionUpdateGroup => {
+      const region = REGIONS.find((r) => r.id === id);
+      if (!region) throw new Error(`Unknown region: ${id}`);
+      const cx = (region.bounds.minX + region.bounds.maxX) / 2;
+      const cz = (region.bounds.minZ + region.bounds.maxZ) / 2;
+      const w = region.bounds.maxX - region.bounds.minX;
+      const d = region.bounds.maxZ - region.bounds.minZ;
+      const radius = Math.min(w, d) / 2 + 4;
+      return {
+        id,
+        center: new THREE.Vector3(cx, 0, cz),
+        radiusSq: radius * radius,
+        update: fn,
+      };
+    };
+
+    this.regionUpdateGroups.push(
+      make('atrium', (t, _d) => {
+        for (const item of this.animatedObjects) {
+          item.object.position.y = item.baseY + Math.sin(t * item.speed + item.phase) * item.amplitude;
+          item.object.rotation.y += 0.006;
+        }
+      }),
+      make('grand_hall', (t) => this.grandHall.update(t)),
+      make('dining_hall', (t) => this.diningHall.update(t)),
+      make('lawn', (t) => this.lawn.update(t)),
+      make('lake', (t) => this.lake.update(t)),
+    );
+  }
+
+  private updateRegions(elapsedTime: number, delta: number): void {
+    const px = this.player.position.x;
+    const pz = this.player.position.z;
+    for (const group of this.regionUpdateGroups) {
+      const dx = px - group.center.x;
+      const dz = pz - group.center.z;
+      if (dx * dx + dz * dz > group.radiusSq) continue;
+      group.update(elapsedTime, delta);
+    }
   }
 
   getCharacterModelStates(): Record<'player' | 'lyra', string> {
@@ -94,6 +207,11 @@ export class AcademyWorld {
       player: this.playerRig.getModelState(),
       lyra: this.lyraRig.getModelState(),
     };
+  }
+
+  /** 直接返回序列化字符串，避免每帧分配中间对象 */
+  getCharacterModelStatesString(): string {
+    return `player:${this.playerRig.getModelState()},lyra:${this.lyraRig.getModelState()}`;
   }
 
   /**
@@ -166,20 +284,22 @@ export class AcademyWorld {
     this.scene.add(hemi);
 
     // 太阳 — 黄金时段斜射光
-    const sun = new THREE.DirectionalLight(0xffd49a, 3.0);
-    sun.position.set(-8, 12, 6);
-    sun.castShadow = true;
-    sun.shadow.mapSize.set(2048, 2048);
-    sun.shadow.camera.near = 0.5;
-    sun.shadow.camera.far = 45;
-    sun.shadow.camera.left = -16;
-    sun.shadow.camera.right = 16;
-    sun.shadow.camera.top = 16;
-    sun.shadow.camera.bottom = -16;
-    sun.shadow.bias = -0.0003;
-    sun.shadow.normalBias = 0.04;
-    sun.shadow.radius = 3;
-    this.scene.add(sun);
+    this.sun = new THREE.DirectionalLight(0xffd49a, 3.0);
+    this.sun.position.copy(this.sunOffset);
+    this.sun.castShadow = true;
+    this.sun.shadow.mapSize.set(2048, 2048);
+    this.sun.shadow.camera.near = 0.5;
+    this.sun.shadow.camera.far = 45;
+    this.sun.shadow.camera.left = -16;
+    this.sun.shadow.camera.right = 16;
+    this.sun.shadow.camera.top = 16;
+    this.sun.shadow.camera.bottom = -16;
+    this.sun.shadow.bias = -0.0003;
+    this.sun.shadow.normalBias = 0.04;
+    this.sun.shadow.radius = 3;
+    this.scene.add(this.sun);
+    this.scene.add(this.sunTarget);
+    this.sun.target = this.sunTarget;
 
     // 补光 — 冷蓝色反向填充
     const fill = new THREE.DirectionalLight(0x8eb4d8, 0.6);
@@ -575,7 +695,7 @@ export class AcademyWorld {
         const bookWidth = 0.065 + ((row + i * 2) % 5) * 0.012;
         const bookHeight = 0.29 + ((row + i) % 4) * 0.045;
         const bookDepth = 0.13 + ((row * 2 + i) % 3) * 0.024;
-        const bookMat = new THREE.MeshStandardMaterial({ color: colors[(row * 3 + i) % colors.length], roughness: 0.5 });
+        const bookMat = getStandardMaterial({ color: colors[(row * 3 + i) % colors.length], roughness: 0.5 });
         const book = this.addBoxToGroup(
           shelf,
           new THREE.Vector3(cursor + bookWidth / 2, shelfLevels[row] + 0.06 + bookHeight / 2, depth / 2 - 0.04),
@@ -608,9 +728,9 @@ export class AcademyWorld {
     const labelMat = new THREE.MeshStandardMaterial({ color: 0xe7c87a, roughness: 0.28, metalness: 0.45 });
     const parchmentMat = new THREE.MeshStandardMaterial({ color: 0xd9c08e, roughness: 0.68, metalness: 0.02 });
     const glassMats = [
-      new THREE.MeshStandardMaterial({ color: 0x75c6d8, roughness: 0.12, metalness: 0.02, transparent: true, opacity: 0.72 }),
-      new THREE.MeshStandardMaterial({ color: 0xa978d4, roughness: 0.12, metalness: 0.02, transparent: true, opacity: 0.72 }),
-      new THREE.MeshStandardMaterial({ color: 0x8ecf84, roughness: 0.12, metalness: 0.02, transparent: true, opacity: 0.72 }),
+      getStandardMaterial({ color: 0x75c6d8, roughness: 0.12, metalness: 0.02, transparent: true, opacity: 0.72 }),
+      getStandardMaterial({ color: 0xa978d4, roughness: 0.12, metalness: 0.02, transparent: true, opacity: 0.72 }),
+      getStandardMaterial({ color: 0x8ecf84, roughness: 0.12, metalness: 0.02, transparent: true, opacity: 0.72 }),
     ];
 
     for (const level of [shelfLevels[1], shelfLevels[3]]) {
@@ -641,7 +761,7 @@ export class AcademyWorld {
 
     const charm = new THREE.Mesh(
       new THREE.OctahedronGeometry(0.07, 0),
-      new THREE.MeshStandardMaterial({ color: 0x8fc7ff, emissive: 0x4f8cff, emissiveIntensity: 0.65, roughness: 0.2 })
+      getStandardMaterial({ color: 0x8fc7ff, emissive: 0x4f8cff, emissiveIntensity: 0.65, roughness: 0.2 })
     );
     charm.position.set(0, shelfLevels[4] + 0.28, depth / 2 + 0.03);
     charm.castShadow = true;
@@ -669,7 +789,7 @@ export class AcademyWorld {
       const book = this.addBox(
         new THREE.Vector3(x + i * 0.012, 0.09 + i * 0.074, z),
         new THREE.Vector3(0.42 - i * 0.018, 0.07, 0.3 - i * 0.012),
-        new THREE.MeshStandardMaterial({ color: colors[(i + count) % colors.length], roughness: 0.52, metalness: 0.04 }),
+        getStandardMaterial({ color: colors[(i + count) % colors.length], roughness: 0.52, metalness: 0.04 }),
         true,
         true
       );
@@ -678,30 +798,34 @@ export class AcademyWorld {
   }
 
   private addColumn(x: number, z: number, stoneMat: THREE.Material, trimMat: THREE.Material): void {
-    const base = new THREE.Mesh(new THREE.CylinderGeometry(0.42, 0.5, 0.2, 28), stoneMat);
+    const baseGeo = Geo.cylinder(0.42, 0.5, 0.2, 28);
+    const base = new THREE.Mesh(baseGeo, stoneMat);
     base.position.set(x, 0.1, z);
     base.castShadow = true;
     base.receiveShadow = true;
     this.scene.add(base);
 
-    const pillar = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.25, 2.35, 28), stoneMat);
+    const pillarGeo = Geo.cylinder(0.22, 0.25, 2.35, 28);
+    const pillar = new THREE.Mesh(pillarGeo, stoneMat);
     pillar.position.set(x, 1.28, z);
     pillar.castShadow = true;
     pillar.receiveShadow = true;
     this.scene.add(pillar);
 
+    const ringGeo = Geo.cylinder(0.32, 0.34, 0.09, 28);
     for (const y of [0.36, 2.2]) {
-      const ring = new THREE.Mesh(new THREE.CylinderGeometry(0.32, 0.34, 0.09, 28), trimMat);
+      const ring = new THREE.Mesh(ringGeo, trimMat);
       ring.position.set(x, y, z);
       ring.castShadow = true;
       ring.receiveShadow = true;
       this.scene.add(ring);
     }
 
-    const grooveMat = new THREE.MeshStandardMaterial({ color: 0x554a5f, roughness: 0.64, metalness: 0.03 });
+    const grooveMat = getStandardMaterial({ color: 0x554a5f, roughness: 0.64, metalness: 0.03 });
+    const grooveGeo = Geo.box(0.022, 1.62, 0.028);
     for (let i = 0; i < 8; i += 1) {
       const angle = (i / 8) * Math.PI * 2;
-      const groove = new THREE.Mesh(new THREE.BoxGeometry(0.022, 1.62, 0.028), grooveMat);
+      const groove = new THREE.Mesh(grooveGeo, grooveMat);
       groove.position.set(x + Math.cos(angle) * 0.242, 1.28, z + Math.sin(angle) * 0.242);
       groove.rotation.y = -angle;
       groove.castShadow = true;
@@ -709,8 +833,9 @@ export class AcademyWorld {
       this.scene.add(groove);
     }
 
+    const nickGeo = Geo.box(0.14, 0.018, 0.022);
     for (const [dy, angle] of [[0.88, 0.35], [1.58, 2.25]] as Array<[number, number]>) {
-      const nick = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.018, 0.022), grooveMat);
+      const nick = new THREE.Mesh(nickGeo, grooveMat);
       nick.position.set(x + Math.cos(angle) * 0.262, dy, z + Math.sin(angle) * 0.262);
       nick.rotation.set(0, -angle, 0.38);
       nick.castShadow = true;
@@ -718,8 +843,8 @@ export class AcademyWorld {
     }
 
     const lamp = new THREE.Mesh(
-      new THREE.OctahedronGeometry(0.16, 1),
-      new THREE.MeshStandardMaterial({ color: 0xffd674, emissive: 0xffb847, emissiveIntensity: 1.65 })
+      Geo.octahedron(0.16, 1),
+      getStandardMaterial({ color: 0xffd674, emissive: 0xffb847, emissiveIntensity: 1.65 })
     );
     lamp.position.set(x, 2.58, z);
     this.scene.add(lamp);

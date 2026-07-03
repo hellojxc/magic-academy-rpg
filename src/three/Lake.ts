@@ -1,5 +1,6 @@
 import * as THREE from 'three';
-import { addFlatPlane, addPointLight, makeWaterTexture } from './WorldHelpers';
+import { addFlatPlane, addPointLight, makeWaterTexture, makeGrassTexture } from './WorldHelpers';
+import { MatLib, getStandardMaterial, Geo } from './RenderResources';
 
 /**
  * 湖泊 — 西南方向 (x:[-26,-4], z:[10,28])
@@ -8,11 +9,13 @@ import { addFlatPlane, addPointLight, makeWaterTexture } from './WorldHelpers';
 export class Lake {
   private readonly animatedObjects: { obj: THREE.Object3D; baseY: number; amp: number; speed: number; phase: number }[] = [];
   private readonly waterMeshes: THREE.Mesh[] = [];
+  private waterMap: THREE.Texture | null = null;
 
   constructor(private readonly scene: THREE.Scene) {}
 
   build(): void {
     const waterTex = makeWaterTexture();
+    this.waterMap = waterTex;
     const waterMat = new THREE.MeshStandardMaterial({
       color: 0x3a7eac,
       roughness: 0.12,
@@ -27,7 +30,7 @@ export class Lake {
     this.addShallowWaterShelf();
 
     // 湖底
-    const lakeBedMat = new THREE.MeshStandardMaterial({ color: 0x2a3a4a, roughness: 0.9, metalness: 0.0 });
+    const lakeBedMat = MatLib.lakeBed;
     const bed = new THREE.Mesh(new THREE.CircleGeometry(13, 32), lakeBedMat);
     bed.rotation.x = -Math.PI / 2;
     bed.position.set(-15, -0.5, 19);
@@ -35,7 +38,7 @@ export class Lake {
     this.scene.add(bed);
 
     // 沙滩/岸边
-    const sandMat = new THREE.MeshStandardMaterial({ color: 0xc4a86a, roughness: 0.7, metalness: 0.02 });
+    const sandMat = MatLib.sand;
     for (let i = 0; i < 64; i++) {
       const angle = (i / 64) * Math.PI * 2;
       const r = 11.5 + Math.random() * 1.5;
@@ -56,7 +59,7 @@ export class Lake {
     this.addDock(-6, 16, barkMat());
 
     // 芦苇
-    const reedMat = new THREE.MeshStandardMaterial({ color: 0x6b8a3a, roughness: 0.7 });
+    const reedMat = MatLib.reed;
     for (let i = 0; i < 40; i++) {
       const angle = Math.random() * Math.PI * 2;
       const r = 10 + Math.random() * 1.5;
@@ -71,8 +74,8 @@ export class Lake {
     }
 
     // 睡莲
-    const lilyMat = new THREE.MeshStandardMaterial({ color: 0x2d6b1a, roughness: 0.6, metalness: 0.03 });
-    const flowerMat = new THREE.MeshStandardMaterial({ color: 0xfff4e0, roughness: 0.3 });
+    const lilyMat = MatLib.lilyPad;
+    const flowerMat = MatLib.lilyFlower;
     for (let i = 0; i < 25; i++) {
       const x = -15 + (Math.random() - 0.5) * 18;
       const z = 19 + (Math.random() - 0.5) * 14;
@@ -103,8 +106,8 @@ export class Lake {
     // 月光投射
     addPointLight(this.scene, -15, 6, 19, 0x9fc4ff, 1.8, 22);
 
-    // 草地延伸到湖边
-    const grassMat = new THREE.MeshStandardMaterial({ color: 0x4a8b3a, roughness: 0.85 });
+    // 草地延伸到湖边 — 复用草坪纹理，避免色差
+    const grassMat = new THREE.MeshStandardMaterial({ color: 0x4a8b3a, roughness: 0.85, map: makeGrassTexture() });
     addFlatPlane(this.scene, new THREE.Vector3(-15, -0.03, 12), new THREE.Vector2(22, 4), grassMat);
   }
 
@@ -113,13 +116,10 @@ export class Lake {
       item.obj.position.y = item.baseY + Math.sin(elapsedTime * item.speed + item.phase) * item.amp;
     }
 
-    // 水面 UV 偏移 — 模拟波纹流动
-    for (const mesh of this.waterMeshes) {
-      const mat = mesh.material as THREE.MeshStandardMaterial;
-      if (mat.map) {
-        mat.map.offset.x = elapsedTime * 0.015;
-        mat.map.offset.y = elapsedTime * 0.008;
-      }
+    // 水面 UV 偏移 — 模拟波纹流动（主水面与深水共享同一张贴图，只更新一次）
+    if (this.waterMap) {
+      this.waterMap.offset.x = elapsedTime * 0.015;
+      this.waterMap.offset.y = elapsedTime * 0.008;
     }
   }
 
@@ -146,13 +146,8 @@ export class Lake {
   }
 
   private addShallowWaterShelf(): void {
-    const shelfMat = new THREE.MeshStandardMaterial({
-      color: 0x68b6bd,
-      transparent: true,
-      opacity: 0.32,
-      roughness: 0.24,
-      metalness: 0.08,
-      depthWrite: false,
+    const shelfMat = getStandardMaterial({
+      color: 0x68b6bd, transparent: true, opacity: 0.32, roughness: 0.24, metalness: 0.08, depthWrite: false,
     });
 
     for (let i = 0; i < 30; i += 1) {
@@ -163,18 +158,18 @@ export class Lake {
       patch.rotation.x = -Math.PI / 2;
       patch.rotation.z = Math.random() * Math.PI;
       patch.scale.set(1.8 + Math.random() * 1.4, 0.26 + Math.random() * 0.24, 1);
-      patch.position.set(-15 + Math.cos(angle) * radiusX, 0.012, 19 + Math.sin(angle) * radiusZ,);
+      patch.position.set(-15 + Math.cos(angle) * radiusX, 0.012, 19 + Math.sin(angle) * radiusZ);
       this.scene.add(patch);
     }
   }
 
   private addShoreDetails(): void {
     const pebbleMats = [
-      new THREE.MeshStandardMaterial({ color: 0x726b61, roughness: 0.78 }),
-      new THREE.MeshStandardMaterial({ color: 0x9b907b, roughness: 0.75 }),
-      new THREE.MeshStandardMaterial({ color: 0x554d48, roughness: 0.82 }),
+      getStandardMaterial({ color: 0x726b61, roughness: 0.78 }),
+      getStandardMaterial({ color: 0x9b907b, roughness: 0.75 }),
+      getStandardMaterial({ color: 0x554d48, roughness: 0.82 }),
     ];
-    const driftwoodMat = new THREE.MeshStandardMaterial({ color: 0x6d4a2d, roughness: 0.82, metalness: 0.02 });
+    const driftwoodMat = getStandardMaterial({ color: 0x6d4a2d, roughness: 0.82, metalness: 0.02 });
 
     for (let i = 0; i < 90; i += 1) {
       const angle = Math.random() * Math.PI * 2;
@@ -235,6 +230,7 @@ export class Lake {
 
   private addDock(x: number, z: number, mat: THREE.Material): void {
     // 木栈道
+    const seamMat = getStandardMaterial({ color: 0x3a2619, roughness: 0.85 });
     for (let i = 0; i < 5; i++) {
       const plank = new THREE.Mesh(new THREE.BoxGeometry(1.3 + Math.random() * 0.22, 0.08, 0.72 + Math.random() * 0.16), mat);
       plank.position.set(x + i * 0.82, 0.15 + (i % 2) * 0.012, z + (Math.random() - 0.5) * 0.08);
@@ -242,7 +238,7 @@ export class Lake {
       plank.castShadow = true; plank.receiveShadow = true;
       this.scene.add(plank);
 
-      const seam = new THREE.Mesh(new THREE.BoxGeometry(1.18, 0.012, 0.035), new THREE.MeshStandardMaterial({ color: 0x3a2619, roughness: 0.85 }));
+      const seam = new THREE.Mesh(new THREE.BoxGeometry(1.18, 0.012, 0.035), seamMat);
       seam.position.set(x + i * 0.82, 0.198, z + 0.18);
       seam.rotation.y = plank.rotation.y;
       seam.receiveShadow = true;
@@ -250,9 +246,10 @@ export class Lake {
     }
 
     // 桩
+    const postGeo = Geo.box(0.1, 0.5, 0.1);
     for (let i = 0; i < 5; i++) {
       for (const dx of [-0.65, 0.65]) {
-        const post = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.5, 0.1), mat);
+        const post = new THREE.Mesh(postGeo, mat);
         post.position.set(x + i * 0.82 + dx, -0.1, z);
         post.castShadow = true;
         this.scene.add(post);
@@ -262,7 +259,7 @@ export class Lake {
     // 码头尽头灯笼
     const lamp = new THREE.Mesh(
       new THREE.OctahedronGeometry(0.15, 1),
-      new THREE.MeshStandardMaterial({ color: 0xffd674, emissive: 0xffb847, emissiveIntensity: 2 })
+      MatLib.warmGlowWeak
     );
     lamp.position.set(x + 4.1, 0.7, z);
     this.scene.add(lamp);
@@ -272,21 +269,19 @@ export class Lake {
 
   private addIsland(x: number, z: number): void {
     // 小岛基座
-    const islandMat = new THREE.MeshStandardMaterial({ color: 0x6a8b4a, roughness: 0.8 });
+    const islandMat = getStandardMaterial({ color: 0x6a8b4a, roughness: 0.8 });
     const island = new THREE.Mesh(new THREE.CylinderGeometry(2, 2.4, 0.6, 24), islandMat);
     island.position.set(x, 0.1, z);
     island.receiveShadow = true;
     this.scene.add(island);
 
     // 岛上树
-    const barkMat = new THREE.MeshStandardMaterial({ color: 0x5a3e28, roughness: 0.65 });
-    const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.2, 1.8, 8), barkMat);
+    const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.2, 1.8, 8), MatLib.bark);
     trunk.position.set(x, 1.0, z);
     trunk.castShadow = true;
     this.scene.add(trunk);
 
-    const leafMat = new THREE.MeshStandardMaterial({ color: 0x3d7a30, roughness: 0.75 });
-    const crown = new THREE.Mesh(new THREE.SphereGeometry(0.9, 16, 12), leafMat);
+    const crown = new THREE.Mesh(new THREE.SphereGeometry(0.9, 16, 12), MatLib.leafGreen);
     crown.position.set(x, 2.0, z);
     crown.castShadow = true;
     this.scene.add(crown);
@@ -294,13 +289,14 @@ export class Lake {
   }
 
   private addWaterSparkles(): void {
-    const sparkMat = new THREE.MeshStandardMaterial({ color: 0xc8e8ff, emissive: 0x9fdcff, emissiveIntensity: 1.5, transparent: true, opacity: 0.6 });
+    const sparkMat = MatLib.waterSparkle;
+    const sparkGeo = Geo.sphere(0.02, 4, 3);
     for (let i = 0; i < 40; i++) {
       const x = -15 + (Math.random() - 0.5) * 16;
       const z = 19 + (Math.random() - 0.5) * 12;
       if (Math.abs(x + 15) > 8 || Math.abs(z - 19) > 6) continue;
 
-      const spark = new THREE.Mesh(new THREE.SphereGeometry(0.02, 4, 3), sparkMat);
+      const spark = new THREE.Mesh(sparkGeo, sparkMat);
       spark.position.set(x, 0.03, z);
       this.scene.add(spark);
       this.animatedObjects.push({
@@ -315,5 +311,5 @@ export class Lake {
 }
 
 function barkMat(): THREE.Material {
-  return new THREE.MeshStandardMaterial({ color: 0x6d432b, roughness: 0.44, metalness: 0.08 });
+  return getStandardMaterial({ color: 0x6d432b, roughness: 0.44, metalness: 0.08 });
 }

@@ -12,10 +12,13 @@ export class ThreeGameView {
   readonly camera: THREE.PerspectiveCamera;
   private readonly composer: EffectComposer;
   private readonly bloomPass: UnrealBloomPass;
-  private readonly ssaoPass: SSAOPass;
+  private readonly ssaoPass: SSAOPass | null;
   private readonly renderPixelRatio = Math.min(window.devicePixelRatio || 1, 1.35);
+  private readonly lowQuality: boolean;
 
   constructor(private readonly container: HTMLElement) {
+    this.lowQuality = new URLSearchParams(window.location.search).get('quality') === 'low';
+
     // 相机 — 50mm 等效视野，略偏俯视角
     this.camera = new THREE.PerspectiveCamera(48, 16 / 9, 0.1, 120);
     this.camera.position.set(3.6, 4.8, 6.8);
@@ -23,11 +26,11 @@ export class ThreeGameView {
 
     // 渲染器 — 高质量设置
     this.renderer = new THREE.WebGLRenderer({
-      antialias: true,
+      antialias: !this.lowQuality,
       powerPreference: 'high-performance',
       stencil: false,
     });
-    this.renderer.setPixelRatio(this.renderPixelRatio);
+    this.renderer.setPixelRatio(this.lowQuality ? Math.min(this.renderPixelRatio, 1) : this.renderPixelRatio);
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = THREE.PCFShadowMap;
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -39,28 +42,34 @@ export class ThreeGameView {
 
     // 后处理管线
     this.composer = new EffectComposer(this.renderer);
-    this.composer.setPixelRatio(this.renderPixelRatio);
+    this.composer.setPixelRatio(this.lowQuality ? Math.min(this.renderPixelRatio, 1) : this.renderPixelRatio);
     this.composer.addPass(new RenderPass(this.scene, this.camera));
 
-    // SSAO — 环境光遮蔽，给角落和缝隙加阴影
-    this.ssaoPass = new SSAOPass(this.scene, this.camera, 0, 0);
-    this.ssaoPass.kernelRadius = 5;
-    this.ssaoPass.minDistance = 0.003;
-    this.ssaoPass.maxDistance = 0.04;
-    this.composer.addPass(this.ssaoPass);
+    // SSAO — 环境光遮蔽，给角落和缝隙加阴影（低端模式关闭）
+    if (this.lowQuality) {
+      this.ssaoPass = null;
+    } else {
+      this.ssaoPass = new SSAOPass(this.scene, this.camera, 0, 0);
+      this.ssaoPass.kernelRadius = 5;
+      this.ssaoPass.minDistance = 0.003;
+      this.ssaoPass.maxDistance = 0.04;
+      this.composer.addPass(this.ssaoPass);
+    }
 
     // Bloom — 发光体辉光
     this.bloomPass = new UnrealBloomPass(
       new THREE.Vector2(1, 1),
-      0.36,   // strength — 适度，不过曝
+      this.lowQuality ? 0.24 : 0.36,   // strength — 适度，不过曝
       0.52,   // radius
       0.82    // threshold — 只有高亮物体才辉光
     );
     this.composer.addPass(this.bloomPass);
 
-    // SMAA — 高质量抗锯齿
-    const smaaPass = new SMAAPass();
-    this.composer.addPass(smaaPass);
+    // SMAA — 高质量抗锯齿（低端模式跳过，依赖原生 MSAA）
+    if (!this.lowQuality) {
+      const smaaPass = new SMAAPass();
+      this.composer.addPass(smaaPass);
+    }
 
     // Output — 色彩空间转换
     this.composer.addPass(new OutputPass());
@@ -75,7 +84,7 @@ export class ThreeGameView {
     this.composer.setSize(width, height);
 
     // 更新 SSAO 分辨率
-    this.ssaoPass.setSize(width, height);
+    this.ssaoPass?.setSize(width, height);
 
     // 更新 Bloom 分辨率
     this.bloomPass.resolution.set(width, height);

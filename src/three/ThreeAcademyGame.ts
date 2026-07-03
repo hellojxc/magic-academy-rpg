@@ -210,8 +210,7 @@ export class ThreeAcademyGame {
   };
 
   private updateDebugDataset(): void {
-    const states = this.world.getCharacterModelStates();
-    const serialized = `player:${states.player},lyra:${states.lyra}`;
+    const serialized = this.world.getCharacterModelStatesString();
     if (serialized === this.lastCharacterModelState) return;
     this.lastCharacterModelState = serialized;
     this.container.dataset.characterModels = serialized;

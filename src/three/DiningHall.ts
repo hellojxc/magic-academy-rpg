@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import type { Obstacle } from './WorldTypes';
 import { addBox, addPointLight, makeWoodTexture, makePlasterTexture } from './WorldHelpers';
+import { MatLib, getStandardMaterial, Geo } from './RenderResources';
 
 /**
  * 食堂 — 中庭东面 (x:[10,24], z:[-6,8])
@@ -20,7 +21,7 @@ export class DiningHall {
     const darkWoodMat = new THREE.MeshStandardMaterial({ color: 0x3a211a, roughness: 0.5, metalness: 0.08 });
     const wallMat = new THREE.MeshStandardMaterial({ color: 0xc4b4a0, roughness: 0.58, metalness: 0.03, map: plasterTex });
     const lowerMat = new THREE.MeshStandardMaterial({ color: 0x7b6a5e, roughness: 0.5, metalness: 0.08 });
-    const goldMat = new THREE.MeshStandardMaterial({ color: 0xc7a060, roughness: 0.24, metalness: 0.48 });
+    const goldMat = MatLib.gold;
     const clothMat = new THREE.MeshStandardMaterial({ color: 0xe8dcc0, roughness: 0.72, metalness: 0.02 });
 
     // 地板
@@ -67,7 +68,7 @@ export class DiningHall {
     this.addFoodCounter(14, -5.5, woodMat, goldMat);
 
     // 吊灯
-    const chandelierMat = new THREE.MeshStandardMaterial({ color: 0xd6b45d, roughness: 0.28, metalness: 0.42 });
+    const chandelierMat = MatLib.chandelier;
     for (const [x, z] of [[15, -3], [19, -3], [15, 0.5], [19, 0.5], [15, 4], [19, 4]] as Array<[number, number]>) {
       this.addChandelier(x, z, chandelierMat);
     }
@@ -119,9 +120,10 @@ export class DiningHall {
     this.scene.add(cloth);
 
     // 桌腿
+    const legGeo = Geo.box(0.12, 0.72, 0.12);
     for (const dx of [-length / 2 + 0.3, length / 2 - 0.3]) {
       for (const dz of [-0.45, 0.45]) {
-        const leg = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.72, 0.12), darkWoodMat);
+        const leg = new THREE.Mesh(legGeo, darkWoodMat);
         leg.position.set(centerX + dx, 0.36, centerZ + dz);
         leg.castShadow = true; leg.receiveShadow = true;
         this.scene.add(leg);
@@ -135,8 +137,9 @@ export class DiningHall {
       bench.castShadow = true; bench.receiveShadow = true;
       this.scene.add(bench);
 
+      const benchLegGeo = Geo.box(0.08, 0.4, 0.08);
       for (const dx of [-length * 0.4, 0, length * 0.4]) {
-        const bl = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.4, 0.08), darkWoodMat);
+        const bl = new THREE.Mesh(benchLegGeo, darkWoodMat);
         bl.position.set(centerX + dx, 0.2, centerZ + dz);
         bl.castShadow = true;
         this.scene.add(bl);
@@ -144,17 +147,20 @@ export class DiningHall {
     }
 
     // 餐具 — 盘子
-    const plateMat = new THREE.MeshStandardMaterial({ color: 0xf0eadf, roughness: 0.3, metalness: 0.05 });
+    const plateMat = MatLib.plate;
+    const cupMat = MatLib.cup;
+    const plateGeo = Geo.cylinder(0.12, 0.1, 0.02, 16);
+    const cupGeo = Geo.cylinder(0.04, 0.035, 0.08, 12);
     for (let i = 0; i < 6; i++) {
       const dx = -length / 2 + 1 + i * (length - 2) / 5;
       for (const dz of [-0.3, 0.3]) {
-        const plate = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.1, 0.02, 16), plateMat);
+        const plate = new THREE.Mesh(plateGeo, plateMat);
         plate.position.set(centerX + dx, 0.81, centerZ + dz);
         plate.castShadow = true;
         this.scene.add(plate);
 
         // 杯子
-        const cup = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.035, 0.08, 12), new THREE.MeshStandardMaterial({ color: 0xddc8a0, roughness: 0.2 }));
+        const cup = new THREE.Mesh(cupGeo, cupMat);
         cup.position.set(centerX + dx + 0.16, 0.84, centerZ + dz);
         cup.castShadow = true;
         this.scene.add(cup);
@@ -175,8 +181,9 @@ export class DiningHall {
     this.scene.add(trim);
 
     // 食物 — 水果碗
-    const bowlMat = new THREE.MeshStandardMaterial({ color: 0xd4a76a, roughness: 0.3 });
+    const bowlMat = getStandardMaterial({ color: 0xd4a76a, roughness: 0.3 });
     const fruitColors = [0xd85f5f, 0xf1c45f, 0x6b9e4a, 0xd85f9e];
+    const fruitMats = fruitColors.map((c) => getStandardMaterial({ color: c, roughness: 0.4 }));
     for (let i = 0; i < 3; i++) {
       const dx = (i - 1) * 0.8;
       const bowl = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.12, 0.08, 16), bowlMat);
@@ -188,7 +195,7 @@ export class DiningHall {
       for (let j = 0; j < 4; j++) {
         const fruit = new THREE.Mesh(
           new THREE.SphereGeometry(0.05 + Math.random() * 0.03, 8, 6),
-          new THREE.MeshStandardMaterial({ color: fruitColors[Math.floor(Math.random() * fruitColors.length)], roughness: 0.4 })
+          fruitMats[Math.floor(Math.random() * fruitMats.length)]
         );
         fruit.position.set(x + dx + (Math.random() - 0.5) * 0.2, 1.0 + Math.random() * 0.05, z + (Math.random() - 0.5) * 0.15);
         fruit.castShadow = true;
@@ -199,7 +206,7 @@ export class DiningHall {
 
   private addFireplace(x: number, z: number): void {
     const stoneMat = new THREE.MeshStandardMaterial({ color: 0x5a4a3e, roughness: 0.6, metalness: 0.06 });
-    const fireMat = new THREE.MeshStandardMaterial({ color: 0xff6020, emissive: 0xff4010, emissiveIntensity: 2.5 });
+    const fireMat = MatLib.fire;
     const sootMat = new THREE.MeshBasicMaterial({ color: 0x1f1714, transparent: true, opacity: 0.28, depthWrite: false });
 
     // 壁炉框架
@@ -237,11 +244,13 @@ export class DiningHall {
     group.add(ring);
 
     // 蜡烛灯
+    const candleMat = MatLib.candleWax;
+    const flameMat = getStandardMaterial({ color: 0xffd674, emissive: 0xffb847, emissiveIntensity: 2 });
     for (let i = 0; i < 4; i++) {
       const angle = (i / 4) * Math.PI * 2;
       const candle = new THREE.Mesh(
         new THREE.CylinderGeometry(0.04, 0.04, 0.12, 8),
-        new THREE.MeshStandardMaterial({ color: 0xf0e8d0, roughness: 0.3 })
+        candleMat
       );
       candle.position.set(Math.cos(angle) * 0.35, -0.06, Math.sin(angle) * 0.35);
       group.add(candle);
@@ -249,7 +258,7 @@ export class DiningHall {
       // 火焰
       const flame = new THREE.Mesh(
         new THREE.SphereGeometry(0.03, 8, 6),
-        new THREE.MeshStandardMaterial({ color: 0xffd674, emissive: 0xffb847, emissiveIntensity: 2 })
+        flameMat
       );
       flame.position.set(Math.cos(angle) * 0.35, 0.02, Math.sin(angle) * 0.35);
       group.add(flame);
@@ -262,11 +271,8 @@ export class DiningHall {
   }
 
   private addWindow(x: number, y: number, z: number, _side: string): void {
-    const frameMat = new THREE.MeshStandardMaterial({ color: 0xc7a060, roughness: 0.24, metalness: 0.45 });
-    const glassMat = new THREE.MeshStandardMaterial({
-      color: 0xbfe7ff, emissive: 0x5c8eda, emissiveIntensity: 0.15,
-      transparent: true, opacity: 0.55, roughness: 0.12, metalness: 0.02,
-    });
+    const frameMat = MatLib.goldFrame;
+    const glassMat = MatLib.windowGlassDining;
 
     const glass = new THREE.Mesh(new THREE.PlaneGeometry(1.4, 2.2), glassMat);
     glass.position.set(x - 0.05, y, z);

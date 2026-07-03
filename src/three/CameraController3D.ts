@@ -21,11 +21,24 @@ export class CameraController3D {
     this.domElement.addEventListener('contextmenu', this.onContextMenu);
     window.addEventListener('pointermove', this.onPointerMove);
     window.addEventListener('pointerup', this.onPointerUp);
-    this.update(1);
+    this.snap();
   }
 
   getYaw(): number {
     return this.yaw;
+  }
+
+  /** 立即把相机定位到目标位置，跳过平滑插值（用于初始化） */
+  private snap(): void {
+    this.lookTarget.copy(this.target.position).add(this.targetOffset);
+    const horizontalDistance = Math.cos(this.pitch) * this.distance;
+    this.desiredPosition.set(
+      this.lookTarget.x + Math.sin(this.yaw) * horizontalDistance,
+      this.lookTarget.y + Math.sin(this.pitch) * this.distance,
+      this.lookTarget.z + Math.cos(this.yaw) * horizontalDistance
+    );
+    this.camera.position.copy(this.desiredPosition);
+    this.camera.lookAt(this.lookTarget);
   }
 
   update(delta: number): void {

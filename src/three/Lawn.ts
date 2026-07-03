@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import type { Obstacle } from './WorldTypes';
 import { addFlatPlane, addPointLight, makeGrassTexture } from './WorldHelpers';
+import { MatLib, getStandardMaterial, Geo } from './RenderResources';
 
 /**
  * 草坪 — 中庭南面 (x:[-16,16], z:[7,22])
@@ -17,8 +18,8 @@ export class Lawn {
     const grassTex = makeGrassTexture();
     const grassMat = new THREE.MeshStandardMaterial({ color: 0x4a8b3a, roughness: 0.85, metalness: 0.0, map: grassTex });
     const stoneMat = new THREE.MeshStandardMaterial({ color: 0x8a8278, roughness: 0.6, metalness: 0.05 });
-    const barkMat = new THREE.MeshStandardMaterial({ color: 0x5a3e28, roughness: 0.65, metalness: 0.05 });
-    const goldMat = new THREE.MeshStandardMaterial({ color: 0xc7a060, roughness: 0.24, metalness: 0.48 });
+    const barkMat = MatLib.bark;
+    const goldMat = MatLib.gold;
 
     // 草地
     addFlatPlane(this.scene, new THREE.Vector3(0, -0.02, 14.5), new THREE.Vector2(32, 15), grassMat);
@@ -111,7 +112,7 @@ export class Lawn {
     // 水面
     const water = new THREE.Mesh(
       new THREE.CircleGeometry(1.1, 32),
-      new THREE.MeshStandardMaterial({ color: 0x4a9ec9, transparent: true, opacity: 0.75, roughness: 0.1, metalness: 0.03 })
+      MatLib.waterBlue
     );
     water.rotation.x = -Math.PI / 2;
     water.position.set(x, 0.38, z);
@@ -133,7 +134,7 @@ export class Lawn {
     // 水柱
     const spout = new THREE.Mesh(
       new THREE.CylinderGeometry(0.05, 0.08, 0.4, 12),
-      new THREE.MeshStandardMaterial({ color: 0x9fdcff, transparent: true, opacity: 0.5, roughness: 0.05 })
+      MatLib.waterSpout
     );
     spout.position.set(x, 1.2, z);
     this.scene.add(spout);
@@ -143,10 +144,10 @@ export class Lawn {
 
   private addGroundPatches(): void {
     const patchMats = [
-      new THREE.MeshStandardMaterial({ color: 0x356f32, roughness: 0.92, metalness: 0.0 }),
-      new THREE.MeshStandardMaterial({ color: 0x5a8d42, roughness: 0.9, metalness: 0.0 }),
-      new THREE.MeshStandardMaterial({ color: 0x3d5f2f, roughness: 0.94, metalness: 0.0 }),
-      new THREE.MeshStandardMaterial({ color: 0x6a583a, roughness: 0.96, metalness: 0.0 }),
+      getStandardMaterial({ color: 0x356f32, roughness: 0.92, metalness: 0.0 }),
+      getStandardMaterial({ color: 0x5a8d42, roughness: 0.9, metalness: 0.0 }),
+      getStandardMaterial({ color: 0x3d5f2f, roughness: 0.94, metalness: 0.0 }),
+      getStandardMaterial({ color: 0x6a583a, roughness: 0.96, metalness: 0.0 }),
     ];
 
     for (let i = 0; i < 58; i += 1) {
@@ -183,9 +184,9 @@ export class Lawn {
   private addGrassBlades(): void {
     const bladeGeometry = new THREE.ConeGeometry(0.026, 1, 4);
     const bladeMaterials = [
-      new THREE.MeshStandardMaterial({ color: 0x3e8a35, roughness: 0.88, metalness: 0.0 }),
-      new THREE.MeshStandardMaterial({ color: 0x6fae54, roughness: 0.86, metalness: 0.0 }),
-      new THREE.MeshStandardMaterial({ color: 0x2f6c2c, roughness: 0.9, metalness: 0.0 }),
+      getStandardMaterial({ color: 0x3e8a35, roughness: 0.88, metalness: 0.0 }),
+      getStandardMaterial({ color: 0x6fae54, roughness: 0.86, metalness: 0.0 }),
+      getStandardMaterial({ color: 0x2f6c2c, roughness: 0.9, metalness: 0.0 }),
     ];
     const dummy = new THREE.Object3D();
 
@@ -230,7 +231,7 @@ export class Lawn {
   }
 
   private addFlowerBed(x: number, z: number, colors: number[]): void {
-    const stoneMat = new THREE.MeshStandardMaterial({ color: 0x8a8278, roughness: 0.6 });
+    const stoneMat = getStandardMaterial({ color: 0x8a8278, roughness: 0.6 });
     const ring = new THREE.Mesh(new THREE.CylinderGeometry(0.7, 0.75, 0.25, 20), stoneMat);
     ring.position.set(x, 0.12, z);
     ring.castShadow = true; ring.receiveShadow = true;
@@ -242,19 +243,21 @@ export class Lawn {
     this.scene.add(dirt);
 
     // 花
+    const stemMat = getStandardMaterial({ color: 0x4a8b3a, roughness: 0.7 });
+    const flowerMats = colors.map((c) => getStandardMaterial({ color: c, emissive: c, emissiveIntensity: 0.08, roughness: 0.4 }));
     for (let i = 0; i < 12; i++) {
       const angle = (i / 12) * Math.PI * 2;
       const r = Math.random() * 0.5;
       const fx = x + Math.cos(angle) * r;
       const fz = z + Math.sin(angle) * r;
 
-      const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.015, 0.15, 4), new THREE.MeshStandardMaterial({ color: 0x4a8b3a, roughness: 0.7 }));
+      const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.015, 0.15, 4), stemMat);
       stem.position.set(fx, 0.33, fz);
       this.scene.add(stem);
 
       const flower = new THREE.Mesh(
         new THREE.SphereGeometry(0.04, 8, 6),
-        new THREE.MeshStandardMaterial({ color: colors[i % colors.length], emissive: colors[i % colors.length], emissiveIntensity: 0.08, roughness: 0.4 })
+        flowerMats[i % flowerMats.length]
       );
       flower.position.set(fx, 0.42, fz);
       flower.castShadow = true;
@@ -272,9 +275,9 @@ export class Lawn {
     group.add(trunk);
 
     // 树冠 — 三层球
-    const leafMat1 = new THREE.MeshStandardMaterial({ color: 0x3d7a30, roughness: 0.75, metalness: 0.0 });
-    const leafMat2 = new THREE.MeshStandardMaterial({ color: 0x4f8b3e, roughness: 0.75, metalness: 0.0 });
-    const leafMat3 = new THREE.MeshStandardMaterial({ color: 0x5a9b4a, roughness: 0.75, metalness: 0.0 });
+    const leafMat1 = MatLib.leafGreen;
+    const leafMat2 = MatLib.leafGreenMid;
+    const leafMat3 = MatLib.leafGreenLight;
 
     const c1 = new THREE.Mesh(new THREE.SphereGeometry(1.1 * scale, 16, 12), leafMat1);
     c1.position.y = 2.4 * scale; c1.castShadow = true; c1.receiveShadow = true;
@@ -296,17 +299,18 @@ export class Lawn {
   private addBench(x: number, z: number, rotY: number, mat: THREE.Material): void {
     const group = new THREE.Group();
 
-    const seat = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.06, 0.4), mat);
+    const seat = new THREE.Mesh(Geo.box(1.6, 0.06, 0.4), mat);
     seat.position.y = 0.42; seat.castShadow = true; seat.receiveShadow = true;
     group.add(seat);
 
-    const back = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.4, 0.06), mat);
+    const back = new THREE.Mesh(Geo.box(1.6, 0.4, 0.06), mat);
     back.position.set(0, 0.64, -0.17); back.castShadow = true;
     group.add(back);
 
+    const legGeo = Geo.box(0.08, 0.42, 0.08);
     for (const dx of [-0.7, 0.7]) {
       for (const dz of [-0.15, 0.15]) {
-        const leg = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.42, 0.08), mat);
+        const leg = new THREE.Mesh(legGeo, mat);
         leg.position.set(dx, 0.21, dz); leg.castShadow = true;
         group.add(leg);
       }
@@ -318,14 +322,14 @@ export class Lawn {
   }
 
   private addLampPost(x: number, z: number, goldMat: THREE.Material): void {
-    const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.08, 3.2, 12), goldMat);
+    const pole = new THREE.Mesh(Geo.cylinder(0.06, 0.08, 3.2, 12), goldMat);
     pole.position.set(x, 1.6, z);
     pole.castShadow = true;
     this.scene.add(pole);
 
     const lamp = new THREE.Mesh(
       new THREE.OctahedronGeometry(0.2, 1),
-      new THREE.MeshStandardMaterial({ color: 0xffd674, emissive: 0xffb847, emissiveIntensity: 1.8 })
+      MatLib.warmLight
     );
     lamp.position.set(x, 3.3, z);
     this.scene.add(lamp);
@@ -334,7 +338,7 @@ export class Lawn {
   }
 
   private addFireflies(): void {
-    const fireflyMat = new THREE.MeshStandardMaterial({ color: 0xfff4a0, emissive: 0xffd674, emissiveIntensity: 2.5 });
+    const fireflyMat = MatLib.firefly;
     for (let i = 0; i < 30; i++) {
       const fly = new THREE.Mesh(new THREE.SphereGeometry(0.03, 6, 4), fireflyMat);
       const x = (Math.random() - 0.5) * 30;
