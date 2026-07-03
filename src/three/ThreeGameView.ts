@@ -13,7 +13,7 @@ export class ThreeGameView {
   private readonly composer: EffectComposer;
   private readonly bloomPass: UnrealBloomPass;
   private readonly ssaoPass: SSAOPass;
-  private clock = 0;
+  private readonly renderPixelRatio = Math.min(window.devicePixelRatio || 1, 1.35);
 
   constructor(private readonly container: HTMLElement) {
     // 相机 — 50mm 等效视野，略偏俯视角
@@ -27,9 +27,9 @@ export class ThreeGameView {
       powerPreference: 'high-performance',
       stencil: false,
     });
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    this.renderer.setPixelRatio(this.renderPixelRatio);
     this.renderer.shadowMap.enabled = true;
-    this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    this.renderer.shadowMap.type = THREE.PCFShadowMap;
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
     this.renderer.toneMappingExposure = 1.08;
@@ -39,20 +39,21 @@ export class ThreeGameView {
 
     // 后处理管线
     this.composer = new EffectComposer(this.renderer);
+    this.composer.setPixelRatio(this.renderPixelRatio);
     this.composer.addPass(new RenderPass(this.scene, this.camera));
 
     // SSAO — 环境光遮蔽，给角落和缝隙加阴影
     this.ssaoPass = new SSAOPass(this.scene, this.camera, 0, 0);
-    this.ssaoPass.kernelRadius = 8;
+    this.ssaoPass.kernelRadius = 5;
     this.ssaoPass.minDistance = 0.003;
-    this.ssaoPass.maxDistance = 0.05;
+    this.ssaoPass.maxDistance = 0.04;
     this.composer.addPass(this.ssaoPass);
 
     // Bloom — 发光体辉光
     this.bloomPass = new UnrealBloomPass(
       new THREE.Vector2(1, 1),
-      0.45,   // strength — 适度，不过曝
-      0.6,    // radius
+      0.36,   // strength — 适度，不过曝
+      0.52,   // radius
       0.82    // threshold — 只有高亮物体才辉光
     );
     this.composer.addPass(this.bloomPass);
@@ -81,7 +82,6 @@ export class ThreeGameView {
   }
 
   render(): void {
-    this.clock += 0.016;
     this.composer.render();
   }
 

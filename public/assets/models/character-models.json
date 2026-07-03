@@ -1,0 +1,10 @@
+{
+  "player": {
+    "enabled": false,
+    "url": "player.vrm"
+  },
+  "lyra": {
+    "enabled": false,
+    "url": "lyra.vrm"
+  }
+}

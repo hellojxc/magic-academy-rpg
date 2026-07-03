@@ -23,6 +23,7 @@ interface RigParts {
   capePanels: THREE.Group[];
   skirtPanels: THREE.Group[];
   braidSegments: THREE.Group[];
+  blinkLids: THREE.Mesh[];
   cape?: THREE.Group;
   skirt?: THREE.Group;
   book?: THREE.Group;
@@ -87,6 +88,7 @@ export class CharacterRig3D {
     this.parts.head.rotation.x = -Math.abs(walkCos) * 0.02 * blend + breathe * 0.012 * idleBlend;
     this.parts.head.rotation.y = soft * (this.kind === 'lyra' ? 0.052 : 0.034) * idleBlend;
     this.parts.head.rotation.z = -walk * 0.016 * blend;
+    this.animateBlink(elapsedTime);
 
     if (this.kind === 'player') {
       this.animatePlayer(walk, walkOpposite, walkCos, breathe, blend, idleBlend);
@@ -95,6 +97,18 @@ export class CharacterRig3D {
     }
 
     this.animateSecondaryMotion(elapsedTime, walk, breathe, blend);
+  }
+
+  private animateBlink(elapsedTime: number): void {
+    const offset = this.kind === 'lyra' ? 0.85 : 0.18;
+    const phase = (elapsedTime + offset) % 4.3;
+    const blink = phase < 0.16 ? Math.sin((phase / 0.16) * Math.PI) : 0;
+    for (const lid of this.parts.blinkLids) {
+      const baseScale = lid.userData.baseScale as THREE.Vector3;
+      const baseY = lid.userData.baseY as number;
+      lid.scale.set(baseScale.x, baseScale.y * (1 + blink * 15), baseScale.z);
+      lid.position.y = baseY - blink * 0.022;
+    }
   }
 
   private animatePlayer(
@@ -218,6 +232,7 @@ export class CharacterRig3D {
     const capePanels: THREE.Group[] = [];
     const skirtPanels: THREE.Group[] = [];
     const braidSegments: THREE.Group[] = [];
+    const blinkLids: THREE.Mesh[] = [];
 
     this.root.scale.setScalar(this.kind === 'player' ? 1.02 : 1.0);
     this.root.add(body);
@@ -234,7 +249,7 @@ export class CharacterRig3D {
 
     head.position.set(0, 0.74, -0.01);
     chest.add(head);
-    this.addHead(head, hair, hairStrands, braidSegments, palette);
+    this.addHead(head, hair, hairStrands, braidSegments, blinkLids, palette);
 
     let cape: THREE.Group | undefined;
     let skirt: THREE.Group | undefined;
@@ -244,6 +259,7 @@ export class CharacterRig3D {
       cape = this.addPlayerCape(chest, capePanels, palette);
       wand = this.addPlayerWand(rightHand, palette);
     } else {
+      cape = this.addLyraCape(chest, capePanels, palette);
       skirt = this.addLyraSkirt(body, skirtPanels, palette);
       book = this.addLyraBook(chest, palette);
     }
@@ -288,6 +304,7 @@ export class CharacterRig3D {
       capePanels,
       skirtPanels,
       braidSegments,
+      blinkLids,
       cape,
       skirt,
       book,
@@ -314,11 +331,11 @@ export class CharacterRig3D {
   private addTorso(chest: THREE.Group, palette: CharacterPalette): void {
     this.addMesh(
       chest,
-      new THREE.CapsuleGeometry(0.255, 0.5, 14, 24),
+      new THREE.CapsuleGeometry(this.kind === 'player' ? 0.275 : 0.265, 0.5, 14, 24),
       palette.outfit,
       [0, 0.03, 0],
       [0, 0, 0],
-      [this.kind === 'lyra' ? 1.0 : 1.06, 1.05, 0.78]
+      [this.kind === 'lyra' ? 1.02 : 1.08, 1.05, 0.8]
     );
     this.addMesh(
       chest,
@@ -414,15 +431,17 @@ export class CharacterRig3D {
     const upperLength = 0.42;
     const lowerLength = 0.38;
     const sleeveMat = this.kind === 'lyra' ? palette.clothLight : palette.outfit;
+    const upperRadius = this.kind === 'player' ? 0.068 : 0.061;
+    const lowerRadius = this.kind === 'player' ? 0.058 : 0.054;
 
-    this.addMesh(upperArm, new THREE.CapsuleGeometry(0.055, upperLength, 12, 18), sleeveMat, [0, -upperLength / 2, 0], [0, 0, 0], [0.82, 1, 0.78]);
-    this.addMesh(upperArm, new THREE.TorusGeometry(0.063, 0.006, 8, 22), palette.gold, [0, -0.08, -0.002], [Math.PI / 2, 0, 0], [1, 1, 1], false);
+    this.addMesh(upperArm, new THREE.CapsuleGeometry(upperRadius, upperLength, 12, 18), sleeveMat, [0, -upperLength / 2, 0], [0, 0, 0], [0.84, 1, 0.8]);
+    this.addMesh(upperArm, new THREE.TorusGeometry(upperRadius + 0.008, 0.006, 8, 22), palette.gold, [0, -0.08, -0.002], [Math.PI / 2, 0, 0], [1, 1, 1], false);
 
     forearm.position.set(side * 0.012, -upperLength, -0.005);
     upperArm.add(forearm);
 
-    this.addMesh(forearm, new THREE.CapsuleGeometry(0.05, lowerLength, 12, 18), sleeveMat, [0, -lowerLength / 2, 0], [0, 0, 0], [0.78, 1, 0.74]);
-    this.addMesh(forearm, new THREE.TorusGeometry(0.057, 0.008, 8, 22), palette.gold, [0, -lowerLength + 0.045, 0], [Math.PI / 2, 0, 0], [1, 1, 1], false);
+    this.addMesh(forearm, new THREE.CapsuleGeometry(lowerRadius, lowerLength, 12, 18), sleeveMat, [0, -lowerLength / 2, 0], [0, 0, 0], [0.8, 1, 0.76]);
+    this.addMesh(forearm, new THREE.TorusGeometry(lowerRadius + 0.007, 0.008, 8, 22), palette.gold, [0, -lowerLength + 0.045, 0], [Math.PI / 2, 0, 0], [1, 1, 1], false);
 
     hand.position.set(side * 0.006, -lowerLength - 0.045, -0.012);
     forearm.add(hand);
@@ -443,11 +462,13 @@ export class CharacterRig3D {
     const upperLength = 0.49;
     const lowerLength = 0.54;
     const legMat = this.kind === 'player' ? palette.outfitDark : palette.clothLight;
+    const upperRadius = this.kind === 'player' ? 0.077 : 0.068;
+    const lowerRadius = this.kind === 'player' ? 0.064 : 0.057;
 
-    this.addMesh(upperLeg, new THREE.CapsuleGeometry(0.063, upperLength, 12, 18), legMat, [0, -upperLength / 2, 0], [0, 0, 0], [0.82, 1, 0.72]);
+    this.addMesh(upperLeg, new THREE.CapsuleGeometry(upperRadius, upperLength, 12, 18), legMat, [0, -upperLength / 2, 0], [0, 0, 0], [0.84, 1, 0.74]);
     lowerLeg.position.set(side * 0.012, -upperLength, -0.005);
     upperLeg.add(lowerLeg);
-    this.addMesh(lowerLeg, new THREE.CapsuleGeometry(0.052, lowerLength, 12, 18), legMat, [0, -lowerLength / 2, 0], [0, 0, 0], [0.78, 1, 0.68]);
+    this.addMesh(lowerLeg, new THREE.CapsuleGeometry(lowerRadius, lowerLength, 12, 18), legMat, [0, -lowerLength / 2, 0], [0, 0, 0], [0.8, 1, 0.7]);
 
     foot.position.set(0, -lowerLength - 0.045, -0.055);
     lowerLeg.add(foot);
@@ -460,6 +481,7 @@ export class CharacterRig3D {
     hair: THREE.Group,
     hairStrands: THREE.Group[],
     braidSegments: THREE.Group[],
+    blinkLids: THREE.Mesh[],
     palette: CharacterPalette
   ): void {
     this.addMesh(head, new THREE.SphereGeometry(0.225, 42, 26), palette.skin, [0, 0, 0], [0, 0, 0], [0.9, 1.05, 0.78]);
@@ -492,10 +514,10 @@ export class CharacterRig3D {
       this.addLyraHair(hair, hairStrands, braidSegments, palette);
     }
 
-    this.addAnimeFace(head, palette);
+    this.addAnimeFace(head, blinkLids, palette);
   }
 
-  private addAnimeFace(head: THREE.Group, palette: CharacterPalette): void {
+  private addAnimeFace(head: THREE.Group, blinkLids: THREE.Mesh[], palette: CharacterPalette): void {
     for (const side of [-1, 1] as const) {
       const eyeX = side * 0.068;
       this.addMesh(head, new THREE.SphereGeometry(0.042, 24, 14), palette.white, [eyeX, 0.036, -0.195], [0, 0, side * 0.05], [1.32, 0.9, 0.12], false);
@@ -504,6 +526,10 @@ export class CharacterRig3D {
       this.addMesh(head, new THREE.SphereGeometry(0.0065, 10, 6), palette.white, [eyeX - side * 0.009, 0.046, -0.215], [0, 0, 0], [1, 1, 0.035], false);
       this.addMesh(head, new THREE.BoxGeometry(0.07, 0.01, 0.01), palette.hairShade, [eyeX, 0.084, -0.199], [0, 0, side * 0.15], [1, 1, 1], false);
       this.addMesh(head, new THREE.SphereGeometry(0.026, 16, 8), palette.blush, [side * 0.11, -0.032, -0.196], [0, 0, 0], [1.35, 0.48, 0.07], false);
+      const lid = this.addMesh(head, new THREE.SphereGeometry(0.043, 20, 8), palette.skin, [eyeX, 0.058, -0.218], [0, 0, side * 0.05], [1.38, 0.045, 0.035], false);
+      lid.userData.baseScale = lid.scale.clone();
+      lid.userData.baseY = lid.position.y;
+      blinkLids.push(lid);
     }
 
     this.addMesh(head, new THREE.SphereGeometry(0.016, 14, 8), palette.skinWarm, [0, -0.018, -0.207], [0, 0, 0], [0.55, 0.8, 0.16], false);
@@ -624,9 +650,9 @@ export class CharacterRig3D {
     chest.add(cape);
 
     const panels: Array<[number, number, number, number, number]> = [
-      [0, 0, 0, 0.72, 0],
-      [-0.22, -0.04, 0.03, 0.62, -0.12],
-      [0.22, -0.04, 0.03, 0.62, 0.12],
+      [0, 0, 0, 0.64, 0],
+      [-0.23, -0.04, 0.025, 0.56, -0.16],
+      [0.23, -0.04, 0.025, 0.56, 0.16],
     ];
     for (const [x, y, z, height, rz] of panels) {
       const panel = new THREE.Group();
@@ -635,11 +661,38 @@ export class CharacterRig3D {
       cape.add(panel);
       this.rememberBaseRotation(panel);
       capePanels.push(panel);
-      this.addMesh(panel, this.createClothPanelGeometry(0.14, 0.2, height), palette.outfitDark, [0, -0.04, 0], [0, 0, 0], [1, 1, 1], true, 1.015);
-      this.addMesh(panel, new THREE.BoxGeometry(0.03, height * 0.88, 0.018), palette.gold, [0.18 * Math.sign(x || 1), -height * 0.42, -0.006], [0, 0, 0], [1, 1, 1], false);
+      this.addMesh(panel, this.createClothPanelGeometry(0.12, 0.17, height), palette.outfitDark, [0, -0.04, 0], [0, 0, 0], [1, 1, 1], true, 1.015);
+      this.addMesh(panel, new THREE.BoxGeometry(0.024, height * 0.84, 0.018), palette.gold, [0.15 * Math.sign(x || 1), -height * 0.4, -0.006], [0, 0, 0], [1, 1, 1], false);
     }
 
     this.addMesh(cape, new THREE.BoxGeometry(0.58, 0.035, 0.055), palette.gold, [0, 0.015, -0.01], [0, 0, 0], [1, 1, 1], false);
+    return cape;
+  }
+
+  private addLyraCape(chest: THREE.Group, capePanels: THREE.Group[], palette: CharacterPalette): THREE.Group {
+    const cape = new THREE.Group();
+    cape.position.set(0, 0.28, 0.22);
+    cape.rotation.x = -0.08;
+    chest.add(cape);
+
+    const panels: Array<[number, number, number, number, number, number]> = [
+      [-0.28, 0, 0.02, 0.92, -0.16, -0.12],
+      [0.28, 0, 0.02, 0.92, 0.16, 0.12],
+      [0, -0.02, 0.05, 0.78, 0, 0],
+    ];
+    for (const [x, y, z, height, ry, rz] of panels) {
+      const panel = new THREE.Group();
+      panel.position.set(x, y, z);
+      panel.rotation.set(-0.08, ry, rz);
+      cape.add(panel);
+      this.rememberBaseRotation(panel);
+      capePanels.push(panel);
+      this.addMesh(panel, this.createClothPanelGeometry(0.1, x === 0 ? 0.16 : 0.23, height), palette.outfitDark, [0, -0.02, 0], [0, 0, 0], [1, 1, 1], true, 1.014);
+      this.addMesh(panel, new THREE.BoxGeometry(0.02, height * 0.88, 0.018), palette.gold, [0.16 * Math.sign(x || 1), -height * 0.43, -0.006], [0, 0, 0], [1, 1, 1], false);
+      if (x !== 0) this.addStar(panel, new THREE.Vector3(0.07 * Math.sign(x), -height * 0.55, -0.014), 0.036, palette.gold);
+    }
+
+    this.addMesh(cape, new THREE.BoxGeometry(0.52, 0.035, 0.055), palette.gold, [0, 0.012, -0.01], [0, 0, 0], [1, 1, 1], false);
     return cape;
   }
 

@@ -10,6 +10,7 @@ import { ThreeGameView } from './ThreeGameView';
 import { Minimap } from './Minimap';
 import dialoguesData from '../data/dialogues.json';
 import type { DialogueTree, SaveData } from '../types';
+import type { AcademyWorldObjects } from './WorldTypes';
 
 export class ThreeAcademyGame {
   private readonly view: ThreeGameView;
@@ -35,6 +36,7 @@ export class ThreeAcademyGame {
     this.view = new ThreeGameView(this.container);
     this.world = new AcademyWorld(this.view.scene);
     const worldObjects = this.world.build();
+    this.applyShowcaseSpawn(worldObjects);
 
     this.save = this.saveSystem.load();
     this.dialogueSystem = new DialogueSystem(
@@ -191,6 +193,16 @@ export class ThreeAcademyGame {
 
   private updateHud(): void {
     this.hud.update(this.save);
+  }
+
+  private applyShowcaseSpawn(worldObjects: AcademyWorldObjects): void {
+    if (new URLSearchParams(window.location.search).get('showcase') !== 'lyra') return;
+    worldObjects.player.position.set(
+      worldObjects.lyra.position.x - 0.75,
+      0,
+      worldObjects.lyra.position.z + 1.05
+    );
+    worldObjects.player.rotation.y = Math.PI * 0.82;
   }
 
   private readonly resize = (): void => {

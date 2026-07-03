@@ -37,10 +37,8 @@ export class CameraController3D {
       this.lookTarget.z + Math.cos(this.yaw) * horizontalDistance
     );
 
-    this.camera.position.lerp(this.desiredPosition, Math.min(1, delta * 6));
+    this.camera.position.lerp(this.desiredPosition, 1 - Math.exp(-10 * delta));
     this.camera.lookAt(this.lookTarget);
-    // 微弱呼吸效果 — 增加生命感
-    this.camera.position.y += Math.sin(performance.now() * 0.0008) * 0.015;
   }
 
   destroy(): void {

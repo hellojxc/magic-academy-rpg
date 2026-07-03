@@ -169,7 +169,7 @@ export class AcademyWorld {
     const sun = new THREE.DirectionalLight(0xffd49a, 3.0);
     sun.position.set(-8, 12, 6);
     sun.castShadow = true;
-    sun.shadow.mapSize.set(4096, 4096);
+    sun.shadow.mapSize.set(2048, 2048);
     sun.shadow.camera.near = 0.5;
     sun.shadow.camera.far = 45;
     sun.shadow.camera.left = -16;
