@@ -99,12 +99,16 @@ export function getStandardMaterial(params: {
     dw: params.depthWrite ?? true,
   });
   if (matCache.has(key)) return matCache.get(key)!;
-  const mat = new THREE.MeshStandardMaterial({
+  const ctorParams: THREE.MeshStandardMaterialParameters = {
     color: params.color, roughness: r, metalness: m,
-    emissive: params.emissive, emissiveIntensity: params.emissiveIntensity,
-    transparent: params.transparent, opacity: params.opacity, depthWrite: params.depthWrite,
-  });
-  if (params.map) mat.map = params.map;
+  };
+  if (params.emissive !== undefined) ctorParams.emissive = params.emissive;
+  if (params.emissiveIntensity !== undefined) ctorParams.emissiveIntensity = params.emissiveIntensity;
+  if (params.transparent !== undefined) ctorParams.transparent = params.transparent;
+  if (params.opacity !== undefined) ctorParams.opacity = params.opacity;
+  if (params.depthWrite !== undefined) ctorParams.depthWrite = params.depthWrite;
+  if (params.map) ctorParams.map = params.map;
+  const mat = new THREE.MeshStandardMaterial(ctorParams);
   matCache.set(key, mat);
   return mat;
 }

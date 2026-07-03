@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { CharacterModel3D } from './CharacterModel3D';
 import type { AcademyWorldObjects, Obstacle } from './WorldTypes';
-import { REGIONS, getRegion } from './WorldHelpers';
+import { REGIONS } from './WorldHelpers';
 import { GrandHall } from './GrandHall';
 import { DiningHall } from './DiningHall';
 import { Lawn } from './Lawn';
@@ -112,15 +112,30 @@ export class AcademyWorld {
   }
 
   /**
-   * 遍历场景中所有 PointLight，按所在区域分组。
+   * 遍历场景中所有 PointLight，按最近的区域中心分组。
+   * 用最近中心而非 AABB 包含，避免区域边界重叠时灯光被错配
+   * （例如 Lake 与 Lawn 边界重叠，月光应归 Lake 而非 Lawn）。
    * 运行时根据玩家位置动态开关光源，减少同时活跃的光源数量。
    */
   private collectPointLightsByRegion(): void {
     const lightsByRegion = new Map<string, THREE.PointLight[]>();
     this.scene.traverse((obj) => {
       if (!(obj instanceof THREE.PointLight)) return;
-      const region = getRegion(obj.position.x, obj.position.z);
-      const id = region?.id ?? '__global__';
+      // 找距光源最近的区域中心
+      let bestId: string | null = null;
+      let bestDistSq = Infinity;
+      for (const region of REGIONS) {
+        const cx = (region.bounds.minX + region.bounds.maxX) / 2;
+        const cz = (region.bounds.minZ + region.bounds.maxZ) / 2;
+        const dx = obj.position.x - cx;
+        const dz = obj.position.z - cz;
+        const d = dx * dx + dz * dz;
+        if (d < bestDistSq) {
+          bestDistSq = d;
+          bestId = region.id;
+        }
+      }
+      const id = bestId ?? '__global__';
       const arr = lightsByRegion.get(id);
       if (arr) arr.push(obj);
       else lightsByRegion.set(id, [obj]);
