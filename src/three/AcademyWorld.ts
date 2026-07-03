@@ -5,8 +5,7 @@ import type { AcademyWorldObjects, Obstacle } from './WorldTypes';
 import { REGIONS } from './WorldHelpers';
 import { GrandHall } from './GrandHall';
 import { DiningHall } from './DiningHall';
-import { Lawn } from './Lawn';
-import { Lake } from './Lake';
+import { LawnLakeEnvironment } from './LawnLakeEnvironment';
 import { LibraryEnvironment } from './LibraryEnvironment';
 import { addWorldPrefabRegion } from './WorldPrefabLayer';
 import {
@@ -50,14 +49,12 @@ export class AcademyWorld {
   private lyra!: THREE.Object3D;
   private grandHall: GrandHall;
   private diningHall: DiningHall;
-  private lawn: Lawn;
-  private lake: Lake;
+  private outdoor: LawnLakeEnvironment;
 
   constructor(private readonly scene: THREE.Scene) {
     this.grandHall = new GrandHall(this.scene);
     this.diningHall = new DiningHall(this.scene);
-    this.lawn = new Lawn(this.scene);
-    this.lake = new Lake(this.scene);
+    this.outdoor = new LawnLakeEnvironment(this.scene);
   }
 
   private readonly marbleTex = makeSharedMarbleTexture('#d8d0dc', '#afa0b9', '#f0e8f3');
@@ -81,8 +78,7 @@ export class AcademyWorld {
     // 构建新区域
     this.obstacles.push(...this.grandHall.build());
     this.obstacles.push(...this.diningHall.build());
-    this.obstacles.push(...this.lawn.build());
-    this.lake.build();
+    this.obstacles.push(...this.outdoor.build());
 
     // 区域间通道 — 移除阻挡通行的障碍
     this.clearPassages();
@@ -208,8 +204,8 @@ export class AcademyWorld {
       }),
       make('grand_hall', (t) => this.grandHall.update(t)),
       make('dining_hall', (t) => this.diningHall.update(t)),
-      make('lawn', (t) => this.lawn.update(t)),
-      make('lake', (t) => this.lake.update(t)),
+      make('lawn', (t, d) => this.outdoor.update(t, d)),
+      make('lake', (t, d) => this.outdoor.update(t, d)),
     );
   }
 
