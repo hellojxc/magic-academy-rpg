@@ -450,6 +450,7 @@ def make_materials(spec: dict[str, Any]) -> dict[str, bpy.types.Material]:
         "cheek": material("CheekTint", face["cheekTint"], 0.82, alpha=0.82, backface_culling=False),
         "eye_white": material("EyeWhite", "#fffaff", 0.44, backface_culling=False, emission_strength=0.1),
         "eye": material("EyeIris", face["eyeColor"], 0.32, backface_culling=False, emission_strength=0.08),
+        "eye_shadow": material("EyeShadow", "#1b2338", 0.5, backface_culling=False),
         "pupil": material("Pupil", "#14111c", 0.52, backface_culling=False),
         "brow": material("Brow", face["browColor"], 0.6, backface_culling=False),
         "hair": material("Hair", hair_color, 0.56, backface_culling=False, emission_strength=hair_emission),
@@ -680,6 +681,8 @@ def add_limbs(
             rings=10,
         )
         parent_to_bone(hand, armature, f"{side}Hand")
+        if is_player:
+            add_player_hand_details(side, sx, m, mats, armature, collection)
 
         thigh = add_uv_sphere(
             f"{side}UpperLeg",
@@ -751,6 +754,60 @@ def add_limbs(
         parent_to_bone(sole, armature, f"{side}Foot")
 
 
+def add_player_hand_details(
+    side: str,
+    sx: int,
+    m: dict[str, float],
+    mats: dict[str, bpy.types.Material],
+    armature: bpy.types.Object,
+    collection: bpy.types.Collection,
+) -> None:
+    scale = m["scale"]
+    shoulder = m["shoulder_width"]
+    palm_x = sx * (shoulder * 0.84)
+    palm_z = 0.652 * scale
+    finger_mat = mats["shoe"]
+    for index, offset in enumerate((-0.018, -0.006, 0.006, 0.018)):
+        length = (0.063 - abs(offset) * 0.42) * scale
+        radius = (0.0048 if index in (1, 2) else 0.0042) * scale
+        finger = add_cylinder(
+            f"{side}GlovedFinger_{index}",
+            finger_mat,
+            (palm_x + sx * offset * scale, -0.033 * scale, palm_z - length * 0.42),
+            radius,
+            length,
+            collection,
+            vertices=10,
+            rotation=(0.04, sx * 0.08, 0),
+            scale=(0.74, 1.0, 1.0),
+        )
+        parent_to_bone(finger, armature, f"{side}Hand")
+
+        fingertip = add_uv_sphere(
+            f"{side}GlovedFingertip_{index}",
+            finger_mat,
+            (palm_x + sx * offset * scale, -0.034 * scale, palm_z - length * 0.86),
+            (radius * 1.2, radius * 1.0, radius * 1.2),
+            collection,
+            segments=10,
+            rings=6,
+        )
+        parent_to_bone(fingertip, armature, f"{side}Hand")
+
+    thumb = add_cylinder(
+        f"{side}GlovedThumb",
+        finger_mat,
+        (palm_x - sx * 0.03 * scale, -0.041 * scale, 0.649 * scale),
+        0.0052 * scale,
+        0.053 * scale,
+        collection,
+        vertices=10,
+        rotation=(0.3, sx * 0.86, 0.18),
+        scale=(0.76, 1.0, 1.0),
+    )
+    parent_to_bone(thumb, armature, f"{side}Hand")
+
+
 def add_head(
     spec: dict[str, Any],
     m: dict[str, float],
@@ -760,20 +817,23 @@ def add_head(
 ) -> None:
     scale = m["scale"]
     head_scale = spec["body"]["headScale"]
+    is_player = spec["id"] == "player"
     head = add_uv_sphere(
         "Face",
         mats["skin"],
-        (0, -0.018 * scale, m["head_z"]),
+        (0, (-0.025 if is_player else -0.018) * scale, m["head_z"]),
         (
-            m["head_radius"] * 0.90 * float(head_scale[0]),
-            m["head_radius"] * 0.70 * float(head_scale[2]),
-            m["head_radius"] * 1.02 * float(head_scale[1]),
+            m["head_radius"] * (0.84 if is_player else 0.90) * float(head_scale[0]),
+            m["head_radius"] * (0.62 if is_player else 0.70) * float(head_scale[2]),
+            m["head_radius"] * (1.05 if is_player else 1.02) * float(head_scale[1]),
         ),
         collection,
         segments=64,
         rings=32,
     )
     parent_to_bone(head, armature, "Head")
+    if is_player:
+        add_player_face_structure(m, mats, armature, collection)
 
     nose = add_uv_sphere("Nose", mats["skin_warm"], (0, -0.196 * scale, 1.51 * scale), (0.009 * scale, 0.007 * scale, 0.019 * scale), collection, 16, 8)
     parent_to_bone(nose, armature, "Head")
@@ -784,14 +844,14 @@ def add_head(
     add_shape_key_transform(mouth, "surprised", scale=(0.64, 1.0, 2.2), offset=(0, -0.002 * scale, 0))
     parent_to_bone(mouth, armature, "Head")
 
-    eye_scale = float(spec["face"]["eyeScale"])
+    eye_scale = float(spec["face"]["eyeScale"]) * (1.16 if is_player else 1.0)
     for side, sx in (("Left", -1), ("Right", 1)):
-        eye_x = sx * 0.058 * scale
+        eye_x = sx * (0.062 if is_player else 0.058) * scale
         eye_white = add_uv_sphere(
             f"{side}EyeWhite",
             mats["eye_white"],
-            (eye_x, -0.214 * scale, 1.546 * scale),
-            (0.035 * scale * eye_scale, 0.0055 * scale, 0.024 * scale * eye_scale),
+            (eye_x, (-0.218 if is_player else -0.214) * scale, 1.546 * scale),
+            ((0.038 if is_player else 0.035) * scale * eye_scale, 0.0055 * scale, (0.026 if is_player else 0.024) * scale * eye_scale),
             collection,
             segments=36,
             rings=12,
@@ -802,8 +862,8 @@ def add_head(
         iris = add_uv_sphere(
             f"{side}Iris",
             mats["eye"],
-            (eye_x + sx * 0.003 * scale, -0.216 * scale, 1.542 * scale),
-            (0.016 * scale * eye_scale, 0.0035 * scale, 0.019 * scale * eye_scale),
+            (eye_x + sx * 0.003 * scale, -0.220 * scale, 1.541 * scale),
+            ((0.018 if is_player else 0.016) * scale * eye_scale, 0.0035 * scale, (0.020 if is_player else 0.019) * scale * eye_scale),
             collection,
             segments=32,
             rings=10,
@@ -811,11 +871,24 @@ def add_head(
         add_shape_key_transform(iris, "blink", scale=(1.0, 1.0, 0.12), offset=(0, 0, -0.002 * scale))
         parent_to_bone(iris, armature, "Head")
 
+        if is_player:
+            upper_shadow = add_cube(
+                f"{side}EyeUpperShadow",
+                mats["eye_shadow"],
+                (eye_x + sx * 0.001 * scale, -0.224 * scale, 1.552 * scale),
+                (0.023 * scale * eye_scale, 0.0018 * scale, 0.0045 * scale),
+                collection,
+                rotation=(0, 0, sx * 0.04),
+                bevel=0.001 * scale,
+            )
+            add_shape_key_transform(upper_shadow, "blink", scale=(1.0, 1.0, 0.1), offset=(0, 0, -0.001 * scale))
+            parent_to_bone(upper_shadow, armature, "Head")
+
         pupil = add_uv_sphere(
             f"{side}Pupil",
             mats["pupil"],
-            (eye_x + sx * 0.004 * scale, -0.218 * scale, 1.54 * scale),
-            (0.007 * scale, 0.0022 * scale, 0.011 * scale),
+            (eye_x + sx * 0.004 * scale, -0.222 * scale, 1.54 * scale),
+            ((0.0085 if is_player else 0.007) * scale, 0.0022 * scale, (0.0125 if is_player else 0.011) * scale),
             collection,
             segments=24,
             rings=8,
@@ -826,7 +899,7 @@ def add_head(
         highlight = add_uv_sphere(
             f"{side}EyeHighlight",
             mats["eye_white"],
-            (eye_x - sx * 0.010 * scale, -0.22 * scale, 1.558 * scale),
+            (eye_x - sx * 0.011 * scale, -0.224 * scale, 1.56 * scale),
             (0.0052 * scale, 0.0018 * scale, 0.0068 * scale),
             collection,
             segments=18,
@@ -838,8 +911,8 @@ def add_head(
         lash = add_cube(
             f"{side}UpperEyelash",
             mats["outline"],
-            (eye_x, -0.221 * scale, 1.57 * scale),
-            (0.044 * scale * eye_scale, 0.0025 * scale, 0.0032 * scale),
+            (eye_x, (-0.226 if is_player else -0.221) * scale, 1.57 * scale),
+            ((0.050 if is_player else 0.044) * scale * eye_scale, 0.0025 * scale, (0.0038 if is_player else 0.0032) * scale),
             collection,
             rotation=(0, 0, sx * 0.075),
             bevel=0.001 * scale,
@@ -849,8 +922,8 @@ def add_head(
         lower_lash = add_cube(
             f"{side}LowerEyelash",
             mats["outline"],
-            (eye_x + sx * 0.002 * scale, -0.221 * scale, 1.523 * scale),
-            (0.026 * scale * eye_scale, 0.002 * scale, 0.0022 * scale),
+            (eye_x + sx * 0.002 * scale, (-0.226 if is_player else -0.221) * scale, 1.521 * scale),
+            ((0.031 if is_player else 0.026) * scale * eye_scale, 0.002 * scale, 0.0022 * scale),
             collection,
             rotation=(0, 0, -sx * 0.055),
             bevel=0.001 * scale,
@@ -860,8 +933,8 @@ def add_head(
         brow = add_cube(
             f"{side}Brow",
             mats["brow"],
-            (eye_x, -0.208 * scale, 1.607 * scale),
-            (0.04 * scale, 0.003 * scale, 0.0042 * scale),
+            (eye_x, (-0.214 if is_player else -0.208) * scale, (1.612 if is_player else 1.607) * scale),
+            ((0.046 if is_player else 0.04) * scale, 0.003 * scale, 0.0042 * scale),
             collection,
             rotation=(0, 0, sx * 0.12),
             bevel=0.0015 * scale,
@@ -871,13 +944,82 @@ def add_head(
         cheek = add_uv_sphere(
             f"{side}CheekTint",
             mats["cheek"],
-            (sx * 0.115 * scale, -0.207 * scale, 1.485 * scale),
-            (0.034 * scale, 0.004 * scale, 0.014 * scale),
+            (sx * (0.108 if is_player else 0.115) * scale, (-0.216 if is_player else -0.207) * scale, 1.485 * scale),
+            (
+                (0.012 if is_player else 0.034) * scale,
+                (0.002 if is_player else 0.004) * scale,
+                (0.005 if is_player else 0.014) * scale,
+            ),
             collection,
             segments=16,
             rings=8,
         )
         parent_to_bone(cheek, armature, "Head")
+
+
+def add_player_face_structure(
+    m: dict[str, float],
+    mats: dict[str, bpy.types.Material],
+    armature: bpy.types.Object,
+    collection: bpy.types.Collection,
+) -> None:
+    scale = m["scale"]
+    chin = add_uv_sphere(
+        "HeroChinPlane",
+        mats["skin"],
+        (0, -0.186 * scale, 1.401 * scale),
+        (0.038 * scale, 0.010 * scale, 0.021 * scale),
+        collection,
+        segments=28,
+        rings=10,
+    )
+    parent_to_bone(chin, armature, "Head")
+
+    lower_lip = add_cube(
+        "HeroLowerLipSoftShade",
+        mats["skin_warm"],
+        (0.002 * scale, -0.209 * scale, 1.431 * scale),
+        (0.018 * scale, 0.0016 * scale, 0.0014 * scale),
+        collection,
+        rotation=(0, 0, 0.02),
+        bevel=0.0012 * scale,
+    )
+    parent_to_bone(lower_lip, armature, "Head")
+
+    for side, sx in (("Left", -1), ("Right", 1)):
+        jaw = add_uv_sphere(
+            f"{side}HeroJawPlane",
+            mats["skin"],
+            (sx * 0.072 * scale, -0.163 * scale, 1.428 * scale),
+            (0.018 * scale, 0.006 * scale, 0.028 * scale),
+            collection,
+            segments=24,
+            rings=10,
+        )
+        parent_to_bone(jaw, armature, "Head")
+
+        ear = add_uv_sphere(
+            f"{side}HeroEar",
+            mats["skin_warm"],
+            (sx * 0.151 * scale, -0.017 * scale, 1.525 * scale),
+            (0.015 * scale, 0.010 * scale, 0.037 * scale),
+            collection,
+            segments=18,
+            rings=8,
+        )
+        ear.rotation_euler[2] = sx * 0.1
+        parent_to_bone(ear, armature, "Head")
+
+        inner_ear = add_uv_sphere(
+            f"{side}HeroInnerEar",
+            mats["cheek"],
+            (sx * 0.154 * scale, -0.027 * scale, 1.523 * scale),
+            (0.006 * scale, 0.003 * scale, 0.019 * scale),
+            collection,
+            segments=12,
+            rings=6,
+        )
+        parent_to_bone(inner_ear, armature, "Head")
 
 
 def add_hair(

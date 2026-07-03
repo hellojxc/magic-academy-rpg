@@ -76,8 +76,9 @@ The generated clips are:
 - `walk`
 - `talk`
 
-This first pass uses animated transform nodes for stability in web GLB runtime
-tests. It is still a template generator, not a final commercial model. The final
-quality pass should replace the transform-node template with sculpted topology,
-UV textures, a true Armature with skin weights, facial morph targets, and
-spring-bone style secondary motion for hair, skirt, cape, and ribbons.
+The current pass exports a Blender Armature, weighted meshes, facial morph
+targets, and animation clips. It is still a template generator, not a final
+commercial model. The final quality pass should replace the primitive template
+sections with sculpted topology, UV textures, polished skin weights, richer
+facial shape keys, and spring-bone style secondary motion for hair, skirt, cape,
+and ribbons.

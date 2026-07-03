@@ -64,7 +64,7 @@
       "materialProfile": "toon",
       "supportsFacialMorphs": true,
       "supportsSpringBones": false,
-      "triangleBudget": 26000,
+      "triangleBudget": 30000,
       "textureBudgetKb": 1024
     },
     {

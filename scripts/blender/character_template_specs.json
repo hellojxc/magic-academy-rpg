@@ -7,18 +7,18 @@
       "displayName": "Academy Protagonist",
       "heightMeters": 1.68,
       "body": {
-        "headScale": [0.9, 1.03, 0.78],
-        "shoulderWidth": 0.43,
+        "headScale": [0.86, 1.06, 0.72],
+        "shoulderWidth": 0.39,
         "torsoLength": 0.54,
-        "waistWidth": 0.31,
-        "hipWidth": 0.34,
+        "waistWidth": 0.28,
+        "hipWidth": 0.31,
         "armLength": 0.61,
         "legLength": 0.83,
         "handScale": 0.96,
         "footScale": 1.0
       },
       "face": {
-        "eyeScale": 1.04,
+        "eyeScale": 1.18,
         "eyeColor": "#4f8ed9",
         "browColor": "#17131b",
         "cheekTint": "#f0b8aa"
@@ -28,7 +28,7 @@
         "length": "short",
         "color": "#211b24",
         "highlightColor": "#51495a",
-        "volume": 0.82
+        "volume": 0.74
       },
       "outfit": {
         "style": "academy-uniform-male",
