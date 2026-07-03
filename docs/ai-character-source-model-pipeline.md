@@ -69,10 +69,29 @@ Inspect runtime and template GLBs:
 npm run assets:characters:inspect
 ```
 
+Audit whether runtime GLBs pass the production character gate:
+
+```sh
+npm run assets:characters:audit
+```
+
 Generate the review JSON used by the browser comparison page:
 
 ```sh
 npm run assets:characters:review
+```
+
+Prepare an AI candidate generation job:
+
+```sh
+npm run assets:characters:candidate:prepare -- --character lyra --tool charactergen --job lyra-charactergen-001
+npm run assets:characters:candidate:prepare -- --character lyra --tool hunyuan3d --job lyra-hunyuan3d-001
+```
+
+Register a generated candidate after an external AI tool writes a mesh:
+
+```sh
+npm run assets:characters:candidate:register -- --character lyra --tool charactergen --job lyra-charactergen-001 --input /path/to/generated.glb
 ```
 
 Export a production source `.blend`:
@@ -94,6 +113,16 @@ public/assets/models/lyra.glb
 public/assets/character-reviews/lyra-source-preview.png
 public/assets/character-reviews/lyra-source-audit.json
 ```
+
+## Hardware Reality
+
+The current `miemie` preview/build host has Blender and Python, but no visible
+NVIDIA runtime. That makes local CharacterGen, Hunyuan3D, or TRELLIS inference
+impractical on that host. The project pipeline therefore treats AI generation as
+an external job that can run on a GPU workstation, cloud GPU, ComfyUI server, or
+another machine. The generated mesh is then registered back into
+`assets/characters/<id>/candidates/registered` and continues through Blender
+cleanup and source export.
 
 Open the review page after running the review command:
 

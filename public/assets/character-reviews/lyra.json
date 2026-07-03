@@ -5,6 +5,7 @@
   "portraitUrl": "/assets/portraits/lyra-3d.png",
   "currentRuntimeModelUrl": "/assets/models/lyra.glb",
   "currentPreviewUrl": "/assets/models/lyra.blender-template.png",
+  "runtimeAuditUrl": "/assets/character-reviews/lyra-runtime-audit.json",
   "sourceModelPath": "assets/characters/lyra/source/lyra.blend",
   "targetRuntimeFile": "public/assets/models/lyra.glb",
   "targetIdentity": {

@@ -36,6 +36,7 @@ for (const id of characterIds) {
       `/assets/models/${id}.blender-template.png`,
       `/assets/portraits/${id}-3d.png`,
     ]),
+    runtimeAuditUrl: `/assets/character-reviews/${id}-runtime-audit.json`,
     sourceModelPath: brief.sourceModelRequirements.sourceFile,
     targetRuntimeFile: brief.sourceModelRequirements.targetRuntimeFile,
     targetIdentity: brief.targetIdentity,
