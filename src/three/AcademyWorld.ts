@@ -6,6 +6,7 @@ import { GrandHall } from './GrandHall';
 import { DiningHall } from './DiningHall';
 import { Lawn } from './Lawn';
 import { Lake } from './Lake';
+import { LibraryEnvironment } from './LibraryEnvironment';
 import {
   Geo, UNIT_BOX, getStandardMaterial,
   makeSharedMarbleTexture, makeSharedPlasterTexture, makeSharedWoodTexture, makeSharedCarpetTexture,
@@ -598,6 +599,7 @@ export class AcademyWorld {
     this.addBookStack(3.6, -1.05, 4);
     this.addBookStack(7.2, 0.72, 5);
     this.addBookStack(6.58, -2.05, 3);
+    new LibraryEnvironment(this.scene).build();
   }
 
   private addStudyArea(): void {

@@ -2,6 +2,8 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import type { VRM } from '@pixiv/three-vrm';
 import { CharacterRig3D, type CharacterKind } from './CharacterRig3D';
+import { CharacterAnimationStateMachine } from './CharacterAnimationStateMachine';
+import { CharacterAssetLoader } from './CharacterAssetLoader';
 
 interface BoneSet {
   hips?: THREE.Object3D;
@@ -20,12 +22,6 @@ interface BoneSet {
   rightFoot?: THREE.Object3D;
 }
 
-interface CharacterModelManifestEntry {
-  enabled?: boolean;
-  url?: string;
-}
-
-type CharacterModelManifest = Partial<Record<CharacterKind, CharacterModelManifestEntry>>;
 type CharacterAssetState = 'loading' | 'vrm' | 'gltf' | 'rig' | 'failed';
 type ThreeVRMModule = typeof import('@pixiv/three-vrm');
 
@@ -33,11 +29,11 @@ export class CharacterModel3D {
   readonly root = new THREE.Group();
   private readonly fallback: CharacterRig3D;
   private readonly lookTarget = new THREE.Object3D();
+  private readonly animationState = new CharacterAnimationStateMachine();
+  private readonly assetLoader: CharacterAssetLoader;
   private vrmModule?: ThreeVRMModule;
   private vrm?: VRM;
   private bones: BoneSet = {};
-  private moving = false;
-  private movementBlend = 0;
   private blinkTimer = 0;
   private blinkDuration = 0;
   private assetState: CharacterAssetState = 'loading';
@@ -46,12 +42,13 @@ export class CharacterModel3D {
     this.root.userData.characterKind = kind;
     this.root.userData.characterAssetState = this.assetState;
     this.fallback = new CharacterRig3D(kind);
+    this.assetLoader = new CharacterAssetLoader(() => CharacterModel3D.createLoader(this.requireVRMModule()));
     this.root.add(this.fallback.root);
     void this.loadModel();
   }
 
   setMoving(moving: boolean): void {
-    this.moving = moving;
+    this.animationState.setMoving(moving);
     this.fallback.setMoving(moving);
   }
 
@@ -65,15 +62,15 @@ export class CharacterModel3D {
       return;
     }
 
-    this.movementBlend = THREE.MathUtils.lerp(this.movementBlend, this.moving ? 1 : 0, 0.14);
+    const poseWeights = this.animationState.update(delta);
     this.updateLookTarget(lookAtWorldPosition, elapsedTime);
-    this.applyHumanoidPose(elapsedTime);
+    this.applyHumanoidPose(elapsedTime, poseWeights.walk, poseWeights.talk);
     this.applyExpressions(elapsedTime, delta);
     this.vrm.update(delta);
   }
 
   private async loadModel(): Promise<void> {
-    const url = await this.findModelUrl();
+    const url = await this.assetLoader.resolveModelUrl(this.kind);
     if (!url) {
       this.setAssetState('rig');
       return;
@@ -81,8 +78,7 @@ export class CharacterModel3D {
 
     try {
       const vrmModule = await this.loadVRMModule();
-      const loader = CharacterModel3D.createLoader(vrmModule);
-      const gltf = await loader.loadAsync(url);
+      const gltf = await this.assetLoader.loadGLTF(url);
       const vrm = gltf.userData.vrm as VRM | undefined;
       if (vrm) {
         this.installVRM(vrm, vrmModule);
@@ -100,36 +96,9 @@ export class CharacterModel3D {
     return this.vrmModule;
   }
 
-  private async findModelUrl(): Promise<string | undefined> {
-    const manifest = await this.loadManifest();
-    const entry = manifest?.[this.kind];
-    if (!entry?.enabled || !entry.url) return undefined;
-
-    const url = entry.url.startsWith('/') ? entry.url : `/assets/models/${entry.url}`;
-    if (!/\.(vrm|glb|gltf)$/i.test(url)) {
-      console.warn(`Ignoring unsupported ${this.kind} character asset: ${url}`);
-      return undefined;
-    }
-
-    try {
-      const response = await fetch(url, { method: 'HEAD' });
-      const contentType = response.headers.get('content-type') ?? '';
-      if (response.ok && !contentType.includes('text/html')) return url;
-    } catch {
-      // Missing optional assets should silently fall back to the authored rig.
-    }
-    return undefined;
-  }
-
-  private async loadManifest(): Promise<CharacterModelManifest | undefined> {
-    try {
-      const response = await fetch('/assets/models/character-models.json', { cache: 'no-cache' });
-      const contentType = response.headers.get('content-type') ?? '';
-      if (!response.ok || contentType.includes('text/html')) return undefined;
-      return await response.json() as CharacterModelManifest;
-    } catch {
-      return undefined;
-    }
+  private requireVRMModule(): ThreeVRMModule {
+    if (!this.vrmModule) throw new Error('VRM module requested before it was loaded');
+    return this.vrmModule;
   }
 
   private installVRM(vrm: VRM, vrmModule: ThreeVRMModule): void {
@@ -209,7 +178,7 @@ export class CharacterModel3D {
     this.lookTarget.updateMatrixWorld(true);
   }
 
-  private applyHumanoidPose(elapsedTime: number): void {
+  private applyHumanoidPose(elapsedTime: number, movementBlend: number, talkBlend: number): void {
     if (!this.vrm) return;
 
     const walk = Math.sin(elapsedTime * 8.2);
@@ -217,7 +186,7 @@ export class CharacterModel3D {
     const bounce = Math.abs(Math.cos(elapsedTime * 8.2));
     const breathe = Math.sin(elapsedTime * 2.1);
     const soft = Math.sin(elapsedTime * 1.1);
-    const blend = this.movementBlend;
+    const blend = movementBlend;
     const idle = 1 - blend;
 
     this.vrm.humanoid.resetNormalizedPose();
@@ -239,7 +208,7 @@ export class CharacterModel3D {
     if (this.kind === 'player') {
       this.poseWalk(walk, opposite, blend);
     } else {
-      this.poseLyraIdle(breathe, soft);
+      this.poseLyraIdle(breathe, soft, talkBlend);
     }
   }
 
@@ -256,13 +225,14 @@ export class CharacterModel3D {
     if (this.bones.rightLowerArm) this.bones.rightLowerArm.rotation.x = -0.18 - Math.max(0, opposite) * 0.12 * blend;
   }
 
-  private poseLyraIdle(breathe: number, soft: number): void {
+  private poseLyraIdle(breathe: number, soft: number, talkBlend: number): void {
     if (this.bones.leftUpperArm) this.bones.leftUpperArm.rotation.set(-0.28 + breathe * 0.015, -0.16, -0.72 + soft * 0.012);
     if (this.bones.leftLowerArm) this.bones.leftLowerArm.rotation.set(-1.05 + breathe * 0.014, 0, 0.46);
     if (this.bones.rightUpperArm) this.bones.rightUpperArm.rotation.set(-0.34 - breathe * 0.012, 0.16, 0.72 - soft * 0.012);
     if (this.bones.rightLowerArm) this.bones.rightLowerArm.rotation.set(-1.08 - breathe * 0.014, 0, -0.42);
     if (this.bones.leftUpperLeg) this.bones.leftUpperLeg.rotation.x = -0.035 + breathe * 0.006;
     if (this.bones.rightUpperLeg) this.bones.rightUpperLeg.rotation.x = 0.03 - breathe * 0.006;
+    if (this.bones.head) this.bones.head.rotation.y += Math.sin(performance.now() * 0.009) * 0.035 * talkBlend;
   }
 
   private applyExpressions(elapsedTime: number, delta: number): void {

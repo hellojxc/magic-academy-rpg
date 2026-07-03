@@ -1,6 +1,8 @@
 import * as THREE from 'three';
-import { addFlatPlane, addPointLight, makeWaterTexture, makeGrassTexture } from './WorldHelpers';
+import { addFlatPlane, addPointLight, makeGrassTexture } from './WorldHelpers';
 import { MatLib, getStandardMaterial, Geo } from './RenderResources';
+import { addFoliageField, addGroundDecals, addNaturalTree, createLakeWaterMaterial, updateLakeWaterMaterial } from './EnvironmentDetailKit';
+import { LAKE_BANK_DECALS, LAKE_EDGE_FOLIAGE_FIELDS } from './NatureSliceConfig';
 
 /**
  * 湖泊 — 西南方向 (x:[-26,-4], z:[10,28])
@@ -8,22 +10,13 @@ import { MatLib, getStandardMaterial, Geo } from './RenderResources';
  */
 export class Lake {
   private readonly animatedObjects: { obj: THREE.Object3D; baseY: number; amp: number; speed: number; phase: number }[] = [];
-  private readonly waterMeshes: THREE.Mesh[] = [];
-  private waterMap: THREE.Texture | null = null;
+  private readonly waterMaterials: THREE.ShaderMaterial[] = [];
 
   constructor(private readonly scene: THREE.Scene) {}
 
   build(): void {
-    const waterTex = makeWaterTexture();
-    this.waterMap = waterTex;
-    const waterMat = new THREE.MeshStandardMaterial({
-      color: 0x3a7eac,
-      roughness: 0.12,
-      metalness: 0.35,
-      map: waterTex,
-      transparent: true,
-      opacity: 0.82,
-    });
+    const waterMat = createLakeWaterMaterial();
+    this.waterMaterials.push(waterMat);
 
     // 主水面 — 用不规则几何做岸线，避免像几块矩形贴图拼起来。
     this.addWaterBody(waterMat);
@@ -54,6 +47,10 @@ export class Lake {
       this.scene.add(patch);
     }
     this.addShoreDetails();
+    addGroundDecals(this.scene, LAKE_BANK_DECALS);
+    for (const field of LAKE_EDGE_FOLIAGE_FIELDS) {
+      addFoliageField(this.scene, field, (x, z) => this.isInsideOpenWater(x, z));
+    }
 
     // 码头 — 从东岸伸入湖中
     this.addDock(-6, 16, barkMat());
@@ -116,14 +113,12 @@ export class Lake {
       item.obj.position.y = item.baseY + Math.sin(elapsedTime * item.speed + item.phase) * item.amp;
     }
 
-    // 水面 UV 偏移 — 模拟波纹流动（主水面与深水共享同一张贴图，只更新一次）
-    if (this.waterMap) {
-      this.waterMap.offset.x = elapsedTime * 0.015;
-      this.waterMap.offset.y = elapsedTime * 0.008;
+    for (const material of this.waterMaterials) {
+      updateLakeWaterMaterial(material, elapsedTime);
     }
   }
 
-  private addWaterBody(waterMat: THREE.MeshStandardMaterial): void {
+  private addWaterBody(waterMat: THREE.ShaderMaterial): void {
     const points = this.makeLakeOutline(12.0, 8.6, 44);
     const shape = new THREE.Shape(points);
     const water = new THREE.Mesh(new THREE.ShapeGeometry(shape), waterMat);
@@ -131,18 +126,15 @@ export class Lake {
     water.position.set(-15, 0, 19);
     water.receiveShadow = true;
     this.scene.add(water);
-    this.waterMeshes.push(water);
 
-    const deepMat = waterMat.clone();
-    deepMat.color = new THREE.Color(0x235d86);
-    deepMat.opacity = 0.55;
+    const deepMat = createLakeWaterMaterial(0x153d62, 0x2b7890, 0xb9ecff);
+    this.waterMaterials.push(deepMat);
     const deepShape = new THREE.Shape(this.makeLakeOutline(8.4, 5.6, 36));
     const deep = new THREE.Mesh(new THREE.ShapeGeometry(deepShape), deepMat);
     deep.rotation.x = -Math.PI / 2;
     deep.position.set(-15, -0.022, 19);
     deep.receiveShadow = true;
     this.scene.add(deep);
-    this.waterMeshes.push(deep);
   }
 
   private addShallowWaterShelf(): void {
@@ -228,6 +220,12 @@ export class Lake {
     return points;
   }
 
+  private isInsideOpenWater(x: number, z: number): boolean {
+    const dx = (x + 15) / 10.8;
+    const dz = (z - 19) / 7.3;
+    return dx * dx + dz * dz < 0.9;
+  }
+
   private addDock(x: number, z: number, mat: THREE.Material): void {
     // 木栈道
     const seamMat = getStandardMaterial({ color: 0x3a2619, roughness: 0.85 });
@@ -275,17 +273,8 @@ export class Lake {
     island.receiveShadow = true;
     this.scene.add(island);
 
-    // 岛上树
-    const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.2, 1.8, 8), MatLib.bark);
-    trunk.position.set(x, 1.0, z);
-    trunk.castShadow = true;
-    this.scene.add(trunk);
-
-    const crown = new THREE.Mesh(new THREE.SphereGeometry(0.9, 16, 12), MatLib.leafGreen);
-    crown.position.set(x, 2.0, z);
-    crown.castShadow = true;
-    this.scene.add(crown);
-    this.animatedObjects.push({ obj: crown, baseY: 2.0, amp: 0.02, speed: 0.7, phase: 0 });
+    const tree = addNaturalTree(this.scene, { x, z, scale: 0.58, seed: 6101, variant: 'willow', baseY: 0.38, rotation: 0.4 });
+    this.animatedObjects.push({ obj: tree, baseY: 0.38, amp: 0.012, speed: 0.5, phase: 0.4 });
   }
 
   private addWaterSparkles(): void {

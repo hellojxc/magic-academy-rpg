@@ -2,6 +2,8 @@ import * as THREE from 'three';
 import type { Obstacle } from './WorldTypes';
 import { addFlatPlane, addPointLight, makeGrassTexture } from './WorldHelpers';
 import { MatLib, getStandardMaterial, Geo } from './RenderResources';
+import { addFoliageField, addGroundDecals, addNaturalTree } from './EnvironmentDetailKit';
+import { LAWN_FOLIAGE_FIELDS, LAWN_GROUND_DECALS, LAWN_TREE_SPECS } from './NatureSliceConfig';
 
 /**
  * 草坪 — 中庭南面 (x:[-16,16], z:[7,22])
@@ -18,13 +20,16 @@ export class Lawn {
     const grassTex = makeGrassTexture();
     const grassMat = new THREE.MeshStandardMaterial({ color: 0x4a8b3a, roughness: 0.85, metalness: 0.0, map: grassTex });
     const stoneMat = new THREE.MeshStandardMaterial({ color: 0x8a8278, roughness: 0.6, metalness: 0.05 });
-    const barkMat = MatLib.bark;
     const goldMat = MatLib.gold;
 
     // 草地
     addFlatPlane(this.scene, new THREE.Vector3(0, -0.02, 14.5), new THREE.Vector2(32, 15), grassMat);
+    addGroundDecals(this.scene, LAWN_GROUND_DECALS);
     this.addGroundPatches();
     this.addGrassBlades();
+    for (const field of LAWN_FOLIAGE_FIELDS) {
+      addFoliageField(this.scene, field, (x, z) => this.isNearLawnFeature(x, z, 0.2));
+    }
 
     // 石径 — 从中庭南门到草坪
     for (let z = 7; z <= 22; z += 1.5) {
@@ -58,11 +63,9 @@ export class Lawn {
     }
 
     // 树木
-    for (const [x, z, scale] of [
-      [-14, 9, 1], [14, 9, 1.1], [-14, 20, 0.9], [14, 20, 1],
-      [-7, 21, 0.85], [7, 21, 0.95], [-5, 8.5, 0.8], [5, 8.5, 0.85],
-    ] as Array<[number, number, number]>) {
-      this.addTree(x, z, scale, barkMat);
+    for (const tree of LAWN_TREE_SPECS) {
+      const group = addNaturalTree(this.scene, tree);
+      this.animatedObjects.push({ obj: group, baseY: tree.baseY ?? 0, amp: 0.01, speed: 0.55, phase: tree.seed * 0.01 });
     }
 
     // 长椅
@@ -80,8 +83,9 @@ export class Lawn {
     }
 
     // 障碍 — 树干和花坛边
-    for (const [x, z] of [[-14, 9], [14, 9], [-14, 20], [14, 20], [-7, 21], [7, 21], [-5, 8.5], [5, 8.5]] as Array<[number, number]>) {
-      obstacles.push({ minX: x - 0.3, maxX: x + 0.3, minZ: z - 0.3, maxZ: z + 0.3 });
+    for (const tree of LAWN_TREE_SPECS) {
+      const radius = 0.28 * tree.scale;
+      obstacles.push({ minX: tree.x - radius, maxX: tree.x + radius, minZ: tree.z - radius, maxZ: tree.z + radius });
     }
     for (const [x, z] of [[-10, 10], [10, 10], [-10, 19], [10, 19]] as Array<[number, number]>) {
       obstacles.push({ minX: x - 0.8, maxX: x + 0.8, minZ: z - 0.8, maxZ: z + 0.8 });
@@ -263,37 +267,6 @@ export class Lawn {
       flower.castShadow = true;
       this.scene.add(flower);
     }
-  }
-
-  private addTree(x: number, z: number, scale: number, barkMat: THREE.Material): void {
-    const group = new THREE.Group();
-
-    // 树干
-    const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.18 * scale, 0.25 * scale, 2.2 * scale, 12), barkMat);
-    trunk.position.y = 1.1 * scale;
-    trunk.castShadow = true; trunk.receiveShadow = true;
-    group.add(trunk);
-
-    // 树冠 — 三层球
-    const leafMat1 = MatLib.leafGreen;
-    const leafMat2 = MatLib.leafGreenMid;
-    const leafMat3 = MatLib.leafGreenLight;
-
-    const c1 = new THREE.Mesh(new THREE.SphereGeometry(1.1 * scale, 16, 12), leafMat1);
-    c1.position.y = 2.4 * scale; c1.castShadow = true; c1.receiveShadow = true;
-    group.add(c1);
-
-    const c2 = new THREE.Mesh(new THREE.SphereGeometry(0.9 * scale, 16, 12), leafMat2);
-    c2.position.set(0.3 * scale, 2.9 * scale, 0.2 * scale); c2.castShadow = true;
-    group.add(c2);
-
-    const c3 = new THREE.Mesh(new THREE.SphereGeometry(0.85 * scale, 16, 12), leafMat3);
-    c3.position.set(-0.25 * scale, 3.1 * scale, -0.15 * scale); c3.castShadow = true;
-    group.add(c3);
-
-    group.position.set(x, 0, z);
-    this.scene.add(group);
-    this.animatedObjects.push({ obj: group, baseY: 0, amp: 0.015, speed: 0.8, phase: Math.random() * Math.PI * 2 });
   }
 
   private addBench(x: number, z: number, rotY: number, mat: THREE.Material): void {
