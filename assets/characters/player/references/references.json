@@ -1,0 +1,42 @@
+{
+  "version": "character-reference-index-v1",
+  "characterId": "player",
+  "displayName": "Academy Protagonist",
+  "references": {
+    "model-sheet": {
+      "path": "assets/characters/player/references/model-sheet.png",
+      "publicUrl": "/assets/character-reviews/player-model-sheet.png",
+      "registeredAt": "2026-07-03T20:48:21.402Z"
+    },
+    "front": {
+      "path": "assets/characters/player/references/front.png",
+      "publicUrl": "/assets/character-reviews/player-front.png",
+      "registeredAt": "2026-07-03T20:51:42.492Z"
+    },
+    "side": {
+      "path": "assets/characters/player/references/side.png",
+      "publicUrl": "/assets/character-reviews/player-side.png",
+      "registeredAt": "2026-07-03T20:52:04.739Z"
+    },
+    "back": {
+      "path": "assets/characters/player/references/back.png",
+      "publicUrl": "/assets/character-reviews/player-back.png",
+      "registeredAt": "2026-07-03T20:52:22.681Z"
+    },
+    "face-detail": {
+      "path": "assets/characters/player/references/face-detail.png",
+      "publicUrl": "/assets/character-reviews/player-face-detail.png",
+      "registeredAt": "2026-07-03T20:52:37.236Z"
+    },
+    "hair-breakdown": {
+      "path": "assets/characters/player/references/hair-breakdown.png",
+      "publicUrl": "/assets/character-reviews/player-hair-breakdown.png",
+      "registeredAt": "2026-07-03T20:52:53.048Z"
+    },
+    "outfit-breakdown": {
+      "path": "assets/characters/player/references/outfit-breakdown.png",
+      "publicUrl": "/assets/character-reviews/player-outfit-breakdown.png",
+      "registeredAt": "2026-07-03T20:53:09.177Z"
+    }
+  }
+}

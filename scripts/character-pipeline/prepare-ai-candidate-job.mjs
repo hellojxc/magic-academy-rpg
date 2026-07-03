@@ -1,7 +1,14 @@
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-const supportedTools = new Set(['charactergen', 'hunyuan3d', 'comfyui-3d-pack', 'trellis']);
+const supportedTools = new Set([
+  'charactergen',
+  'hunyuan3d',
+  'comfyui-3d-pack',
+  'trellis',
+  'triposr',
+  'unirig',
+]);
 
 function readArg(name, fallback) {
   const index = process.argv.indexOf(name);
@@ -162,6 +169,66 @@ function toolRunbook(tool, job) {
       '',
       '```sh',
       `npm run assets:characters:candidate:register -- --character ${job.characterId} --tool comfyui-3d-pack --job ${job.jobId} --input /path/to/generated.glb`,
+      '```',
+      '',
+    ].join('\n');
+  }
+
+  if (tool === 'triposr') {
+    return [
+      '# TripoSR Job',
+      '',
+      'TripoSR is a lightweight image-to-3D baseline. Use it for quick silhouette probes when a GPU-backed CharacterGen/Hunyuan3D run is unavailable.',
+      '',
+      'Upstream setup summary:',
+      '',
+      '```sh',
+      'git clone https://github.com/VAST-AI-Research/TripoSR.git',
+      'cd TripoSR',
+      'python3 -m venv .venv',
+      '. .venv/bin/activate',
+      'pip install -r requirements.txt',
+      '```',
+      '',
+      'Use this project job input:',
+      '',
+      `- Portrait or front reference: ${job.input.localPortraitPath}`,
+      `- Prompt: ${job.files.prompt}`,
+      `- Expected output folder: ${job.files.outputsDir}`,
+      '',
+      'Register the best output:',
+      '',
+      '```sh',
+      `npm run assets:characters:candidate:register -- --character ${job.characterId} --tool triposr --job ${job.jobId} --input /path/to/generated.glb`,
+      '```',
+      '',
+    ].join('\n');
+  }
+
+  if (tool === 'unirig') {
+    return [
+      '# UniRig Job',
+      '',
+      'UniRig is not a portrait-to-mesh generator. Use it after a generated or cleaned humanoid mesh has acceptable silhouette but lacks skeleton and skin weights.',
+      '',
+      'Upstream setup summary:',
+      '',
+      '```sh',
+      'git clone https://github.com/VAST-AI-Research/UniRig.git',
+      'cd UniRig',
+      '# Follow upstream Python/CUDA setup for automatic skeleton and skinning.',
+      '```',
+      '',
+      'Use this project job input:',
+      '',
+      `- Source brief: ${job.input.sourceBrief}`,
+      `- Prompt: ${job.files.prompt}`,
+      `- Expected output folder: ${job.files.outputsDir}`,
+      '',
+      'Register the rigged candidate after exporting GLB:',
+      '',
+      '```sh',
+      `npm run assets:characters:candidate:register -- --character ${job.characterId} --tool unirig --job ${job.jobId} --input /path/to/rigged.glb`,
       '```',
       '',
     ].join('\n');

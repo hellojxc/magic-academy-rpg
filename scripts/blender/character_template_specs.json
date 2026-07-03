@@ -18,24 +18,24 @@
         "footScale": 1.0
       },
       "face": {
-        "eyeScale": 1.08,
-        "eyeColor": "#355c9a",
-        "browColor": "#2d1f18",
+        "eyeScale": 1.04,
+        "eyeColor": "#4f8ed9",
+        "browColor": "#17131b",
         "cheekTint": "#f0b8aa"
       },
       "hair": {
         "style": "layered-short",
         "length": "short",
-        "color": "#2a1d17",
-        "highlightColor": "#6d4a32",
-        "volume": 0.74
+        "color": "#211b24",
+        "highlightColor": "#51495a",
+        "volume": 0.82
       },
       "outfit": {
         "style": "academy-uniform-male",
         "primaryColor": "#132b68",
         "secondaryColor": "#f6f0dc",
         "darkColor": "#18204c",
-        "accentColor": "#8d2834",
+        "accentColor": "#273f86",
         "trimColor": "#d7b45f",
         "shoeColor": "#16131c",
         "cape": "short-mage-cape",
@@ -63,17 +63,17 @@
         "footScale": 0.88
       },
       "face": {
-        "eyeScale": 1.18,
+        "eyeScale": 1.16,
         "eyeColor": "#7b66ff",
-        "browColor": "#8a6cff",
+        "browColor": "#8366d8",
         "cheekTint": "#f4a8c4"
       },
       "hair": {
         "style": "long-layered",
         "length": "long",
-        "color": "#9f7cff",
-        "highlightColor": "#d8c5ff",
-        "volume": 0.88
+        "color": "#b9a3ff",
+        "highlightColor": "#efe3ff",
+        "volume": 0.94
       },
       "outfit": {
         "style": "academy-uniform-heroine",
@@ -82,7 +82,7 @@
         "darkColor": "#4b2d78",
         "accentColor": "#a568df",
         "trimColor": "#f0c86e",
-        "shoeColor": "#1e1630",
+        "shoeColor": "#f2e6cf",
         "cape": "short-capelet",
         "heldItem": "spellbook"
       },

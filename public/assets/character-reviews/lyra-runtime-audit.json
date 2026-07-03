@@ -5,19 +5,20 @@
   "accepted": false,
   "summary": {
     "file": "public/assets/models/lyra.glb",
-    "sizeKb": 1067.1,
-    "nodes": 211,
-    "meshes": 157,
-    "primitives": 157,
-    "materials": 65,
+    "sizeKb": 583.4,
+    "nodes": 102,
+    "meshes": 84,
+    "primitives": 84,
+    "materials": 18,
     "skins": 0,
     "bones": 0,
     "animations": [
+      "walk",
       "idle",
-      "walk"
+      "talk"
     ],
     "morphTargetPrimitiveCount": 0,
-    "triangleCount": 65112
+    "triangleCount": 19504
   },
   "requirements": {
     "triangleBudgetHero": [
@@ -53,7 +54,7 @@
     {
       "name": "triangle budget",
       "passed": false,
-      "detail": "65112 triangles, target 25000-45000"
+      "detail": "19504 triangles, target 25000-45000"
     },
     {
       "name": "humanoid skin",
@@ -67,15 +68,15 @@
     },
     {
       "name": "required animation clips",
-      "passed": false,
-      "detail": "has [idle, walk], requires [idle, walk, talk]"
+      "passed": true,
+      "detail": "has [walk, idle, talk], requires [idle, walk, talk]"
     },
     {
       "name": "material count",
-      "passed": false,
-      "detail": "65 materials, target <= 32"
+      "passed": true,
+      "detail": "18 materials, target <= 32"
     }
   ],
   "conclusion": "Runtime asset is not yet a production-quality RPG character model.",
-  "generatedAt": "2026-07-03T20:24:14.342Z"
+  "generatedAt": "2026-07-03T21:15:31.942Z"
 }

@@ -17,18 +17,21 @@
     },
     {
       "type": "front",
-      "exists": false,
-      "sourcePath": "assets/characters/lyra/references/front.png"
+      "exists": true,
+      "sourcePath": "assets/characters/lyra/references/front.png",
+      "publicUrl": "/assets/character-reviews/lyra-front.png"
     },
     {
       "type": "side",
-      "exists": false,
-      "sourcePath": "assets/characters/lyra/references/side.png"
+      "exists": true,
+      "sourcePath": "assets/characters/lyra/references/side.png",
+      "publicUrl": "/assets/character-reviews/lyra-side.png"
     },
     {
       "type": "back",
-      "exists": false,
-      "sourcePath": "assets/characters/lyra/references/back.png"
+      "exists": true,
+      "sourcePath": "assets/characters/lyra/references/back.png",
+      "publicUrl": "/assets/character-reviews/lyra-back.png"
     },
     {
       "type": "model-sheet",
@@ -38,18 +41,21 @@
     },
     {
       "type": "face-detail",
-      "exists": false,
-      "sourcePath": "assets/characters/lyra/references/face-detail.png"
+      "exists": true,
+      "sourcePath": "assets/characters/lyra/references/face-detail.png",
+      "publicUrl": "/assets/character-reviews/lyra-face-detail.png"
     },
     {
       "type": "hair-breakdown",
-      "exists": false,
-      "sourcePath": "assets/characters/lyra/references/hair-breakdown.png"
+      "exists": true,
+      "sourcePath": "assets/characters/lyra/references/hair-breakdown.png",
+      "publicUrl": "/assets/character-reviews/lyra-hair-breakdown.png"
     },
     {
       "type": "outfit-breakdown",
-      "exists": false,
-      "sourcePath": "assets/characters/lyra/references/outfit-breakdown.png"
+      "exists": true,
+      "sourcePath": "assets/characters/lyra/references/outfit-breakdown.png",
+      "publicUrl": "/assets/character-reviews/lyra-outfit-breakdown.png"
     }
   ],
   "targetIdentity": {

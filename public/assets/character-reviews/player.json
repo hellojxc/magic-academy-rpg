@@ -17,38 +17,45 @@
     },
     {
       "type": "front",
-      "exists": false,
-      "sourcePath": "assets/characters/player/references/front.png"
+      "exists": true,
+      "sourcePath": "assets/characters/player/references/front.png",
+      "publicUrl": "/assets/character-reviews/player-front.png"
     },
     {
       "type": "side",
-      "exists": false,
-      "sourcePath": "assets/characters/player/references/side.png"
+      "exists": true,
+      "sourcePath": "assets/characters/player/references/side.png",
+      "publicUrl": "/assets/character-reviews/player-side.png"
     },
     {
       "type": "back",
-      "exists": false,
-      "sourcePath": "assets/characters/player/references/back.png"
+      "exists": true,
+      "sourcePath": "assets/characters/player/references/back.png",
+      "publicUrl": "/assets/character-reviews/player-back.png"
     },
     {
       "type": "model-sheet",
-      "exists": false,
-      "sourcePath": "assets/characters/player/references/model-sheet.png"
+      "exists": true,
+      "sourcePath": "assets/characters/player/references/model-sheet.png",
+      "publicUrl": "/assets/character-reviews/player-model-sheet.png"
     },
     {
       "type": "face-detail",
-      "exists": false,
-      "sourcePath": "assets/characters/player/references/face-detail.png"
+      "exists": true,
+      "sourcePath": "assets/characters/player/references/face-detail.png",
+      "publicUrl": "/assets/character-reviews/player-face-detail.png"
     },
     {
       "type": "hair-breakdown",
-      "exists": false,
-      "sourcePath": "assets/characters/player/references/hair-breakdown.png"
+      "exists": true,
+      "sourcePath": "assets/characters/player/references/hair-breakdown.png",
+      "publicUrl": "/assets/character-reviews/player-hair-breakdown.png"
     },
     {
       "type": "outfit-breakdown",
-      "exists": false,
-      "sourcePath": "assets/characters/player/references/outfit-breakdown.png"
+      "exists": true,
+      "sourcePath": "assets/characters/player/references/outfit-breakdown.png",
+      "publicUrl": "/assets/character-reviews/player-outfit-breakdown.png"
     }
   ],
   "targetIdentity": {

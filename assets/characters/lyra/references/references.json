@@ -7,6 +7,36 @@
       "path": "assets/characters/lyra/references/model-sheet.png",
       "publicUrl": "/assets/character-reviews/lyra-model-sheet.png",
       "registeredAt": "2026-07-03T20:23:42.512Z"
+    },
+    "front": {
+      "path": "assets/characters/lyra/references/front.png",
+      "publicUrl": "/assets/character-reviews/lyra-front.png",
+      "registeredAt": "2026-07-03T20:41:40.222Z"
+    },
+    "side": {
+      "path": "assets/characters/lyra/references/side.png",
+      "publicUrl": "/assets/character-reviews/lyra-side.png",
+      "registeredAt": "2026-07-03T20:42:01.728Z"
+    },
+    "back": {
+      "path": "assets/characters/lyra/references/back.png",
+      "publicUrl": "/assets/character-reviews/lyra-back.png",
+      "registeredAt": "2026-07-03T20:42:13.258Z"
+    },
+    "face-detail": {
+      "path": "assets/characters/lyra/references/face-detail.png",
+      "publicUrl": "/assets/character-reviews/lyra-face-detail.png",
+      "registeredAt": "2026-07-03T20:42:36.984Z"
+    },
+    "hair-breakdown": {
+      "path": "assets/characters/lyra/references/hair-breakdown.png",
+      "publicUrl": "/assets/character-reviews/lyra-hair-breakdown.png",
+      "registeredAt": "2026-07-03T20:42:48.334Z"
+    },
+    "outfit-breakdown": {
+      "path": "assets/characters/lyra/references/outfit-breakdown.png",
+      "publicUrl": "/assets/character-reviews/lyra-outfit-breakdown.png",
+      "registeredAt": "2026-07-03T20:43:01.957Z"
     }
   }
 }

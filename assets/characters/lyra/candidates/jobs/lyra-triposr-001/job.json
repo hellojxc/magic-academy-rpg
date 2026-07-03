@@ -1,0 +1,28 @@
+{
+  "version": "ai-character-candidate-job-v1",
+  "jobId": "lyra-triposr-001",
+  "characterId": "lyra",
+  "displayName": "Lyra",
+  "tool": "triposr",
+  "status": "ready-to-run",
+  "input": {
+    "portraitUrl": "/assets/portraits/lyra-3d.png",
+    "localPortraitPath": "public/assets/portraits/lyra-3d.png",
+    "sourceBrief": "assets/characters/lyra/character-model-brief.json"
+  },
+  "files": {
+    "prompt": "assets/characters/lyra/candidates/jobs/lyra-triposr-001/prompt.md",
+    "runbook": "assets/characters/lyra/candidates/jobs/lyra-triposr-001/RUNBOOK.md",
+    "outputsDir": "assets/characters/lyra/candidates/jobs/lyra-triposr-001/outputs"
+  },
+  "expectedOutput": {
+    "registerCommand": "npm run assets:characters:candidate:register -- --character lyra --tool triposr --job lyra-triposr-001 --input /path/to/generated.glb"
+  },
+  "acceptanceGate": [
+    "head silhouette matches portrait",
+    "eyes remain readable from front view",
+    "hair is separated into editable sections",
+    "clothing can be repaired in Blender",
+    "mesh can be retopologized without losing identity"
+  ]
+}

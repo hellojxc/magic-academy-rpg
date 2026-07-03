@@ -31,7 +31,11 @@ The project should test tools in this order:
 2. Hunyuan3D: first fallback for image-to-3D shape and texture candidates.
 3. ComfyUI-3D-Pack: harness for comparing several 3D generation backends.
 4. TRELLIS: general 3D generation fallback.
-5. VRM Addon for Blender: export route when a character needs VRM metadata,
+5. TripoSR: lightweight single-image mesh baseline when GPU generation is not
+   available.
+6. UniRig: automatic skeleton and skinning candidate pass for a cleaned humanoid
+   mesh.
+7. VRM Addon for Blender: export route when a character needs VRM metadata,
    expressions, MToon materials, and spring-bone motion.
 
 The repository list and intended use live in:
@@ -50,16 +54,18 @@ still needs Blender cleanup.
 2. Run at least three AI candidate generations for Lyra.
 3. Select the candidate with the best silhouette, face proportions, and editable
    hair/clothing structure.
-4. Import it into Blender.
-5. Rebuild the head, eyes, hair, clothing, hands, and shoes as clean meshes.
-6. Retopologize for deformation.
-7. UV unwrap and paint toon textures.
-8. Build a humanoid rig with deform bones only for export.
-9. Add shape keys for blink, smile, shy, surprised, and thinking.
-10. Add hair, skirt, capelet, and ribbon secondary-motion bones.
-11. Export GLB or VRM.
-12. Inspect the asset and compare it against the portrait.
-13. Only then update the runtime manifest if the asset is visually acceptable.
+4. If the candidate has no skeleton, run an automatic rigging pass such as
+   UniRig only as a starting point.
+5. Import it into Blender.
+6. Rebuild the head, eyes, hair, clothing, hands, and shoes as clean meshes.
+7. Retopologize for deformation.
+8. UV unwrap and paint toon textures.
+9. Build or repair a humanoid rig with deform bones only for export.
+10. Add shape keys for blink, smile, shy, surprised, and thinking.
+11. Add hair, skirt, capelet, and ribbon secondary-motion bones.
+12. Export GLB or VRM.
+13. Inspect the asset and compare it against the portrait.
+14. Only then update the runtime manifest if the asset is visually acceptable.
 
 ## Commands
 
@@ -86,6 +92,8 @@ Prepare an AI candidate generation job:
 ```sh
 npm run assets:characters:candidate:prepare -- --character lyra --tool charactergen --job lyra-charactergen-001
 npm run assets:characters:candidate:prepare -- --character lyra --tool hunyuan3d --job lyra-hunyuan3d-001
+npm run assets:characters:candidate:prepare -- --character lyra --tool triposr --job lyra-triposr-001
+npm run assets:characters:candidate:prepare -- --character lyra --tool unirig --job lyra-unirig-001
 ```
 
 Register a generated candidate after an external AI tool writes a mesh:
@@ -161,6 +169,11 @@ A model is not accepted just because it loads in Three.js. It must pass:
 ## Current Status
 
 The current `player.glb` and `lyra.glb` are runtime prototypes. The
-`*.blender-template.glb` files are technical pipeline probes. The next real
-milestone is a Lyra source `.blend` produced through an AI candidate plus Blender
-cleanup workflow, then exported through `assets:characters:source:export`.
+`*.blender-template.glb` files are technical pipeline probes. The model-sheet
+references for both player and Lyra are now registered in
+`assets/characters/<id>/references` and mirrored to
+`public/assets/character-reviews`.
+
+The next real milestone is a Lyra source `.blend` produced through an AI
+candidate plus Blender cleanup workflow, then exported through
+`assets:characters:source:export`.

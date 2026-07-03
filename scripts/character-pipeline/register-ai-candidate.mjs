@@ -1,7 +1,15 @@
 import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { basename, extname, resolve } from 'node:path';
 
-const supportedTools = new Set(['charactergen', 'hunyuan3d', 'comfyui-3d-pack', 'trellis', 'manual']);
+const supportedTools = new Set([
+  'charactergen',
+  'hunyuan3d',
+  'comfyui-3d-pack',
+  'trellis',
+  'triposr',
+  'unirig',
+  'manual',
+]);
 
 function readArg(name, fallback) {
   const index = process.argv.indexOf(name);

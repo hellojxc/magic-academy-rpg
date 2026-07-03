@@ -74,6 +74,42 @@
       "projectUse": "Use as a fallback candidate generator when character-specific methods fail."
     },
     {
+      "id": "triposr",
+      "name": "TripoSR",
+      "repo": "https://github.com/VAST-AI-Research/TripoSR",
+      "role": "lightweight image-to-3D mesh candidate generation",
+      "priority": 5,
+      "expectedInput": ["front view image", "portrait crop"],
+      "expectedOutput": ["OBJ or GLB mesh candidate"],
+      "strengths": [
+        "lighter than full diffusion 3D stacks",
+        "useful as a CPU-tolerant baseline for silhouette experiments"
+      ],
+      "risks": [
+        "single-view reconstruction can flatten anime hair and clothing",
+        "does not produce game-ready topology, rig, expressions, or secondary motion"
+      ],
+      "projectUse": "Use for fast local or remote silhouette probes when no GPU-backed CharacterGen/Hunyuan3D environment is available."
+    },
+    {
+      "id": "unirig",
+      "name": "UniRig",
+      "repo": "https://github.com/VAST-AI-Research/UniRig",
+      "role": "automatic rigging and skinning candidate pass",
+      "priority": 2,
+      "expectedInput": ["cleaned humanoid mesh candidate"],
+      "expectedOutput": ["rigged and skinned character candidate"],
+      "strengths": [
+        "targets automatic skeleton and skinning for generated characters",
+        "fits the pipeline stage between mesh generation and Blender cleanup"
+      ],
+      "risks": [
+        "auto-rig output still needs deformation review in walk and talk clips",
+        "VRM humanoid metadata, facial morphs, and spring bones still need Blender authoring"
+      ],
+      "projectUse": "Use after a generated Lyra or player mesh has acceptable silhouette but lacks a usable skeleton."
+    },
+    {
       "id": "vrm-addon-for-blender",
       "name": "VRM Addon for Blender",
       "repo": "https://github.com/saturday06/VRM-Addon-for-Blender",
