@@ -1,0 +1,155 @@
+{
+  "lyra": [
+    {
+      "id": "lyra_intro",
+      "trigger": "proximity",
+      "minAffection": -999,
+      "maxAffection": 1,
+      "completesEvent": "lyra_intro",
+      "pages": [
+        {
+          "speaker": "Lyra",
+          "text": "...嗯？你是新来的学生吧。这片图书馆的区域不常有人来。"
+        },
+        {
+          "speaker": "Lyra",
+          "text": "我是 Lyra，负责管理星辉图书馆的古籍。你......对魔法有兴趣吗？",
+          "choices": [
+            {
+              "id": "choice_eager",
+              "text": "当然！我想学会所有咒语！",
+              "affectionChange": 1,
+              "response": "呵呵，热情是好事。但魔法不是光靠热情就能驾驭的——不过，我喜欢你的冲劲。"
+            },
+            {
+              "id": "choice_calm",
+              "text": "比起施法，我更想理解魔法的本质。",
+              "affectionChange": 2,
+              "response": "......真有趣。很少有人第一句话就说中我的心声。也许我们会有很多话题可聊。"
+            },
+            {
+              "id": "choice_rude",
+              "text": "图书馆？我以为魔法学院会有更刺激的地方。",
+              "affectionChange": -1,
+              "response": "......是吗。那门口在左边，不送。"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lyra_second_event",
+      "trigger": "event",
+      "minAffection": 2,
+      "requiredEvent": "lyra_intro",
+      "completesEvent": "lyra_second_event",
+      "pages": [
+        {
+          "speaker": "Lyra",
+          "text": "你来了。......我刚才在翻一本很旧的星图笔记，上面记载了一种已经失传的共鸣魔法。"
+        },
+        {
+          "speaker": "Lyra",
+          "text": "我本来打算自己研究，但......如果你愿意的话，我想请你一起看看。两个人的魔力共鸣，也许能唤醒书页里的残影。",
+          "choices": [
+            {
+              "id": "choice_accept",
+              "text": "我很荣幸。带我看看吧。",
+              "affectionChange": 2,
+              "response": "谢谢你。......你知道吗，这是第一次我主动邀请别人走进我的研究。走吧，跟我来。"
+            },
+            {
+              "id": "choice_curious",
+              "text": "共鸣魔法？听起来有点危险......但还是想试试。",
+              "affectionChange": 1,
+              "response": "你的谨慎和你父亲一样——啊，没什么。来吧，有我在不会出事。"
+            },
+            {
+              "id": "choice_decline",
+              "text": "我还有别的事，下次再说吧。",
+              "affectionChange": -1,
+              "response": "......好吧。笔记不会跑掉，我等你。"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lyra_repeat_cold",
+      "trigger": "repeat",
+      "minAffection": -999,
+      "maxAffection": -1,
+      "pages": [
+        {
+          "speaker": "Lyra",
+          "text": "......又是你。如果你不是来看书的，请别打扰我。",
+          "choices": [
+            {
+              "id": "choice_apologize",
+              "text": "抱歉，我上次说话太冲了。",
+              "affectionChange": 1,
+              "response": "......知道就好。我并非不能原谅，只是不喜欢被轻视。"
+            },
+            {
+              "id": "choice_ignore",
+              "text": "随便你吧。",
+              "affectionChange": -1,
+              "response": "......"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lyra_repeat_warm",
+      "trigger": "repeat",
+      "minAffection": 0,
+      "maxAffection": 1,
+      "pages": [
+        {
+          "speaker": "Lyra",
+          "text": "又来了？......我刚好泡了杯星辉茶，要多一杯吗？",
+          "choices": [
+            {
+              "id": "choice_tea_yes",
+              "text": "好啊，谢了。",
+              "affectionChange": 1,
+              "response": "嗯，坐吧。我很少主动招待人——别辜负了。"
+            },
+            {
+              "id": "choice_tea_no",
+              "text": "不用了，我坐一会儿就走。",
+              "affectionChange": 0,
+              "response": "随你。书架那边自己看。"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lyra_repeat_close",
+      "trigger": "repeat",
+      "minAffection": 3,
+      "pages": [
+        {
+          "speaker": "Lyra",
+          "text": "你来了。......我刚才一直在想那本星图笔记的事。下次有空吗？我想带你去塔顶看真的星空。",
+          "choices": [
+            {
+              "id": "choice_starry_yes",
+              "text": "一定去。我也想和你一起看。",
+              "affectionChange": 2,
+              "response": "......嗯。那说好了。不许放鸽子。"
+            },
+            {
+              "id": "choice_starry_maybe",
+              "text": "最近有点忙......但我会尽量。",
+              "affectionChange": 0,
+              "response": "好吧，我不催你。星月不急，我也......不急。"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

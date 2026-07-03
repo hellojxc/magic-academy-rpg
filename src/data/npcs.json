@@ -1,0 +1,13 @@
+[
+  {
+    "id": "lyra",
+    "name": "Lyra",
+    "title": "星辉图书馆管理员",
+    "x": 970,
+    "y": 390,
+    "color": "0x7c4dff",
+    "radius": 16,
+    "area": "library",
+    "description": "一位安静而聪慧的魔法师，总是埋首于古籍之间。"
+  }
+]
