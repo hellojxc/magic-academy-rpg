@@ -15,3 +15,8 @@ The existing Three.js procedural characters are useful as temporary fallbacks, b
 The first reusable DCC template path lives in `scripts/blender`. See
 `docs/blender-character-template.md` for the headless Blender command, template
 contract, and generated GLB output names.
+
+The production source-model path lives in `assets/characters`. See
+`docs/ai-character-source-model-pipeline.md` for the AI candidate, Blender
+cleanup, GLB/VRM export, and portrait comparison workflow. This is the path that
+should replace the procedural and Blender-template probes for final art.

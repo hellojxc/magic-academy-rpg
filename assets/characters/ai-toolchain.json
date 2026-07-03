@@ -1,0 +1,100 @@
+{
+  "version": "ai-character-toolchain-v1",
+  "goal": "Generate and refine anime RPG humanoid source models for web GLB or VRM runtime use.",
+  "tools": [
+    {
+      "id": "charactergen",
+      "name": "CharacterGen",
+      "repo": "https://github.com/zjp-shadow/CharacterGen",
+      "role": "portrait-to-character candidate generation",
+      "priority": 1,
+      "expectedInput": ["single character portrait", "optional multiview references"],
+      "expectedOutput": ["candidate textured character mesh", "multiview render references"],
+      "strengths": [
+        "designed around character generation",
+        "closer to anime humanoid use cases than generic object reconstruction"
+      ],
+      "risks": [
+        "research pipeline output still needs topology cleanup",
+        "game-ready rig, expressions, and secondary motion are not guaranteed"
+      ],
+      "projectUse": "Create the first Lyra 3D candidate from the portrait, then refine in Blender."
+    },
+    {
+      "id": "hunyuan3d",
+      "name": "Hunyuan3D",
+      "repo": "https://github.com/Tencent-Hunyuan/Hunyuan3D-2",
+      "role": "image-to-3D mesh and texture candidate generation",
+      "priority": 2,
+      "expectedInput": ["portrait", "front view", "text prompt"],
+      "expectedOutput": ["textured mesh candidate"],
+      "strengths": [
+        "actively used general image-to-3D system",
+        "useful for fast shape and texture exploration"
+      ],
+      "risks": [
+        "not specialized for animation-ready anime characters",
+        "face likeness and hair structure must be repaired manually"
+      ],
+      "projectUse": "Generate alternate Lyra and player candidates for silhouette and color exploration."
+    },
+    {
+      "id": "comfyui-3d-pack",
+      "name": "ComfyUI-3D-Pack",
+      "repo": "https://github.com/MrForExample/ComfyUI-3D-Pack",
+      "role": "workflow harness for comparing 3D generation backends",
+      "priority": 3,
+      "expectedInput": ["portrait", "workflow graph"],
+      "expectedOutput": ["multiple candidate meshes from different backends"],
+      "strengths": [
+        "fast toolchain comparison",
+        "can route the same portrait through several AI 3D methods"
+      ],
+      "risks": [
+        "workflow complexity",
+        "outputs still require DCC cleanup"
+      ],
+      "projectUse": "Run a bake-off between CharacterGen, Hunyuan3D, TRELLIS, TripoSR, and other generators."
+    },
+    {
+      "id": "trellis",
+      "name": "TRELLIS",
+      "repo": "https://github.com/microsoft/TRELLIS",
+      "role": "general 3D asset candidate generation",
+      "priority": 4,
+      "expectedInput": ["image", "prompt"],
+      "expectedOutput": ["candidate 3D asset"],
+      "strengths": [
+        "strong general 3D generation baseline"
+      ],
+      "risks": [
+        "not a character rigging solution",
+        "anime likeness can drift"
+      ],
+      "projectUse": "Use as a fallback candidate generator when character-specific methods fail."
+    },
+    {
+      "id": "vrm-addon-for-blender",
+      "name": "VRM Addon for Blender",
+      "repo": "https://github.com/saturday06/VRM-Addon-for-Blender",
+      "role": "VRM import and export from Blender",
+      "priority": 1,
+      "expectedInput": ["rigged Blender character"],
+      "expectedOutput": ["VRM avatar with humanoid metadata, expressions, and spring bones"],
+      "strengths": [
+        "matches anime avatar workflow",
+        "maps well to @pixiv/three-vrm runtime"
+      ],
+      "risks": [
+        "requires correct humanoid setup",
+        "export validation must be enforced"
+      ],
+      "projectUse": "Use when Lyra needs VRM expressions, lookAt, MToon, hair, skirt, and ribbon spring bones."
+    }
+  ],
+  "decision": {
+    "firstExperiment": "CharacterGen for Lyra portrait-to-candidate generation",
+    "fallbackExperiment": "Hunyuan3D portrait-to-mesh candidate generation",
+    "finalAssetPath": "Blender source model with manual cleanup, rigging, morphs, and GLB or VRM export"
+  }
+}

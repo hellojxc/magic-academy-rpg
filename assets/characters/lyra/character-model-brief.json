@@ -1,0 +1,80 @@
+{
+  "version": "character-model-brief-v1",
+  "characterId": "lyra",
+  "displayName": "Lyra",
+  "runtimeAssetId": "lyra-hero-v1",
+  "referenceImages": {
+    "portrait": "/assets/portraits/lyra-3d.png",
+    "front": "assets/characters/lyra/references/front.png",
+    "side": "assets/characters/lyra/references/side.png",
+    "back": "assets/characters/lyra/references/back.png"
+  },
+  "targetIdentity": {
+    "style": "mainstream Japanese RPG heroine",
+    "silhouette": "petite academy mage heroine with long layered lavender hair",
+    "heightMeters": 1.55,
+    "headToBodyRatio": 0.22,
+    "facePriorities": [
+      "large rounded purple eyes",
+      "small soft mouth",
+      "minimal stylized nose",
+      "warm shy expression",
+      "visible cheek tint"
+    ],
+    "hairPriorities": [
+      "soft center bangs",
+      "long side locks",
+      "layered back hair",
+      "star hair clip",
+      "spring-bone-ready hair sections"
+    ],
+    "outfitPriorities": [
+      "white blouse",
+      "purple ribbon",
+      "layered purple academy skirt",
+      "short pale capelet",
+      "cream ankle boots",
+      "spellbook accessory"
+    ]
+  },
+  "sourceModelRequirements": {
+    "sourceFile": "assets/characters/lyra/source/lyra.blend",
+    "targetRuntimeFile": "public/assets/models/lyra.glb",
+    "preferredFormat": "glb",
+    "acceptableFormat": "vrm",
+    "triangleBudget": {
+      "hero": [25000, 45000],
+      "mid": [12000, 18000],
+      "low": [4000, 7000]
+    },
+    "textureBudgetKb": 4096,
+    "requiredAnimationClips": ["idle", "walk", "talk"],
+    "requiredExpressions": [
+      "neutral",
+      "blink",
+      "warm-smile",
+      "shy",
+      "surprised",
+      "thinking"
+    ],
+    "requiredSecondaryMotion": [
+      "long-hair-sway",
+      "skirt-sway",
+      "capelet-sway",
+      "ribbon-sway"
+    ]
+  },
+  "aiCandidatePlan": {
+    "primaryTool": "charactergen",
+    "secondaryTool": "hunyuan3d",
+    "candidateFolder": "assets/characters/lyra/candidates",
+    "minimumCandidates": 3,
+    "acceptanceGate": [
+      "head silhouette matches portrait",
+      "eyes remain readable from front view",
+      "hair is separated into editable sections",
+      "clothing can be repaired in Blender",
+      "mesh can be retopologized without losing identity"
+    ]
+  }
+}

@@ -14,11 +14,12 @@
       "format": "glb",
       "quality": "hero",
       "url": "/assets/models/player.glb",
-      "animationClips": ["idle", "walk", "run", "turn", "talk", "interact"],
+      "thumbnailUrl": "/assets/portraits/player-3d.png",
+      "animationClips": ["idle", "walk"],
       "materialProfile": "toon",
-      "supportsFacialMorphs": true,
+      "supportsFacialMorphs": false,
       "supportsSpringBones": false,
-      "triangleBudget": 32000,
+      "triangleBudget": 48000,
       "textureBudgetKb": 4096
     },
     {
@@ -28,12 +29,43 @@
       "format": "glb",
       "quality": "hero",
       "url": "/assets/models/lyra.glb",
-      "animationClips": ["idle", "walk", "turn", "talk", "smile", "thinking"],
+      "thumbnailUrl": "/assets/portraits/lyra-3d.png",
+      "animationClips": ["idle", "walk"],
       "materialProfile": "toon",
-      "supportsFacialMorphs": true,
+      "supportsFacialMorphs": false,
       "supportsSpringBones": false,
-      "triangleBudget": 36000,
+      "triangleBudget": 66000,
       "textureBudgetKb": 4096
+    },
+    {
+      "id": "player-blender-template-v1",
+      "characterId": "player",
+      "enabled": false,
+      "format": "glb",
+      "quality": "low",
+      "url": "/assets/models/player.blender-template.glb",
+      "thumbnailUrl": "/assets/models/player.blender-template.png",
+      "animationClips": ["idle", "walk", "talk"],
+      "materialProfile": "toon",
+      "supportsFacialMorphs": false,
+      "supportsSpringBones": false,
+      "triangleBudget": 20000,
+      "textureBudgetKb": 1024
+    },
+    {
+      "id": "lyra-blender-template-v1",
+      "characterId": "lyra",
+      "enabled": false,
+      "format": "glb",
+      "quality": "low",
+      "url": "/assets/models/lyra.blender-template.glb",
+      "thumbnailUrl": "/assets/models/lyra.blender-template.png",
+      "animationClips": ["idle", "walk", "talk"],
+      "materialProfile": "toon",
+      "supportsFacialMorphs": false,
+      "supportsSpringBones": false,
+      "triangleBudget": 20000,
+      "textureBudgetKb": 1024
     }
   ]
 }

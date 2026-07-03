@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Character Model Review</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: #111318;
+      color: #e7e9ee;
+      font-family: Inter, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+    }
+    main {
+      min-height: 100vh;
+      padding: 24px;
+    }
+    header {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+    h1 {
+      margin: 0;
+      font-size: 24px;
+      font-weight: 760;
+      letter-spacing: 0;
+    }
+    .tabs {
+      display: flex;
+      gap: 8px;
+    }
+    .tabs a {
+      display: inline-flex;
+      align-items: center;
+      min-height: 36px;
+      padding: 0 12px;
+      border: 1px solid #343946;
+      border-radius: 8px;
+      color: #d9dce6;
+      text-decoration: none;
+      background: #181b22;
+    }
+    .tabs a[aria-current="page"] {
+      border-color: #d9b765;
+      color: #ffe4a3;
+    }
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.4fr) minmax(320px, 0.8fr);
+      gap: 18px;
+      align-items: start;
+    }
+    .comparison {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+    .panel {
+      border: 1px solid #2f3441;
+      border-radius: 8px;
+      background: #181b22;
+      overflow: hidden;
+    }
+    .panel h2 {
+      margin: 0;
+      padding: 12px 14px;
+      border-bottom: 1px solid #2f3441;
+      font-size: 14px;
+      font-weight: 720;
+      color: #f1d48c;
+      letter-spacing: 0;
+    }
+    .image-stage {
+      display: grid;
+      place-items: center;
+      min-height: 640px;
+      padding: 16px;
+      background:
+        linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(255,255,255,0.035) 1px, transparent 1px),
+        #101219;
+      background-size: 32px 32px;
+    }
+    .image-stage img {
+      display: block;
+      max-width: 100%;
+      max-height: 76vh;
+      object-fit: contain;
+      filter: drop-shadow(0 18px 28px rgba(0, 0, 0, 0.36));
+    }
+    .details {
+      display: grid;
+      gap: 14px;
+    }
+    .section {
+      padding: 14px;
+      border: 1px solid #2f3441;
+      border-radius: 8px;
+      background: #181b22;
+    }
+    .section h2 {
+      margin: 0 0 10px;
+      color: #f1d48c;
+      font-size: 14px;
+      letter-spacing: 0;
+    }
+    .kv {
+      display: grid;
+      grid-template-columns: 130px minmax(0, 1fr);
+      gap: 8px 10px;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+    .kv dt { color: #9aa3b6; }
+    .kv dd {
+      margin: 0;
+      min-width: 0;
+      overflow-wrap: anywhere;
+    }
+    ul {
+      margin: 0;
+      padding-left: 18px;
+      color: #dfe3ee;
+      font-size: 13px;
+      line-height: 1.55;
+    }
+    .error {
+      color: #ffb0a8;
+      white-space: pre-wrap;
+    }
+    @media (max-width: 1050px) {
+      .layout,
+      .comparison {
+        grid-template-columns: 1fr;
+      }
+      .image-stage {
+        min-height: 420px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <h1 id="title">Character Model Review</h1>
+      <nav class="tabs" aria-label="Character">
+        <a id="tab-player" href="?character=player">Player</a>
+        <a id="tab-lyra" href="?character=lyra">Lyra</a>
+      </nav>
+    </header>
+
+    <div id="app" class="layout"></div>
+  </main>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const character = params.get('character') === 'player' ? 'player' : 'lyra';
+    document.getElementById(`tab-${character}`).setAttribute('aria-current', 'page');
+
+    function list(items) {
+      return `<ul>${items.map((item) => `<li>${String(item)}</li>`).join('')}</ul>`;
+    }
+
+    function keyValues(rows) {
+      return `<dl class="kv">${rows.map(([key, value]) => `<dt>${key}</dt><dd>${value}</dd>`).join('')}</dl>`;
+    }
+
+    fetch(`/assets/character-reviews/${character}.json`, { cache: 'no-cache' })
+      .then((response) => {
+        if (!response.ok) throw new Error(`Missing review JSON for ${character}`);
+        return response.json();
+      })
+      .then((data) => {
+        document.getElementById('title').textContent = `${data.displayName} Model Review`;
+        document.getElementById('app').innerHTML = `
+          <section class="comparison">
+            <article class="panel">
+              <h2>Portrait Target</h2>
+              <div class="image-stage"><img src="${data.portraitUrl}" alt="${data.displayName} portrait target"></div>
+            </article>
+            <article class="panel">
+              <h2>Current 3D Preview</h2>
+              <div class="image-stage"><img src="${data.currentPreviewUrl}" alt="${data.displayName} current model preview"></div>
+            </article>
+          </section>
+          <aside class="details">
+            <section class="section">
+              <h2>Source</h2>
+              ${keyValues([
+                ['Source .blend', data.sourceModelPath],
+                ['Runtime file', data.targetRuntimeFile],
+                ['Runtime URL', data.currentRuntimeModelUrl],
+                ['Style', data.targetIdentity.style],
+                ['Silhouette', data.targetIdentity.silhouette]
+              ])}
+            </section>
+            <section class="section">
+              <h2>Identity Priorities</h2>
+              ${list([
+                ...data.targetIdentity.facePriorities,
+                ...data.targetIdentity.hairPriorities,
+                ...data.targetIdentity.outfitPriorities
+              ])}
+            </section>
+            <section class="section">
+              <h2>Required Runtime Features</h2>
+              ${list([
+                `Animations: ${data.requirements.requiredAnimationClips.join(', ')}`,
+                `Expressions: ${data.requirements.requiredExpressions.join(', ')}`,
+                `Secondary motion: ${data.requirements.requiredSecondaryMotion.join(', ')}`,
+                `Triangle budget hero: ${data.requirements.triangleBudget.hero.join(' - ')}`,
+                `Texture budget: ${data.requirements.textureBudgetKb} KB`
+              ])}
+            </section>
+            <section class="section">
+              <h2>Review Checklist</h2>
+              ${list(data.reviewChecklist)}
+            </section>
+          </aside>
+        `;
+      })
+      .catch((error) => {
+        document.getElementById('app').innerHTML = `<section class="section error">${error.stack || error.message}</section>`;
+      });
+  </script>
+</body>
+</html>

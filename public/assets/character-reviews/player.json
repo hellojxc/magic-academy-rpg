@@ -1,0 +1,95 @@
+{
+  "version": "character-review-v1",
+  "characterId": "player",
+  "displayName": "Academy Protagonist",
+  "portraitUrl": "/assets/portraits/player-3d.png",
+  "currentRuntimeModelUrl": "/assets/models/player.glb",
+  "currentPreviewUrl": "/assets/models/player.blender-template.png",
+  "sourceModelPath": "assets/characters/player/source/player.blend",
+  "targetRuntimeFile": "public/assets/models/player.glb",
+  "targetIdentity": {
+    "style": "mainstream Japanese RPG young male protagonist",
+    "silhouette": "slim academy mage hero with short layered dark hair",
+    "heightMeters": 1.68,
+    "headToBodyRatio": 0.18,
+    "facePriorities": [
+      "large but less rounded blue anime eyes",
+      "soft confident brows",
+      "minimal stylized nose",
+      "small neutral heroic mouth"
+    ],
+    "hairPriorities": [
+      "short layered academy cut",
+      "asymmetric side-swept bangs",
+      "separate hair chunks for silhouette control"
+    ],
+    "outfitPriorities": [
+      "navy academy jacket",
+      "cream shirt",
+      "gold trim",
+      "short mage cape",
+      "dark slim trousers",
+      "practice wand"
+    ]
+  },
+  "requirements": {
+    "sourceFile": "assets/characters/player/source/player.blend",
+    "targetRuntimeFile": "public/assets/models/player.glb",
+    "preferredFormat": "glb",
+    "acceptableFormat": "vrm",
+    "triangleBudget": {
+      "hero": [
+        24000,
+        42000
+      ],
+      "mid": [
+        12000,
+        18000
+      ],
+      "low": [
+        4000,
+        7000
+      ]
+    },
+    "textureBudgetKb": 4096,
+    "requiredAnimationClips": [
+      "idle",
+      "walk",
+      "talk"
+    ],
+    "requiredExpressions": [
+      "neutral",
+      "blink",
+      "smile",
+      "focused",
+      "surprised"
+    ],
+    "requiredSecondaryMotion": [
+      "cape-sway",
+      "hair-tip-sway"
+    ]
+  },
+  "aiCandidatePlan": {
+    "primaryTool": "hunyuan3d",
+    "secondaryTool": "trellis",
+    "candidateFolder": "assets/characters/player/candidates",
+    "minimumCandidates": 3,
+    "acceptanceGate": [
+      "young male protagonist silhouette reads clearly",
+      "face remains anime-stylized",
+      "short hair can be separated into chunks",
+      "uniform can be refined in Blender",
+      "mesh supports retopology and rigging"
+    ]
+  },
+  "reviewChecklist": [
+    "portrait likeness: head silhouette, eyes, face shape, expression",
+    "hair structure: separate editable bangs, side locks, back hair, tips",
+    "body proportion: target height, head ratio, shoulder and hip silhouette",
+    "outfit accuracy: blouse, ribbon, skirt or trousers, cape, shoes, accessories",
+    "animation readiness: humanoid skeleton, skin weights, idle/walk/talk clips",
+    "facial readiness: blink, smile, shy, surprised, thinking morphs",
+    "web budget: triangles, materials, texture memory, animation count",
+    "runtime proof: model loads through CharacterManifest without fallback"
+  ]
+}
