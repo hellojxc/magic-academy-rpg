@@ -3,6 +3,7 @@ import { addFlatPlane, addPointLight, makeGrassTexture } from './WorldHelpers';
 import { MatLib, getStandardMaterial, Geo } from './RenderResources';
 import { addFoliageField, addGroundDecals, addNaturalTree, createLakeWaterMaterial, updateLakeWaterMaterial } from './EnvironmentDetailKit';
 import { LAKE_BANK_DECALS, LAKE_EDGE_FOLIAGE_FIELDS } from './NatureSliceConfig';
+import { addWorldPrefabRegion } from './WorldPrefabLayer';
 
 /**
  * 湖泊 — 西南方向 (x:[-26,-4], z:[10,28])
@@ -106,6 +107,7 @@ export class Lake {
     // 草地延伸到湖边 — 复用草坪纹理，避免色差
     const grassMat = new THREE.MeshStandardMaterial({ color: 0x4a8b3a, roughness: 0.85, map: makeGrassTexture() });
     addFlatPlane(this.scene, new THREE.Vector3(-15, -0.03, 12), new THREE.Vector2(22, 4), grassMat);
+    addWorldPrefabRegion(this.scene, 'lake');
   }
 
   update(elapsedTime: number): void {

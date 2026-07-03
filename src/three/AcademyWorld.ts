@@ -7,6 +7,7 @@ import { DiningHall } from './DiningHall';
 import { Lawn } from './Lawn';
 import { Lake } from './Lake';
 import { LibraryEnvironment } from './LibraryEnvironment';
+import { addWorldPrefabRegion } from './WorldPrefabLayer';
 import {
   Geo, UNIT_BOX, getStandardMaterial,
   makeSharedMarbleTexture, makeSharedPlasterTexture, makeSharedWoodTexture, makeSharedCarpetTexture,
@@ -372,6 +373,7 @@ export class AcademyWorld {
     this.addLibrary();
     this.addStudyArea();
     this.addRugsAndFloorDetails();
+    addWorldPrefabRegion(this.scene, 'atrium');
 
     this.obstacles.push(
       { minX: -8.9, maxX: 8.9, minZ: -6.45, maxZ: -5.95 },

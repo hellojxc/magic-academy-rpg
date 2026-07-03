@@ -5,6 +5,7 @@ import {
   makeMarbleTexture, makePlasterTexture,
 } from './WorldHelpers';
 import { MatLib, getStandardMaterial, Geo } from './RenderResources';
+import { addWorldPrefabRegion } from './WorldPrefabLayer';
 
 /**
  * 大厅 — 中庭北面 (x:[-13,13], z:[-22,-7])
@@ -129,6 +130,7 @@ export class GrandHall {
 
     // 北面大型彩色玻璃窗
     this.addStainedGlass(0, 3.2, -22.05, 5, 3.5);
+    addWorldPrefabRegion(this.scene, 'grand_hall');
 
     // 障碍物 — 墙壁和柱子
     obstacles.push(

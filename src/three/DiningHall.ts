@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import type { Obstacle } from './WorldTypes';
 import { addBox, addPointLight, makeWoodTexture, makePlasterTexture } from './WorldHelpers';
 import { MatLib, getStandardMaterial, Geo } from './RenderResources';
+import { addWorldPrefabRegion } from './WorldPrefabLayer';
 
 /**
  * 食堂 — 中庭东面 (x:[10,24], z:[-6,8])
@@ -77,6 +78,7 @@ export class DiningHall {
     for (const z of [-4, -1, 2, 5]) {
       this.addWindow(23.7, 2.5, z, 'side');
     }
+    addWorldPrefabRegion(this.scene, 'dining_hall');
 
     // 障碍物
     obstacles.push(

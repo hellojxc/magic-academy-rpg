@@ -4,6 +4,7 @@ import { addFlatPlane, addPointLight, makeGrassTexture } from './WorldHelpers';
 import { MatLib, getStandardMaterial, Geo } from './RenderResources';
 import { addFoliageField, addGroundDecals, addNaturalTree } from './EnvironmentDetailKit';
 import { LAWN_FOLIAGE_FIELDS, LAWN_GROUND_DECALS, LAWN_TREE_SPECS } from './NatureSliceConfig';
+import { addWorldPrefabRegion } from './WorldPrefabLayer';
 
 /**
  * 草坪 — 中庭南面 (x:[-16,16], z:[7,22])
@@ -81,6 +82,7 @@ export class Lawn {
     for (const [x, z] of [[-12, 7.5], [12, 7.5], [-12, 21.5], [12, 21.5]] as Array<[number, number]>) {
       this.addLampPost(x, z, goldMat);
     }
+    addWorldPrefabRegion(this.scene, 'lawn');
 
     // 障碍 — 树干和花坛边
     for (const tree of LAWN_TREE_SPECS) {
