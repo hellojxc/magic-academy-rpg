@@ -36,8 +36,10 @@ export interface FoliageFieldSpec {
 
 const Y_AXIS = new THREE.Vector3(0, 1, 0);
 const leafMaterials = new Map<number, THREE.MeshStandardMaterial>();
+const grassMaterials = new Map<number, THREE.MeshStandardMaterial>();
 const groundDecalMaterials = new Map<string, THREE.MeshBasicMaterial>();
 let leafTexture: THREE.CanvasTexture | null = null;
+let grassBladeTexture: THREE.CanvasTexture | null = null;
 
 export function addNaturalTree(scene: THREE.Scene, spec: TreeSpec): THREE.Group {
   const rand = seededRandom(spec.seed);
@@ -90,36 +92,65 @@ export function addFoliageField(
 ): void {
   const rand = seededRandom(spec.seed);
   const dummy = new THREE.Object3D();
+  const bladeGeo = Geo.plane(0.16, 1);
 
   for (let matIndex = 0; matIndex < spec.colors.length; matIndex += 1) {
     const count = Math.floor(spec.count / spec.colors.length);
-    const mesh = new THREE.InstancedMesh(
-      Geo.cone(0.025, 1, 4),
-      getStandardMaterial({ color: spec.colors[matIndex], roughness: 0.9, metalness: 0 }),
-      count
-    );
+    const placements: Array<{ x: number; z: number; height: number; width: number; rotation: number; leanX: number; leanZ: number }> = [];
 
     for (let i = 0; i < count; i += 1) {
       let x = spec.x;
       let z = spec.z;
-      for (let attempts = 0; attempts < 12; attempts += 1) {
+      let accepted = false;
+      for (let attempts = 0; attempts < 24; attempts += 1) {
         x = spec.x + (rand() - 0.5) * spec.width;
         z = spec.z + (rand() - 0.5) * spec.depth;
-        if (!avoid?.(x, z)) break;
+        if (!avoid?.(x, z)) {
+          accepted = true;
+          break;
+        }
       }
+      if (!accepted) continue;
 
       const height = lerp(spec.heightMin, spec.heightMax, rand());
-      dummy.position.set(x, height / 2 - 0.005, z);
-      dummy.rotation.set((rand() - 0.5) * 0.34, rand() * Math.PI * 2, (rand() - 0.5) * 0.34);
-      dummy.scale.set(0.7 + rand() * 1.2, height, 0.7 + rand() * 0.8);
-      dummy.updateMatrix();
-      mesh.setMatrixAt(i, dummy.matrix);
+      placements.push({
+        x,
+        z,
+        height,
+        width: lerp(0.55, 1.2, rand()),
+        rotation: rand() * Math.PI * 2,
+        leanX: (rand() - 0.5) * 0.32,
+        leanZ: (rand() - 0.5) * 0.32,
+      });
     }
 
-    mesh.instanceMatrix.needsUpdate = true;
-    mesh.castShadow = true;
-    mesh.receiveShadow = true;
-    scene.add(mesh);
+    if (placements.length === 0) continue;
+
+    const material = getGrassBladeMaterial(spec.colors[matIndex]);
+    const primary = new THREE.InstancedMesh(bladeGeo, material, placements.length);
+    const cross = new THREE.InstancedMesh(bladeGeo, material, placements.length);
+
+    for (let i = 0; i < placements.length; i += 1) {
+      const placement = placements[i];
+      dummy.position.set(placement.x, placement.height * 0.48, placement.z);
+      dummy.rotation.set(placement.leanX, placement.rotation, placement.leanZ);
+      dummy.scale.set(placement.width, placement.height, 1);
+      dummy.updateMatrix();
+      primary.setMatrixAt(i, dummy.matrix);
+
+      dummy.rotation.set(placement.leanX * 0.6, placement.rotation + Math.PI / 2, placement.leanZ * 0.6);
+      dummy.scale.set(placement.width * 0.72, placement.height * 0.92, 1);
+      dummy.updateMatrix();
+      cross.setMatrixAt(i, dummy.matrix);
+    }
+
+    primary.instanceMatrix.needsUpdate = true;
+    cross.instanceMatrix.needsUpdate = true;
+    primary.castShadow = true;
+    primary.receiveShadow = true;
+    cross.castShadow = true;
+    cross.receiveShadow = true;
+    scene.add(primary, cross);
   }
 }
 
@@ -138,7 +169,9 @@ export function createLakeWaterMaterial(deep = 0x1f587f, shallow = 0x62b4c7, foa
         vUv = uv;
         vPos = position;
         vec3 p = position;
-        p.z += sin(position.x * 1.7 + position.y * 2.3) * 0.015;
+        float waveA = sin(position.x * 1.25 + position.y * 1.9 + uTime * 0.82) * 0.018;
+        float waveB = sin(position.x * 3.2 - position.y * 2.4 - uTime * 0.55) * 0.009;
+        p.z += waveA + waveB;
         gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);
       }
     `,
@@ -151,14 +184,29 @@ export function createLakeWaterMaterial(deep = 0x1f587f, shallow = 0x62b4c7, foa
       varying vec3 vPos;
 
       void main() {
-        float waveA = sin(vPos.x * 1.9 + uTime * 0.95);
-        float waveB = sin(vPos.y * 2.8 - uTime * 0.7);
-        float ripple = waveA * 0.5 + waveB * 0.5;
-        float shimmer = smoothstep(0.72, 0.96, sin((vUv.x + vUv.y) * 44.0 + uTime * 2.2));
-        float depth = smoothstep(0.12, 0.86, length(vPos.xy) * 0.055 + ripple * 0.08);
+        vec2 lakeUv = vec2(vPos.x / 12.0, vPos.y / 8.6);
+        float radial = clamp(length(lakeUv), 0.0, 1.35);
+        float waveA = sin(vPos.x * 1.65 + vPos.y * 0.72 + uTime * 0.92);
+        float waveB = sin(vPos.x * -0.88 + vPos.y * 2.35 - uTime * 0.66);
+        float waveC = sin((vPos.x + vPos.y) * 5.4 + uTime * 1.55);
+        float ripple = waveA * 0.42 + waveB * 0.34 + waveC * 0.12;
+
+        float depth = smoothstep(0.08, 0.92, radial + ripple * 0.035);
         vec3 color = mix(uShallow, uDeep, depth);
-        color += uFoam * shimmer * 0.16;
-        gl_FragColor = vec4(color, 0.78);
+
+        float shore = smoothstep(0.72, 1.02, radial);
+        float foamNoise = sin(vPos.x * 8.5 + uTime * 1.7) * sin(vPos.y * 7.2 - uTime * 1.2);
+        float foamMask = shore * smoothstep(0.2, 0.86, foamNoise * 0.5 + 0.5);
+        color = mix(color, uFoam, foamMask * 0.28);
+
+        float highlightLine = sin((vUv.x * 0.9 + vUv.y * 1.8) * 60.0 + uTime * 2.4);
+        float sparkle = pow(smoothstep(0.68, 0.98, highlightLine), 8.0) * (1.0 - radial * 0.42);
+        color += uFoam * sparkle * 0.34;
+
+        vec3 shallowTint = vec3(0.72, 0.95, 0.88);
+        color = mix(color, color * shallowTint, shore * 0.18);
+        float alpha = mix(0.66, 0.84, depth) + foamMask * 0.06;
+        gl_FragColor = vec4(color, alpha);
       }
     `,
     transparent: true,
@@ -293,6 +341,54 @@ function getLeafTexture(): THREE.CanvasTexture {
   leafTexture = new THREE.CanvasTexture(canvas);
   leafTexture.colorSpace = THREE.SRGBColorSpace;
   return leafTexture;
+}
+
+function getGrassBladeMaterial(color: number): THREE.MeshStandardMaterial {
+  if (grassMaterials.has(color)) return grassMaterials.get(color)!;
+  const mat = new THREE.MeshStandardMaterial({
+    color,
+    map: getGrassBladeTexture(),
+    roughness: 0.88,
+    metalness: 0,
+    transparent: true,
+    alphaTest: 0.18,
+    side: THREE.DoubleSide,
+  });
+  grassMaterials.set(color, mat);
+  return mat;
+}
+
+function getGrassBladeTexture(): THREE.CanvasTexture {
+  if (grassBladeTexture) return grassBladeTexture;
+  const canvas = document.createElement('canvas');
+  canvas.width = 48;
+  canvas.height = 128;
+  const ctx = canvas.getContext('2d')!;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+  grad.addColorStop(0, 'rgba(255,255,255,0.08)');
+  grad.addColorStop(0.28, 'rgba(255,255,255,0.82)');
+  grad.addColorStop(1, 'rgba(255,255,255,1)');
+  ctx.fillStyle = grad;
+
+  ctx.beginPath();
+  ctx.moveTo(24, 4);
+  ctx.bezierCurveTo(38, 34, 34, 92, 27, 126);
+  ctx.lineTo(18, 126);
+  ctx.bezierCurveTo(13, 86, 12, 38, 24, 4);
+  ctx.fill();
+
+  ctx.strokeStyle = 'rgba(255,255,255,0.38)';
+  ctx.lineWidth = 1.2;
+  ctx.beginPath();
+  ctx.moveTo(24, 16);
+  ctx.bezierCurveTo(27, 46, 25, 86, 23, 122);
+  ctx.stroke();
+
+  grassBladeTexture = new THREE.CanvasTexture(canvas);
+  grassBladeTexture.colorSpace = THREE.SRGBColorSpace;
+  return grassBladeTexture;
 }
 
 function getGroundDecalMaterial(color: number, opacity: number): THREE.MeshBasicMaterial {

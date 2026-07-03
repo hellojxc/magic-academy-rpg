@@ -12,6 +12,7 @@ import { addWorldPrefabRegion } from './WorldPrefabLayer';
 import {
   Geo, UNIT_BOX, getStandardMaterial,
   makeSharedMarbleTexture, makeSharedPlasterTexture, makeSharedWoodTexture, makeSharedCarpetTexture,
+  makeSharedSurfaceDetailTexture,
 } from './RenderResources';
 
 interface AnimatedObject {
@@ -63,6 +64,9 @@ export class AcademyWorld {
   private readonly plasterTex = makeSharedPlasterTexture('#c8bdc9', '#a99dae', '#d7ccd8');
   private readonly woodTex = makeSharedWoodTexture();
   private readonly carpetTex = makeSharedCarpetTexture();
+  private readonly marbleDetailTex = makeSharedSurfaceDetailTexture('atrium-marble', 4.4, 3.1);
+  private readonly plasterDetailTex = makeSharedSurfaceDetailTexture('atrium-plaster', 2.4, 1.2);
+  private readonly woodDetailTex = makeSharedSurfaceDetailTexture('atrium-wood', 1.4, 2.4);
 
   build(): AcademyWorldObjects {
     // 天空渐变 — 暖蓝黄昏色调
@@ -297,30 +301,30 @@ export class AcademyWorld {
 
   private addLights(): void {
     // 半球光 — 天空暖色 / 地面冷色，提供基础环境照明
-    const hemi = new THREE.HemisphereLight(0xffe8c8, 0x605068, 1.2);
+    const hemi = new THREE.HemisphereLight(0xffe8c8, 0x4f526a, 0.82);
     hemi.position.set(0, 20, 0);
     this.scene.add(hemi);
 
     // 太阳 — 黄金时段斜射光
-    this.sun = new THREE.DirectionalLight(0xffd49a, 3.0);
+    this.sun = new THREE.DirectionalLight(0xffd49a, 3.25);
     this.sun.position.copy(this.sunOffset);
     this.sun.castShadow = true;
-    this.sun.shadow.mapSize.set(2048, 2048);
+    this.sun.shadow.mapSize.set(4096, 4096);
     this.sun.shadow.camera.near = 0.5;
-    this.sun.shadow.camera.far = 45;
-    this.sun.shadow.camera.left = -16;
-    this.sun.shadow.camera.right = 16;
-    this.sun.shadow.camera.top = 16;
-    this.sun.shadow.camera.bottom = -16;
-    this.sun.shadow.bias = -0.0003;
-    this.sun.shadow.normalBias = 0.04;
-    this.sun.shadow.radius = 3;
+    this.sun.shadow.camera.far = 55;
+    this.sun.shadow.camera.left = -22;
+    this.sun.shadow.camera.right = 22;
+    this.sun.shadow.camera.top = 22;
+    this.sun.shadow.camera.bottom = -22;
+    this.sun.shadow.bias = -0.00018;
+    this.sun.shadow.normalBias = 0.035;
+    this.sun.shadow.radius = 4;
     this.scene.add(this.sun);
     this.scene.add(this.sunTarget);
     this.sun.target = this.sunTarget;
 
     // 补光 — 冷蓝色反向填充
-    const fill = new THREE.DirectionalLight(0x8eb4d8, 0.6);
+    const fill = new THREE.DirectionalLight(0x8eb4d8, 0.34);
     fill.position.set(6, 4, -5);
     this.scene.add(fill);
 
@@ -394,9 +398,12 @@ export class AcademyWorld {
       new THREE.BoxGeometry(18, 0.16, 13.2),
       new THREE.MeshStandardMaterial({
         color: 0xc9c0ce,
-        roughness: 0.3,
+        roughness: 0.42,
         metalness: 0.05,
         map: this.marbleTex,
+        bumpMap: this.marbleDetailTex,
+        bumpScale: 0.026,
+        roughnessMap: this.marbleDetailTex,
       })
     );
     floor.position.set(0, -0.08, 0);
@@ -432,6 +439,9 @@ export class AcademyWorld {
       roughness: 0.58,
       metalness: 0.03,
       map: this.plasterTex,
+      bumpMap: this.plasterDetailTex,
+      bumpScale: 0.035,
+      roughnessMap: this.plasterDetailTex,
     });
     const lowerMat = new THREE.MeshStandardMaterial({ color: 0x7b6680, roughness: 0.5, metalness: 0.08 });
     const trimMat = new THREE.MeshStandardMaterial({ color: 0xbf985d, roughness: 0.25, metalness: 0.45 });
@@ -610,7 +620,10 @@ export class AcademyWorld {
       color: 0x5b3324,
       roughness: 0.42,
       metalness: 0.1,
-        map: this.woodTex,
+      map: this.woodTex,
+      bumpMap: this.woodDetailTex,
+      bumpScale: 0.018,
+      roughnessMap: this.woodDetailTex,
     });
     const pageMat = new THREE.MeshStandardMaterial({ color: 0xf0dfbd, roughness: 0.65, metalness: 0.02 });
     const purpleMat = new THREE.MeshStandardMaterial({ color: 0x623660, roughness: 0.66, metalness: 0.02 });
@@ -691,7 +704,10 @@ export class AcademyWorld {
       color: 0x5a3629,
       roughness: 0.45,
       metalness: 0.08,
-        map: this.woodTex,
+      map: this.woodTex,
+      bumpMap: this.woodDetailTex,
+      bumpScale: 0.018,
+      roughnessMap: this.woodDetailTex,
     });
     const darkMat = new THREE.MeshStandardMaterial({ color: 0x2b1c1c, roughness: 0.58, metalness: 0.05 });
     const goldMat = new THREE.MeshStandardMaterial({ color: 0xd0ac68, roughness: 0.25, metalness: 0.5 });

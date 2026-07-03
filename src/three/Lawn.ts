@@ -1,8 +1,8 @@
 import * as THREE from 'three';
 import type { Obstacle } from './WorldTypes';
 import { addFlatPlane, addPointLight, makeGrassTexture } from './WorldHelpers';
-import { MatLib, getStandardMaterial, Geo } from './RenderResources';
-import { addFoliageField, addGroundDecals, addNaturalTree } from './EnvironmentDetailKit';
+import { MatLib, getStandardMaterial, Geo, makeSharedSurfaceDetailTexture } from './RenderResources';
+import { addFoliageField, addGroundDecals, addNaturalTree, type FoliageFieldSpec } from './EnvironmentDetailKit';
 import { LAWN_FOLIAGE_FIELDS, LAWN_GROUND_DECALS, LAWN_TREE_SPECS } from './NatureSliceConfig';
 import { addWorldPrefabRegion } from './WorldPrefabLayer';
 
@@ -19,7 +19,16 @@ export class Lawn {
     const obstacles: Obstacle[] = [];
 
     const grassTex = makeGrassTexture();
-    const grassMat = new THREE.MeshStandardMaterial({ color: 0x4a8b3a, roughness: 0.85, metalness: 0.0, map: grassTex });
+    const grassDetail = makeSharedSurfaceDetailTexture('lawn-grass', 8, 8);
+    const grassMat = new THREE.MeshStandardMaterial({
+      color: 0x4a8b3a,
+      roughness: 0.88,
+      metalness: 0.0,
+      map: grassTex,
+      bumpMap: grassDetail,
+      bumpScale: 0.018,
+      roughnessMap: grassDetail,
+    });
     const stoneMat = new THREE.MeshStandardMaterial({ color: 0x8a8278, roughness: 0.6, metalness: 0.05 });
     const goldMat = MatLib.gold;
 
@@ -173,54 +182,25 @@ export class Lawn {
       this.scene.add(patch);
     }
 
-    const edgeMat = new THREE.MeshStandardMaterial({ color: 0x2f6f2f, roughness: 0.9, metalness: 0.0 });
-    for (let i = 0; i < 46; i += 1) {
-      const alongMain = i % 2 === 0;
-      const x = alongMain ? (Math.random() > 0.5 ? -0.78 : 0.78) + (Math.random() - 0.5) * 0.24 : -15 + Math.random() * 30;
-      const z = alongMain ? 7 + Math.random() * 15 : 18 + (Math.random() > 0.5 ? -0.74 : 0.74) + (Math.random() - 0.5) * 0.22;
-      const tuft = new THREE.Mesh(new THREE.ConeGeometry(0.07, 0.28 + Math.random() * 0.18, 5), edgeMat);
-      tuft.position.set(x, 0.13, z);
-      tuft.rotation.y = Math.random() * Math.PI;
-      tuft.castShadow = true;
-      tuft.receiveShadow = true;
-      this.scene.add(tuft);
+    const edgeFields: FoliageFieldSpec[] = [
+      { x: -0.78, z: 14.5, width: 0.42, depth: 14.2, count: 150, seed: 7101, heightMin: 0.08, heightMax: 0.24, colors: [0x2f6f2f, 0x4f8f3a, 0x6fa54e] },
+      { x: 0.78, z: 14.5, width: 0.42, depth: 14.2, count: 150, seed: 7102, heightMin: 0.08, heightMax: 0.24, colors: [0x326f2d, 0x57933e, 0x7cad54] },
+      { x: -8.7, z: 17.24, width: 13.6, depth: 0.42, count: 150, seed: 7103, heightMin: 0.08, heightMax: 0.22, colors: [0x2e672d, 0x5b9342, 0x789f4e] },
+      { x: 8.7, z: 18.76, width: 13.6, depth: 0.42, count: 150, seed: 7104, heightMin: 0.08, heightMax: 0.22, colors: [0x326a2d, 0x629a45, 0x83aa55] },
+    ];
+    for (const field of edgeFields) {
+      addFoliageField(this.scene, field, (x, z) => this.isNearLawnFeature(x, z, 0.08));
     }
   }
 
   private addGrassBlades(): void {
-    const bladeGeometry = new THREE.ConeGeometry(0.026, 1, 4);
-    const bladeMaterials = [
-      getStandardMaterial({ color: 0x3e8a35, roughness: 0.88, metalness: 0.0 }),
-      getStandardMaterial({ color: 0x6fae54, roughness: 0.86, metalness: 0.0 }),
-      getStandardMaterial({ color: 0x2f6c2c, roughness: 0.9, metalness: 0.0 }),
+    const fineGrassFields: FoliageFieldSpec[] = [
+      { x: 0, z: 14.6, width: 30.8, depth: 14.3, count: 860, seed: 7201, heightMin: 0.06, heightMax: 0.18, colors: [0x3e8a35, 0x6fae54, 0x2f6c2c] },
+      { x: -10.6, z: 15.7, width: 6.4, depth: 8.2, count: 260, seed: 7202, heightMin: 0.1, heightMax: 0.28, colors: [0x2f6d2c, 0x4f8d3f, 0x76a957] },
+      { x: 10.6, z: 15.9, width: 6.4, depth: 8.0, count: 260, seed: 7203, heightMin: 0.1, heightMax: 0.28, colors: [0x356f2b, 0x5f9848, 0x86b65c] },
     ];
-    const dummy = new THREE.Object3D();
-
-    for (let matIndex = 0; matIndex < bladeMaterials.length; matIndex += 1) {
-      const count = 190;
-      const mesh = new THREE.InstancedMesh(bladeGeometry, bladeMaterials[matIndex], count);
-
-      for (let i = 0; i < count; i += 1) {
-        let x = 0;
-        let z = 0;
-        for (let attempts = 0; attempts < 8; attempts += 1) {
-          x = -15.6 + Math.random() * 31.2;
-          z = 7.2 + Math.random() * 14.6;
-          if (!this.isNearLawnFeature(x, z, 0.45)) break;
-        }
-
-        const height = 0.16 + Math.random() * 0.36;
-        dummy.position.set(x, height / 2 - 0.01, z);
-        dummy.rotation.set((Math.random() - 0.5) * 0.26, Math.random() * Math.PI * 2, (Math.random() - 0.5) * 0.26);
-        dummy.scale.set(0.75 + Math.random() * 0.7, height, 0.75 + Math.random() * 0.5);
-        dummy.updateMatrix();
-        mesh.setMatrixAt(i, dummy.matrix);
-      }
-
-      mesh.instanceMatrix.needsUpdate = true;
-      mesh.castShadow = true;
-      mesh.receiveShadow = true;
-      this.scene.add(mesh);
+    for (const field of fineGrassFields) {
+      addFoliageField(this.scene, field, (x, z) => this.isNearLawnFeature(x, z, 0.5));
     }
   }
 

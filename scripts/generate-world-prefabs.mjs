@@ -306,14 +306,30 @@ function makeTree(kind) {
 
 function makeGrassClump() {
   const g = new THREE.Group();
-  for (let i = 0; i < 18; i += 1) {
-    const blade = new THREE.Mesh(new THREE.ConeGeometry(0.025, 0.35 + Math.random() * 0.25, 4), materials.waterPlant);
+  const bladeGeo = makeGrassBladeGeometry();
+  const bladeMats = [materials.waterPlant, materials.leafWarm, materials.leaf];
+  for (let i = 0; i < 28; i += 1) {
+    const blade = new THREE.Mesh(bladeGeo, bladeMats[i % bladeMats.length]);
+    const height = 0.32 + Math.random() * 0.38;
     blade.name = 'grass_blade';
-    blade.position.set((Math.random() - 0.5) * 0.45, 0.16, (Math.random() - 0.5) * 0.45);
-    blade.rotation.set((Math.random() - 0.5) * 0.35, Math.random() * Math.PI * 2, (Math.random() - 0.5) * 0.35);
+    blade.position.set((Math.random() - 0.5) * 0.58, 0.01, (Math.random() - 0.5) * 0.58);
+    blade.scale.set(0.72 + Math.random() * 0.7, height, 1);
+    blade.rotation.set((Math.random() - 0.5) * 0.42, Math.random() * Math.PI * 2, (Math.random() - 0.5) * 0.42);
+    blade.castShadow = true;
     g.add(blade);
   }
   return g;
+}
+
+function makeGrassBladeGeometry() {
+  const shape = new THREE.Shape();
+  shape.moveTo(-0.035, 0);
+  shape.bezierCurveTo(-0.055, 0.34, -0.035, 0.72, 0, 1.0);
+  shape.bezierCurveTo(0.04, 0.7, 0.055, 0.34, 0.035, 0);
+  shape.lineTo(-0.035, 0);
+  const geo = new THREE.ShapeGeometry(shape, 8);
+  geo.computeVertexNormals();
+  return geo;
 }
 
 function makeShrubPatch() {

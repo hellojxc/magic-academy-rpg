@@ -4,7 +4,7 @@ import {
   addBox, addPointLight,
   makeMarbleTexture, makePlasterTexture,
 } from './WorldHelpers';
-import { MatLib, getStandardMaterial, Geo } from './RenderResources';
+import { MatLib, getStandardMaterial, Geo, makeSharedSurfaceDetailTexture } from './RenderResources';
 import { addWorldPrefabRegion } from './WorldPrefabLayer';
 
 /**
@@ -21,13 +21,23 @@ export class GrandHall {
 
     const marbleTex = makeMarbleTexture({ light: '#e8dcc8', mid: '#c9b896', dark: '#f0e8d8' });
     const plasterTex = makePlasterTexture({ light: '#d4c9b8', mid: '#b8a898', dark: '#d8cdb8' });
+    const marbleDetailTex = makeSharedSurfaceDetailTexture('grand-hall-marble', 4.8, 3.2);
+    const plasterDetailTex = makeSharedSurfaceDetailTexture('grand-hall-plaster', 2.8, 1.4);
     const goldMat = MatLib.gold;
     const stoneMat = new THREE.MeshStandardMaterial({ color: 0x80706a, roughness: 0.42, metalness: 0.12 });
 
     // 地板
     const floor = new THREE.Mesh(
       new THREE.BoxGeometry(26, 0.16, 15),
-      new THREE.MeshStandardMaterial({ color: 0xd8ccb8, roughness: 0.3, metalness: 0.05, map: marbleTex })
+      new THREE.MeshStandardMaterial({
+        color: 0xd8ccb8,
+        roughness: 0.42,
+        metalness: 0.05,
+        map: marbleTex,
+        bumpMap: marbleDetailTex,
+        bumpScale: 0.024,
+        roughnessMap: marbleDetailTex,
+      })
     );
     floor.position.set(0, -0.08, -14.5);
     floor.receiveShadow = true;
@@ -63,7 +73,15 @@ export class GrandHall {
     this.scene.add(star);
 
     // 墙壁
-    const wallMat = new THREE.MeshStandardMaterial({ color: 0xc4b8a8, roughness: 0.58, metalness: 0.03, map: plasterTex });
+    const wallMat = new THREE.MeshStandardMaterial({
+      color: 0xc4b8a8,
+      roughness: 0.64,
+      metalness: 0.03,
+      map: plasterTex,
+      bumpMap: plasterDetailTex,
+      bumpScale: 0.036,
+      roughnessMap: plasterDetailTex,
+    });
     const lowerMat = new THREE.MeshStandardMaterial({ color: 0x7b6a5e, roughness: 0.5, metalness: 0.08 });
 
     // 后墙 (北)

@@ -32,7 +32,7 @@ export class ThreeGameView {
     });
     this.renderer.setPixelRatio(this.lowQuality ? Math.min(this.renderPixelRatio, 1) : this.renderPixelRatio);
     this.renderer.shadowMap.enabled = true;
-    this.renderer.shadowMap.type = THREE.PCFShadowMap;
+    this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
     this.renderer.toneMappingExposure = 1.08;
@@ -50,9 +50,9 @@ export class ThreeGameView {
       this.ssaoPass = null;
     } else {
       this.ssaoPass = new SSAOPass(this.scene, this.camera, 0, 0);
-      this.ssaoPass.kernelRadius = 5;
-      this.ssaoPass.minDistance = 0.003;
-      this.ssaoPass.maxDistance = 0.04;
+      this.ssaoPass.kernelRadius = 8;
+      this.ssaoPass.minDistance = 0.0015;
+      this.ssaoPass.maxDistance = 0.075;
       this.composer.addPass(this.ssaoPass);
     }
 

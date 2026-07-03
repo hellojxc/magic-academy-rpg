@@ -88,6 +88,9 @@ export function getStandardMaterial(params: {
   transparent?: boolean;
   opacity?: number;
   map?: THREE.Texture;
+  bumpMap?: THREE.Texture;
+  bumpScale?: number;
+  roughnessMap?: THREE.Texture;
   depthWrite?: boolean;
 }): THREE.MeshStandardMaterial {
   const r = params.roughness ?? 0.5;
@@ -97,6 +100,10 @@ export function getStandardMaterial(params: {
     e: params.emissive ?? 0, ei: (params.emissiveIntensity ?? 0).toFixed(2),
     tr: params.transparent ?? false, op: (params.opacity ?? 1).toFixed(2),
     dw: params.depthWrite ?? true,
+    map: params.map?.uuid ?? '0',
+    bm: params.bumpMap?.uuid ?? '0',
+    bs: (params.bumpScale ?? 0).toFixed(4),
+    rm: params.roughnessMap?.uuid ?? '0',
   });
   if (matCache.has(key)) return matCache.get(key)!;
   const ctorParams: THREE.MeshStandardMaterialParameters = {
@@ -108,6 +115,9 @@ export function getStandardMaterial(params: {
   if (params.opacity !== undefined) ctorParams.opacity = params.opacity;
   if (params.depthWrite !== undefined) ctorParams.depthWrite = params.depthWrite;
   if (params.map) ctorParams.map = params.map;
+  if (params.bumpMap) ctorParams.bumpMap = params.bumpMap;
+  if (params.bumpScale !== undefined) ctorParams.bumpScale = params.bumpScale;
+  if (params.roughnessMap) ctorParams.roughnessMap = params.roughnessMap;
   const mat = new THREE.MeshStandardMaterial(ctorParams);
   matCache.set(key, mat);
   return mat;
@@ -165,6 +175,44 @@ function makeTextureImpl(
   return texture;
 }
 
+export function makeSharedSurfaceDetailTexture(key: string, repeatX: number, repeatY: number): THREE.CanvasTexture {
+  return makeTextureImpl(`surface-detail|${key}|${repeatX}|${repeatY}`, 512, (ctx, size) => {
+    ctx.fillStyle = '#808080';
+    ctx.fillRect(0, 0, size, size);
+
+    for (let i = 0; i < 1800; i += 1) {
+      const shade = 92 + Math.random() * 86;
+      ctx.fillStyle = `rgba(${shade},${shade},${shade},${0.16 + Math.random() * 0.28})`;
+      const w = 1 + Math.random() * 5;
+      const h = 1 + Math.random() * 5;
+      ctx.fillRect(Math.random() * size, Math.random() * size, w, h);
+    }
+
+    ctx.strokeStyle = 'rgba(44,44,44,0.34)';
+    ctx.lineWidth = 1;
+    for (let i = 0; i < 56; i += 1) {
+      const y = Math.random() * size;
+      ctx.beginPath();
+      ctx.moveTo(-24, y);
+      ctx.bezierCurveTo(size * 0.25, y + Math.random() * 42 - 21, size * 0.72, y + Math.random() * 48 - 24, size + 24, y + Math.random() * 34 - 17);
+      ctx.stroke();
+    }
+
+    ctx.strokeStyle = 'rgba(220,220,220,0.16)';
+    for (let i = 0; i < 24; i += 1) {
+      const x = Math.random() * size;
+      ctx.beginPath();
+      ctx.moveTo(x, -20);
+      ctx.lineTo(x + Math.random() * 60 - 30, size + 20);
+      ctx.stroke();
+    }
+  }, (tex) => {
+    tex.colorSpace = THREE.NoColorSpace;
+    tex.repeat.set(repeatX, repeatY);
+    tex.anisotropy = 8;
+  });
+}
+
 export function makeSharedMarbleTexture(light: string, mid: string, dark: string): THREE.CanvasTexture {
   return makeTextureImpl(`marble|${light}|${mid}|${dark}`, 512, (ctx, size) => {
     const g = ctx.createLinearGradient(0, 0, size, size);
@@ -201,10 +249,13 @@ export function makeSharedWoodTexture(): THREE.CanvasTexture {
 export function makeSharedGrassTexture(): THREE.CanvasTexture {
   return makeTextureImpl('grass', 512, (ctx, size) => {
     ctx.fillStyle = '#4a8b3a'; ctx.fillRect(0, 0, size, size);
-    const greens = ['#5a9b4a', '#3d7a30', '#6bb55a', '#4f8b3e', '#3a6b2c'];
-    for (let i = 0; i < 600; i++) { ctx.fillStyle = greens[Math.floor(Math.random() * greens.length)]; ctx.fillRect(Math.random() * size, Math.random() * size, 3 + Math.random() * 6, 1 + Math.random() * 3); }
-    ctx.strokeStyle = 'rgba(120,180,80,0.4)'; ctx.lineWidth = 1;
-    for (let i = 0; i < 200; i++) { const x = Math.random() * size; const y = Math.random() * size; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + (Math.random() - 0.5) * 4, y - 3 - Math.random() * 4); ctx.stroke(); }
+    const g = ctx.createRadialGradient(size * 0.35, size * 0.35, 20, size * 0.5, size * 0.5, size * 0.75);
+    g.addColorStop(0, 'rgba(115,166,78,0.34)'); g.addColorStop(0.55, 'rgba(64,122,48,0.18)'); g.addColorStop(1, 'rgba(35,78,36,0.28)');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, size, size);
+    const greens = ['#5d9b47', '#3f7d34', '#6dae55', '#4e8d3e', '#345f2d', '#7ca95b'];
+    for (let i = 0; i < 1200; i++) { ctx.fillStyle = greens[Math.floor(Math.random() * greens.length)]; ctx.fillRect(Math.random() * size, Math.random() * size, 1 + Math.random() * 4, 1 + Math.random() * 2); }
+    ctx.lineWidth = 0.85;
+    for (let i = 0; i < 520; i++) { const x = Math.random() * size; const y = Math.random() * size; ctx.strokeStyle = i % 3 === 0 ? 'rgba(160,205,108,0.34)' : 'rgba(39,86,37,0.26)'; ctx.beginPath(); ctx.moveTo(x, y + 3); ctx.quadraticCurveTo(x + (Math.random() - 0.5) * 3, y - 1, x + (Math.random() - 0.5) * 6, y - 6 - Math.random() * 5); ctx.stroke(); }
   }, (tex) => { tex.repeat.set(8, 8); tex.anisotropy = 8; });
 }
 

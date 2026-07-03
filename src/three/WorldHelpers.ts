@@ -173,26 +173,31 @@ export function makeGrassTexture(): THREE.CanvasTexture {
   ctx.fillStyle = '#4a8b3a';
   ctx.fillRect(0, 0, size, size);
 
-  // 随机草色斑块
-  const greens = ['#5a9b4a', '#3d7a30', '#6bb55a', '#4f8b3e', '#3a6b2c'];
-  for (let i = 0; i < 600; i++) {
+  const baseGradient = ctx.createRadialGradient(size * 0.35, size * 0.35, 20, size * 0.5, size * 0.5, size * 0.75);
+  baseGradient.addColorStop(0, 'rgba(115,166,78,0.34)');
+  baseGradient.addColorStop(0.55, 'rgba(64,122,48,0.18)');
+  baseGradient.addColorStop(1, 'rgba(35,78,36,0.28)');
+  ctx.fillStyle = baseGradient;
+  ctx.fillRect(0, 0, size, size);
+
+  const greens = ['#5d9b47', '#3f7d34', '#6dae55', '#4e8d3e', '#345f2d', '#7ca95b'];
+  for (let i = 0; i < 1200; i++) {
     ctx.fillStyle = greens[Math.floor(Math.random() * greens.length)];
     const x = Math.random() * size;
     const y = Math.random() * size;
-    const w = 3 + Math.random() * 6;
-    const h = 1 + Math.random() * 3;
+    const w = 1 + Math.random() * 4;
+    const h = 1 + Math.random() * 2;
     ctx.fillRect(x, y, w, h);
   }
 
-  // 草叶
-  ctx.strokeStyle = 'rgba(120,180,80,0.4)';
-  ctx.lineWidth = 1;
-  for (let i = 0; i < 200; i++) {
+  ctx.lineWidth = 0.85;
+  for (let i = 0; i < 520; i++) {
     const x = Math.random() * size;
     const y = Math.random() * size;
+    ctx.strokeStyle = i % 3 === 0 ? 'rgba(160,205,108,0.34)' : 'rgba(39,86,37,0.26)';
     ctx.beginPath();
-    ctx.moveTo(x, y);
-    ctx.lineTo(x + (Math.random() - 0.5) * 4, y - 3 - Math.random() * 4);
+    ctx.moveTo(x, y + 3);
+    ctx.quadraticCurveTo(x + (Math.random() - 0.5) * 3, y - 1, x + (Math.random() - 0.5) * 6, y - 6 - Math.random() * 5);
     ctx.stroke();
   }
 

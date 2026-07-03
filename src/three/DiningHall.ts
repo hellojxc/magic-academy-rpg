@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import type { Obstacle } from './WorldTypes';
 import { addBox, addPointLight, makeWoodTexture, makePlasterTexture } from './WorldHelpers';
-import { MatLib, getStandardMaterial, Geo } from './RenderResources';
+import { MatLib, getStandardMaterial, Geo, makeSharedSurfaceDetailTexture } from './RenderResources';
 import { addWorldPrefabRegion } from './WorldPrefabLayer';
 
 /**
@@ -18,9 +18,27 @@ export class DiningHall {
 
     const woodTex = makeWoodTexture();
     const plasterTex = makePlasterTexture({ light: '#d4c4b0', mid: '#b8a690', dark: '#d0c0a8' });
-    const woodMat = new THREE.MeshStandardMaterial({ color: 0x5b3324, roughness: 0.42, metalness: 0.1, map: woodTex });
+    const woodDetailTex = makeSharedSurfaceDetailTexture('dining-wood', 3, 3);
+    const plasterDetailTex = makeSharedSurfaceDetailTexture('dining-plaster', 2.4, 1.2);
+    const woodMat = new THREE.MeshStandardMaterial({
+      color: 0x5b3324,
+      roughness: 0.48,
+      metalness: 0.1,
+      map: woodTex,
+      bumpMap: woodDetailTex,
+      bumpScale: 0.02,
+      roughnessMap: woodDetailTex,
+    });
     const darkWoodMat = new THREE.MeshStandardMaterial({ color: 0x3a211a, roughness: 0.5, metalness: 0.08 });
-    const wallMat = new THREE.MeshStandardMaterial({ color: 0xc4b4a0, roughness: 0.58, metalness: 0.03, map: plasterTex });
+    const wallMat = new THREE.MeshStandardMaterial({
+      color: 0xc4b4a0,
+      roughness: 0.64,
+      metalness: 0.03,
+      map: plasterTex,
+      bumpMap: plasterDetailTex,
+      bumpScale: 0.034,
+      roughnessMap: plasterDetailTex,
+    });
     const lowerMat = new THREE.MeshStandardMaterial({ color: 0x7b6a5e, roughness: 0.5, metalness: 0.08 });
     const goldMat = MatLib.gold;
     const clothMat = new THREE.MeshStandardMaterial({ color: 0xe8dcc0, roughness: 0.72, metalness: 0.02 });
@@ -28,7 +46,15 @@ export class DiningHall {
     // 地板
     const floor = new THREE.Mesh(
       new THREE.BoxGeometry(14, 0.16, 14),
-      new THREE.MeshStandardMaterial({ color: 0x8a6b4e, roughness: 0.4, metalness: 0.06, map: woodTex.clone() })
+      new THREE.MeshStandardMaterial({
+        color: 0x8a6b4e,
+        roughness: 0.46,
+        metalness: 0.06,
+        map: woodTex.clone(),
+        bumpMap: woodDetailTex,
+        bumpScale: 0.022,
+        roughnessMap: woodDetailTex,
+      })
     );
     (floor.material as THREE.MeshStandardMaterial).map!.repeat.set(3, 3);
     floor.position.set(17, -0.08, 1);

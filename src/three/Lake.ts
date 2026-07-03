@@ -1,7 +1,7 @@
 import * as THREE from 'three';
-import { addFlatPlane, addPointLight, makeGrassTexture } from './WorldHelpers';
+import { addPointLight } from './WorldHelpers';
 import { MatLib, getStandardMaterial, Geo } from './RenderResources';
-import { addFoliageField, addGroundDecals, addNaturalTree, createLakeWaterMaterial, updateLakeWaterMaterial } from './EnvironmentDetailKit';
+import { addFoliageField, addGroundDecals, addNaturalTree, createLakeWaterMaterial, updateLakeWaterMaterial, type FoliageFieldSpec } from './EnvironmentDetailKit';
 import { LAKE_BANK_DECALS, LAKE_EDGE_FOLIAGE_FIELDS } from './NatureSliceConfig';
 import { addWorldPrefabRegion } from './WorldPrefabLayer';
 
@@ -50,8 +50,9 @@ export class Lake {
     this.addShoreDetails();
     addGroundDecals(this.scene, LAKE_BANK_DECALS);
     for (const field of LAKE_EDGE_FOLIAGE_FIELDS) {
-      addFoliageField(this.scene, field, (x, z) => this.isInsideOpenWater(x, z));
+      addFoliageField(this.scene, field, (x, z) => this.isTooCloseToLakeWater(x, z, 0.42));
     }
+    this.addLakeBankGrass();
 
     // 码头 — 从东岸伸入湖中
     this.addDock(-6, 16, barkMat());
@@ -104,9 +105,6 @@ export class Lake {
     // 月光投射
     addPointLight(this.scene, -15, 6, 19, 0x9fc4ff, 1.8, 22);
 
-    // 草地延伸到湖边 — 复用草坪纹理，避免色差
-    const grassMat = new THREE.MeshStandardMaterial({ color: 0x4a8b3a, roughness: 0.85, map: makeGrassTexture() });
-    addFlatPlane(this.scene, new THREE.Vector3(-15, -0.03, 12), new THREE.Vector2(22, 4), grassMat);
     addWorldPrefabRegion(this.scene, 'lake');
   }
 
@@ -166,9 +164,14 @@ export class Lake {
     const driftwoodMat = getStandardMaterial({ color: 0x6d4a2d, roughness: 0.82, metalness: 0.02 });
 
     for (let i = 0; i < 90; i += 1) {
-      const angle = Math.random() * Math.PI * 2;
-      const x = -15 + Math.cos(angle) * (11.1 + Math.random() * 1.7);
-      const z = 19 + Math.sin(angle) * (8.0 + Math.random() * 1.1);
+      let x = -15;
+      let z = 19;
+      for (let attempts = 0; attempts < 12; attempts += 1) {
+        const angle = Math.random() * Math.PI * 2;
+        x = -15 + Math.cos(angle) * (11.1 + Math.random() * 1.7);
+        z = 19 + Math.sin(angle) * (8.0 + Math.random() * 1.1);
+        if (!this.isInsideLakeFootprint(x, z, -0.08)) break;
+      }
       const pebble = new THREE.Mesh(
         new THREE.DodecahedronGeometry(0.05 + Math.random() * 0.08, 0),
         pebbleMats[i % pebbleMats.length]
@@ -207,6 +210,18 @@ export class Lake {
     }
   }
 
+  private addLakeBankGrass(): void {
+    const bankFields: FoliageFieldSpec[] = [
+      { x: -15.4, z: 10.8, width: 18.6, depth: 2.5, count: 360, seed: 7601, heightMin: 0.08, heightMax: 0.26, colors: [0x365f2d, 0x5f8440, 0x8a974d] },
+      { x: -5.9, z: 18.2, width: 2.2, depth: 9.4, count: 240, seed: 7602, heightMin: 0.1, heightMax: 0.32, colors: [0x3d6c2f, 0x6f8d35, 0x9d9342] },
+      { x: -23.1, z: 20.4, width: 2.4, depth: 8.4, count: 250, seed: 7603, heightMin: 0.12, heightMax: 0.36, colors: [0x415f2a, 0x728331, 0x8e7a3f] },
+      { x: -15.2, z: 27.0, width: 9.0, depth: 1.8, count: 210, seed: 7604, heightMin: 0.08, heightMax: 0.24, colors: [0x355f2d, 0x66843d, 0x9a8b4d] },
+    ];
+    for (const field of bankFields) {
+      addFoliageField(this.scene, field, (x, z) => this.isTooCloseToLakeWater(x, z, 0.52));
+    }
+  }
+
   private makeLakeOutline(radiusX: number, radiusZ: number, segments: number): THREE.Vector2[] {
     const points: THREE.Vector2[] = [];
     for (let i = 0; i < segments; i += 1) {
@@ -223,9 +238,29 @@ export class Lake {
   }
 
   private isInsideOpenWater(x: number, z: number): boolean {
-    const dx = (x + 15) / 10.8;
-    const dz = (z - 19) / 7.3;
-    return dx * dx + dz * dz < 0.9;
+    return this.isInsideLakeFootprint(x, z, -1.15);
+  }
+
+  private isTooCloseToLakeWater(x: number, z: number, margin: number): boolean {
+    return this.isInsideLakeFootprint(x, z, margin);
+  }
+
+  private isInsideLakeFootprint(x: number, z: number, margin: number): boolean {
+    const localX = x + 15;
+    const localZ = z - 19;
+    const angle = Math.atan2(localZ / 8.6, localX / 12.0);
+    const normalized = angle < 0 ? angle + Math.PI * 2 : angle;
+    const wobble =
+      1 +
+      Math.sin(normalized * 2.1 + 0.35) * 0.08 +
+      Math.cos(normalized * 3.4 - 0.7) * 0.055 +
+      Math.sin(normalized * 5.2) * 0.035;
+    const notch = normalized > Math.PI * 1.76 || normalized < Math.PI * 0.08 ? 0.82 : 1;
+    const radiusX = Math.max(0.2, 12.0 * wobble * notch + margin);
+    const radiusZ = Math.max(0.2, 8.6 * wobble + margin);
+    const dx = localX / radiusX;
+    const dz = localZ / radiusZ;
+    return dx * dx + dz * dz < 1;
   }
 
   private addDock(x: number, z: number, mat: THREE.Material): void {
@@ -285,7 +320,7 @@ export class Lake {
     for (let i = 0; i < 40; i++) {
       const x = -15 + (Math.random() - 0.5) * 16;
       const z = 19 + (Math.random() - 0.5) * 12;
-      if (Math.abs(x + 15) > 8 || Math.abs(z - 19) > 6) continue;
+      if (!this.isInsideOpenWater(x, z)) continue;
 
       const spark = new THREE.Mesh(sparkGeo, sparkMat);
       spark.position.set(x, 0.03, z);
