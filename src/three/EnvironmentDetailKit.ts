@@ -163,6 +163,7 @@ export function createLakeWaterMaterial(deep = 0x1f587f, shallow = 0x62b4c7, foa
       uFoam: { value: new THREE.Color(foam) },
     },
     vertexShader: `
+      uniform float uTime;
       varying vec2 vUv;
       varying vec3 vPos;
       void main() {
@@ -205,7 +206,7 @@ export function createLakeWaterMaterial(deep = 0x1f587f, shallow = 0x62b4c7, foa
 
         vec3 shallowTint = vec3(0.72, 0.95, 0.88);
         color = mix(color, color * shallowTint, shore * 0.18);
-        float alpha = mix(0.66, 0.84, depth) + foamMask * 0.06;
+        float alpha = mix(0.78, 0.92, depth) + foamMask * 0.06;
         gl_FragColor = vec4(color, alpha);
       }
     `,
