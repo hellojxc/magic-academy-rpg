@@ -5,6 +5,10 @@ import { GrandHall } from './GrandHall';
 import { DiningHall } from './DiningHall';
 import { Lawn } from './Lawn';
 import { Lake } from './Lake';
+import {
+  Geo, UNIT_BOX,
+  makeSharedMarbleTexture, makeSharedPlasterTexture, makeSharedWoodTexture, makeSharedCarpetTexture,
+} from './RenderResources';
 
 interface AnimatedObject {
   object: THREE.Object3D;
@@ -32,6 +36,11 @@ export class AcademyWorld {
     this.lawn = new Lawn(this.scene);
     this.lake = new Lake(this.scene);
   }
+
+  private readonly marbleTex = makeSharedMarbleTexture('#d8d0dc', '#afa0b9', '#f0e8f3');
+  private readonly plasterTex = makeSharedPlasterTexture('#c8bdc9', '#a99dae', '#d7ccd8');
+  private readonly woodTex = makeSharedWoodTexture();
+  private readonly carpetTex = makeSharedCarpetTexture();
 
   build(): AcademyWorldObjects {
     // 天空渐变 — 暖蓝黄昏色调
@@ -247,7 +256,7 @@ export class AcademyWorld {
         color: 0xc9c0ce,
         roughness: 0.3,
         metalness: 0.05,
-        map: this.makeMarbleTexture(),
+        map: this.marbleTex,
       })
     );
     floor.position.set(0, -0.08, 0);
@@ -282,7 +291,7 @@ export class AcademyWorld {
       color: 0xb8adbd,
       roughness: 0.58,
       metalness: 0.03,
-      map: this.makePlasterTexture(),
+      map: this.plasterTex,
     });
     const lowerMat = new THREE.MeshStandardMaterial({ color: 0x7b6680, roughness: 0.5, metalness: 0.08 });
     const trimMat = new THREE.MeshStandardMaterial({ color: 0xbf985d, roughness: 0.25, metalness: 0.45 });
@@ -413,7 +422,7 @@ export class AcademyWorld {
       color: 0x5b3324,
       roughness: 0.42,
       metalness: 0.1,
-      map: this.makeWoodTexture(),
+        map: this.woodTex,
     });
     const pageMat = new THREE.MeshStandardMaterial({ color: 0xf0dfbd, roughness: 0.65, metalness: 0.02 });
     const purpleMat = new THREE.MeshStandardMaterial({ color: 0x623660, roughness: 0.66, metalness: 0.02 });
@@ -450,7 +459,7 @@ export class AcademyWorld {
       color: 0x6b2f73,
       roughness: 0.78,
       metalness: 0.02,
-      map: this.makeCarpetTexture(),
+        map: this.carpetTex,
     });
     const trimMat = new THREE.MeshStandardMaterial({ color: 0xe0bc72, roughness: 0.32, metalness: 0.38 });
 
@@ -494,7 +503,7 @@ export class AcademyWorld {
       color: 0x5a3629,
       roughness: 0.45,
       metalness: 0.08,
-      map: this.makeWoodTexture(),
+        map: this.woodTex,
     });
     const darkMat = new THREE.MeshStandardMaterial({ color: 0x2b1c1c, roughness: 0.58, metalness: 0.05 });
     const goldMat = new THREE.MeshStandardMaterial({ color: 0xd0ac68, roughness: 0.25, metalness: 0.5 });
@@ -541,7 +550,7 @@ export class AcademyWorld {
 
   private addLibraryLadder(): void {
     const ladder = new THREE.Group();
-    const woodMat = new THREE.MeshStandardMaterial({ color: 0x6d432b, roughness: 0.44, metalness: 0.08, map: this.makeWoodTexture() });
+    const woodMat = new THREE.MeshStandardMaterial({ color: 0x6d432b, roughness: 0.44, metalness: 0.08, map: this.woodTex });
     for (const x of [-0.28, 0.28]) {
       const rail = this.addBoxToGroup(ladder, new THREE.Vector3(x, 0.95, 0), new THREE.Vector3(0.055, 1.85, 0.06), woodMat);
       rail.rotation.z = x < 0 ? 0.17 : 0.05;
@@ -638,8 +647,9 @@ export class AcademyWorld {
   }
 
   private addBox(position: THREE.Vector3, scale: THREE.Vector3, material: THREE.Material, castShadow: boolean, receiveShadow: boolean): THREE.Mesh {
-    const mesh = new THREE.Mesh(new THREE.BoxGeometry(scale.x, scale.y, scale.z), material);
+    const mesh = new THREE.Mesh(UNIT_BOX, material);
     mesh.position.copy(position);
+    mesh.scale.set(scale.x, scale.y, scale.z);
     mesh.castShadow = castShadow;
     mesh.receiveShadow = receiveShadow;
     this.scene.add(mesh);
@@ -647,8 +657,9 @@ export class AcademyWorld {
   }
 
   private addBoxToGroup(parent: THREE.Object3D, position: THREE.Vector3, scale: THREE.Vector3, material: THREE.Material): THREE.Mesh {
-    const mesh = new THREE.Mesh(new THREE.BoxGeometry(scale.x, scale.y, scale.z), material);
+    const mesh = new THREE.Mesh(UNIT_BOX, material);
     mesh.position.copy(position);
+    mesh.scale.set(scale.x, scale.y, scale.z);
     mesh.castShadow = true;
     mesh.receiveShadow = true;
     parent.add(mesh);
@@ -656,7 +667,7 @@ export class AcademyWorld {
   }
 
   private addFlatPlane(position: THREE.Vector3, size: THREE.Vector2, material: THREE.Material): THREE.Mesh {
-    const mesh = new THREE.Mesh(new THREE.PlaneGeometry(size.x, size.y), material);
+    const mesh = new THREE.Mesh(Geo.plane(size.x, size.y), material);
     mesh.position.copy(position);
     mesh.rotation.x = -Math.PI / 2;
     mesh.receiveShadow = true;
@@ -668,152 +679,5 @@ export class AcademyWorld {
     const light = new THREE.PointLight(color, intensity, distance, 2);
     light.position.set(x, y, z);
     this.scene.add(light);
-  }
-
-  private makeMarbleTexture(): THREE.CanvasTexture {
-    const size = 1024;
-    const canvas = document.createElement('canvas');
-    canvas.width = size;
-    canvas.height = size;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return new THREE.CanvasTexture(canvas);
-
-    const gradient = ctx.createLinearGradient(0, 0, size, size);
-    gradient.addColorStop(0, '#d8d0dc');
-    gradient.addColorStop(0.48, '#afa0b9');
-    gradient.addColorStop(1, '#f0e8f3');
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, size, size);
-
-    ctx.strokeStyle = 'rgba(255,255,255,0.32)';
-    ctx.lineWidth = 2;
-    for (let i = 0; i <= size; i += 128) {
-      ctx.beginPath();
-      ctx.moveTo(i, 0);
-      ctx.lineTo(i, size);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.moveTo(0, i);
-      ctx.lineTo(size, i);
-      ctx.stroke();
-    }
-
-    ctx.strokeStyle = 'rgba(64,48,82,0.18)';
-    for (let i = 0; i < 42; i += 1) {
-      const y = Math.random() * size;
-      ctx.beginPath();
-      ctx.moveTo(0, y);
-      ctx.bezierCurveTo(size * 0.28, y + Math.random() * 80 - 40, size * 0.62, y + Math.random() * 90 - 45, size, y + Math.random() * 80 - 40);
-      ctx.stroke();
-    }
-
-    const texture = new THREE.CanvasTexture(canvas);
-    texture.colorSpace = THREE.SRGBColorSpace;
-    texture.wrapS = THREE.RepeatWrapping;
-    texture.wrapT = THREE.RepeatWrapping;
-    texture.repeat.set(4.4, 3.1);
-    texture.anisotropy = 16;
-    return texture;
-  }
-
-  private makePlasterTexture(): THREE.CanvasTexture {
-    const size = 1024;
-    const canvas = document.createElement('canvas');
-    canvas.width = size;
-    canvas.height = size;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return new THREE.CanvasTexture(canvas);
-
-    const gradient = ctx.createLinearGradient(0, 0, size, size);
-    gradient.addColorStop(0, '#c8bdc9');
-    gradient.addColorStop(0.52, '#a99dae');
-    gradient.addColorStop(1, '#d7ccd8');
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, size, size);
-
-    ctx.fillStyle = 'rgba(255,255,255,0.12)';
-    for (let i = 0; i < 140; i += 1) {
-      ctx.fillRect(Math.random() * size, Math.random() * size, 2, 2);
-    }
-
-    ctx.strokeStyle = 'rgba(91,76,98,0.16)';
-    for (let y = 42; y < size; y += 84) {
-      ctx.beginPath();
-      ctx.moveTo(0, y);
-      ctx.lineTo(size, y + 8);
-      ctx.stroke();
-    }
-
-    const texture = new THREE.CanvasTexture(canvas);
-    texture.colorSpace = THREE.SRGBColorSpace;
-    texture.wrapS = THREE.RepeatWrapping;
-    texture.wrapT = THREE.RepeatWrapping;
-    texture.repeat.set(2.4, 1.2);
-    texture.anisotropy = 8;
-    return texture;
-  }
-
-  private makeWoodTexture(): THREE.CanvasTexture {
-    const size = 512;
-    const canvas = document.createElement('canvas');
-    canvas.width = size;
-    canvas.height = size;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return new THREE.CanvasTexture(canvas);
-
-    const gradient = ctx.createLinearGradient(0, 0, size, 0);
-    gradient.addColorStop(0, '#3a211a');
-    gradient.addColorStop(0.46, '#74462d');
-    gradient.addColorStop(1, '#4f2f24');
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, size, size);
-
-    for (let y = 8; y < size; y += 13) {
-      ctx.strokeStyle = y % 2 === 0 ? 'rgba(255,213,153,0.12)' : 'rgba(16,7,5,0.18)';
-      ctx.lineWidth = 1 + (y % 5);
-      ctx.beginPath();
-      ctx.moveTo(0, y);
-      ctx.bezierCurveTo(size * 0.25, y - 8, size * 0.62, y + 9, size, y - 2);
-      ctx.stroke();
-    }
-
-    const texture = new THREE.CanvasTexture(canvas);
-    texture.colorSpace = THREE.SRGBColorSpace;
-    texture.wrapS = THREE.RepeatWrapping;
-    texture.wrapT = THREE.RepeatWrapping;
-    texture.repeat.set(1.4, 2.4);
-    texture.anisotropy = 16;
-    return texture;
-  }
-
-  private makeCarpetTexture(): THREE.CanvasTexture {
-    const size = 512;
-    const canvas = document.createElement('canvas');
-    canvas.width = size;
-    canvas.height = size;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return new THREE.CanvasTexture(canvas);
-
-    ctx.fillStyle = '#6c2f71';
-    ctx.fillRect(0, 0, size, size);
-    ctx.strokeStyle = 'rgba(255,220,139,0.32)';
-    ctx.lineWidth = 5;
-    ctx.strokeRect(16, 16, size - 32, size - 32);
-    ctx.strokeStyle = 'rgba(255,255,255,0.08)';
-    ctx.lineWidth = 1;
-    for (let x = 12; x < size; x += 18) {
-      ctx.beginPath();
-      ctx.moveTo(x, 0);
-      ctx.lineTo(x + 42, size);
-      ctx.stroke();
-    }
-
-    const texture = new THREE.CanvasTexture(canvas);
-    texture.colorSpace = THREE.SRGBColorSpace;
-    texture.wrapS = THREE.RepeatWrapping;
-    texture.wrapT = THREE.RepeatWrapping;
-    texture.repeat.set(1.15, 0.8);
-    texture.anisotropy = 16;
-    return texture;
   }
 }

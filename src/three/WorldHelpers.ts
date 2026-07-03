@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { UNIT_BOX, Geo } from './RenderResources';
 
 /** 世界区域列表 — 供小地图和场景构建使用 */
 export const REGIONS = [
@@ -251,8 +252,9 @@ export function addBox(
   castShadow = true,
   receiveShadow = true
 ): THREE.Mesh {
-  const mesh = new THREE.Mesh(new THREE.BoxGeometry(scale.x, scale.y, scale.z), material);
+  const mesh = new THREE.Mesh(UNIT_BOX, material);
   mesh.position.copy(position);
+  mesh.scale.set(scale.x, scale.y, scale.z);
   mesh.castShadow = castShadow;
   mesh.receiveShadow = receiveShadow;
   scene.add(mesh);
@@ -266,8 +268,9 @@ export function addBoxToGroup(
   scale: THREE.Vector3,
   material: THREE.Material
 ): THREE.Mesh {
-  const mesh = new THREE.Mesh(new THREE.BoxGeometry(scale.x, scale.y, scale.z), material);
+  const mesh = new THREE.Mesh(UNIT_BOX, material);
   mesh.position.copy(position);
+  mesh.scale.set(scale.x, scale.y, scale.z);
   mesh.castShadow = true;
   mesh.receiveShadow = true;
   parent.add(mesh);
@@ -281,7 +284,7 @@ export function addFlatPlane(
   size: THREE.Vector2,
   material: THREE.Material
 ): THREE.Mesh {
-  const mesh = new THREE.Mesh(new THREE.PlaneGeometry(size.x, size.y), material);
+  const mesh = new THREE.Mesh(Geo.plane(size.x, size.y), material);
   mesh.position.copy(position);
   mesh.rotation.x = -Math.PI / 2;
   mesh.receiveShadow = true;
