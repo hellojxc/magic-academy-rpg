@@ -4,6 +4,7 @@ import type { Obstacle } from './WorldTypes';
 export class PlayerController3D {
   private readonly speed = 2.9;
   private readonly playerRadius = 0.32;
+  private moving = false;
 
   constructor(
     private readonly player: THREE.Object3D,
@@ -23,7 +24,8 @@ export class PlayerController3D {
       .addScaledVector(forward, forwardInput)
       .addScaledVector(right, rightInput);
 
-    if (direction.lengthSq() === 0) return;
+    this.moving = direction.lengthSq() > 0;
+    if (!this.moving) return;
     direction.normalize();
 
     const nextX = THREE.MathUtils.clamp(this.player.position.x + direction.x * this.speed * delta, -7.0, 7.0);
@@ -38,6 +40,14 @@ export class PlayerController3D {
 
   updateIdle(elapsedTime: number): void {
     this.player.position.y = Math.sin(elapsedTime * 3.1) * 0.018;
+  }
+
+  stop(): void {
+    this.moving = false;
+  }
+
+  isMoving(): boolean {
+    return this.moving;
   }
 
   private collides(x: number, z: number): boolean {

@@ -105,10 +105,12 @@ export class ThreeAcademyGame {
     const dialogueVisible = this.dialogueBox.isVisible();
     if (!dialogueVisible) {
       this.playerController.updateMovement(delta, this.cameraController.getYaw());
+    } else {
+      this.playerController.stop();
     }
 
     this.playerController.updateIdle(this.elapsedTime);
-    this.world.update(this.elapsedTime);
+    this.world.update(this.elapsedTime, this.playerController.isMoving());
     this.cameraController.update(delta);
     this.interactionController.update(dialogueVisible);
   }

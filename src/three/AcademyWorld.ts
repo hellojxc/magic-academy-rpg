@@ -1,7 +1,6 @@
 import * as THREE from 'three';
+import { CharacterRig3D } from './CharacterRig3D';
 import type { AcademyWorldObjects, Obstacle } from './WorldTypes';
-
-type CharacterKind = 'player' | 'lyra';
 
 interface AnimatedObject {
   object: THREE.Object3D;
@@ -14,6 +13,8 @@ interface AnimatedObject {
 export class AcademyWorld {
   private readonly obstacles: Obstacle[] = [];
   private readonly animatedObjects: AnimatedObject[] = [];
+  private playerRig!: CharacterRig3D;
+  private lyraRig!: CharacterRig3D;
   private player!: THREE.Object3D;
   private lyra!: THREE.Object3D;
 
@@ -34,13 +35,16 @@ export class AcademyWorld {
     };
   }
 
-  update(elapsedTime: number): void {
+  update(elapsedTime: number, playerMoving: boolean): void {
     for (const item of this.animatedObjects) {
       item.object.position.y = item.baseY + Math.sin(elapsedTime * item.speed + item.phase) * item.amplitude;
       item.object.rotation.y += 0.006;
     }
 
-    this.lyra.position.y = Math.sin(elapsedTime * 2.2) * 0.025;
+    this.playerRig.setMoving(playerMoving);
+    this.playerRig.update(elapsedTime);
+    this.lyraRig.setMoving(false);
+    this.lyraRig.update(elapsedTime);
   }
 
   private addLights(): void {
@@ -303,162 +307,17 @@ export class AcademyWorld {
   }
 
   private addCharacters(): void {
-    this.player = this.createCharacter('player');
+    this.playerRig = new CharacterRig3D('player');
+    this.player = this.playerRig.root;
     this.player.position.set(-5.1, 0, 2.5);
     this.player.rotation.y = Math.PI * 0.78;
     this.scene.add(this.player);
 
-    this.lyra = this.createCharacter('lyra');
+    this.lyraRig = new CharacterRig3D('lyra');
+    this.lyra = this.lyraRig.root;
     this.lyra.position.set(5.35, 0, -1.35);
     this.lyra.rotation.y = -Math.PI * 0.18;
     this.scene.add(this.lyra);
-  }
-
-  private createCharacter(kind: CharacterKind): THREE.Group {
-    const group = new THREE.Group();
-    const skin = new THREE.MeshStandardMaterial({ color: kind === 'player' ? 0xf0c7aa : 0xf7c9bd, roughness: 0.48 });
-    const black = new THREE.MeshStandardMaterial({ color: 0x171522, roughness: 0.45, metalness: 0.03 });
-    const white = new THREE.MeshStandardMaterial({ color: 0xf3edf7, roughness: 0.42, metalness: 0.02 });
-    const gold = new THREE.MeshStandardMaterial({ color: 0xd6b45d, roughness: 0.28, metalness: 0.42 });
-    const playerBlue = new THREE.MeshStandardMaterial({ color: 0x26365f, roughness: 0.5, metalness: 0.06 });
-    const lyraPurple = new THREE.MeshStandardMaterial({ color: 0x7b4cc5, roughness: 0.48, metalness: 0.05 });
-    const hairMat = new THREE.MeshStandardMaterial({
-      color: kind === 'player' ? 0x382820 : 0xded7ff,
-      roughness: 0.5,
-      metalness: 0.03,
-    });
-
-    const outfit = kind === 'player' ? playerBlue : lyraPurple;
-    const heightOffset = kind === 'player' ? 0 : 0.04;
-
-    this.addCharacterLeg(group, -0.14, outfit, black);
-    this.addCharacterLeg(group, 0.14, outfit, black);
-
-    const torso = new THREE.Mesh(new THREE.CapsuleGeometry(0.27, 0.42, 8, 16), outfit);
-    torso.position.set(0, 0.86 + heightOffset, 0);
-    torso.scale.set(kind === 'lyra' ? 1.08 : 1, kind === 'lyra' ? 1.03 : 1, kind === 'lyra' ? 0.92 : 1);
-    torso.castShadow = true;
-    torso.receiveShadow = true;
-    group.add(torso);
-
-    const chestPanel = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.36, 0.035), white);
-    chestPanel.position.set(0, 0.93 + heightOffset, -0.25);
-    chestPanel.castShadow = true;
-    group.add(chestPanel);
-
-    if (kind === 'lyra') {
-      const skirt = new THREE.Mesh(new THREE.ConeGeometry(0.48, 0.58, 28), lyraPurple);
-      skirt.position.set(0, 0.48, 0);
-      skirt.castShadow = true;
-      skirt.receiveShadow = true;
-      group.add(skirt);
-
-      for (const x of [-0.32, 0.32]) {
-        const ribbon = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.05, 0.025), gold);
-        ribbon.position.set(x, 1.12, -0.28);
-        ribbon.rotation.z = x < 0 ? 0.55 : -0.55;
-        ribbon.castShadow = true;
-        group.add(ribbon);
-      }
-    } else {
-      const cape = new THREE.Mesh(new THREE.BoxGeometry(0.58, 0.78, 0.06), playerBlue);
-      cape.position.set(0, 0.78, 0.24);
-      cape.rotation.x = -0.14;
-      cape.castShadow = true;
-      group.add(cape);
-    }
-
-    this.addCharacterArm(group, -0.38, outfit, skin);
-    this.addCharacterArm(group, 0.38, outfit, skin);
-
-    const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 0.12, 16), skin);
-    neck.position.set(0, 1.28 + heightOffset, 0);
-    neck.castShadow = true;
-    group.add(neck);
-
-    const head = new THREE.Mesh(new THREE.SphereGeometry(0.26, 24, 18), skin);
-    head.position.set(0, 1.55 + heightOffset, 0);
-    head.scale.set(0.92, 1.04, 0.88);
-    head.castShadow = true;
-    group.add(head);
-
-    const hair = new THREE.Mesh(new THREE.SphereGeometry(0.29, 24, 18), hairMat);
-    hair.position.set(0, 1.66 + heightOffset, 0.04);
-    hair.scale.set(1, 0.82, 0.94);
-    hair.castShadow = true;
-    group.add(hair);
-
-    const fringe = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.16, 0.08), hairMat);
-    fringe.position.set(0, 1.6 + heightOffset, -0.22);
-    fringe.rotation.x = 0.22;
-    fringe.castShadow = true;
-    group.add(fringe);
-
-    if (kind === 'lyra') {
-      for (const x of [-0.25, 0.25]) {
-        const lock = new THREE.Mesh(new THREE.CapsuleGeometry(0.075, 0.52, 8, 12), hairMat);
-        lock.position.set(x, 1.3, 0.11);
-        lock.rotation.z = x < 0 ? 0.16 : -0.16;
-        lock.castShadow = true;
-        group.add(lock);
-      }
-    } else {
-      for (const x of [-0.16, 0.02, 0.18]) {
-        const spike = new THREE.Mesh(new THREE.ConeGeometry(0.09, 0.28, 12), hairMat);
-        spike.position.set(x, 1.84, 0.02);
-        spike.rotation.z = -x * 1.5;
-        spike.castShadow = true;
-        group.add(spike);
-      }
-    }
-
-    for (const x of [-0.085, 0.085]) {
-      const eye = new THREE.Mesh(
-        new THREE.SphereGeometry(0.025, 10, 8),
-        new THREE.MeshStandardMaterial({ color: kind === 'player' ? 0x2c2a33 : 0x6b4cff, roughness: 0.2 })
-      );
-      eye.position.set(x, 1.57 + heightOffset, -0.235);
-      group.add(eye);
-    }
-
-    const nameRing = new THREE.Mesh(new THREE.TorusGeometry(0.48, 0.012, 8, 36), gold);
-    nameRing.position.set(0, 0.03, 0);
-    nameRing.rotation.x = Math.PI / 2;
-    group.add(nameRing);
-
-    group.traverse((object) => {
-      if (object instanceof THREE.Mesh) {
-        object.castShadow = true;
-        object.receiveShadow = true;
-      }
-    });
-
-    return group;
-  }
-
-  private addCharacterLeg(parent: THREE.Group, x: number, pantsMat: THREE.Material, shoeMat: THREE.Material): void {
-    const leg = new THREE.Mesh(new THREE.CapsuleGeometry(0.075, 0.48, 8, 12), pantsMat);
-    leg.position.set(x, 0.38, 0);
-    leg.castShadow = true;
-    parent.add(leg);
-
-    const shoe = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.08, 0.28), shoeMat);
-    shoe.position.set(x, 0.08, -0.04);
-    shoe.castShadow = true;
-    parent.add(shoe);
-  }
-
-  private addCharacterArm(parent: THREE.Group, x: number, sleeveMat: THREE.Material, handMat: THREE.Material): void {
-    const sleeve = new THREE.Mesh(new THREE.CapsuleGeometry(0.065, 0.44, 8, 12), sleeveMat);
-    sleeve.position.set(x, 0.93, -0.02);
-    sleeve.rotation.z = x < 0 ? -0.24 : 0.24;
-    sleeve.castShadow = true;
-    parent.add(sleeve);
-
-    const hand = new THREE.Mesh(new THREE.SphereGeometry(0.07, 12, 10), handMat);
-    hand.position.set(x * 1.08, 0.68, -0.04);
-    hand.castShadow = true;
-    parent.add(hand);
   }
 
   private addBookshelf(position: THREE.Vector3, rotationY: number): void {
