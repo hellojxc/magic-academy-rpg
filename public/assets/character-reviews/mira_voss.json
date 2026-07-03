@@ -4,7 +4,7 @@
   "displayName": "Mira Voss",
   "portraitUrl": "/assets/portraits/mira_voss-concept.png",
   "currentRuntimeModelUrl": "/assets/models/mira_voss.glb",
-  "currentPreviewUrl": "/assets/models/mira_voss.blender-template.png",
+  "currentPreviewUrl": "/assets/character-reviews/mira_voss-source-preview.png",
   "runtimeAuditUrl": "/assets/character-reviews/mira_voss-runtime-audit.json",
   "sourceModelPath": "assets/characters/mira_voss/source/mira_voss.blend",
   "targetRuntimeFile": "public/assets/models/mira_voss.glb",

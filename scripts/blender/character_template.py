@@ -117,11 +117,13 @@ def material(
     roughness: float = 0.68,
     metallic: float = 0.0,
     alpha: float = 1.0,
+    backface_culling: bool = True,
+    emission_strength: float = 0.0,
 ) -> bpy.types.Material:
     mat = bpy.data.materials.new(name)
     mat.use_nodes = True
     mat.diffuse_color = hex_to_rgba(color, alpha)
-    mat.use_backface_culling = True
+    mat.use_backface_culling = backface_culling
     if alpha < 1:
         mat.blend_method = "BLEND"
         mat.show_transparent_back = False
@@ -136,6 +138,10 @@ def material(
             bsdf.inputs["Metallic"].default_value = metallic
         if "Alpha" in bsdf.inputs:
             bsdf.inputs["Alpha"].default_value = alpha
+        if emission_strength > 0 and "Emission Color" in bsdf.inputs:
+            bsdf.inputs["Emission Color"].default_value = hex_to_rgba(color, alpha)
+        if emission_strength > 0 and "Emission Strength" in bsdf.inputs:
+            bsdf.inputs["Emission Strength"].default_value = emission_strength
     return mat
 
 
@@ -433,16 +439,16 @@ def make_materials(spec: dict[str, Any]) -> dict[str, bpy.types.Material]:
     face = spec["face"]
     hair = spec["hair"]
     return {
-        "skin": material("Skin", "#f3c7ad", 0.72),
-        "skin_warm": material("SkinWarm", "#e7aa91", 0.76),
-        "skin_shadow": material("SkinSoftShadow", "#d99582", 0.78),
-        "cheek": material("CheekTint", face["cheekTint"], 0.82, alpha=0.82),
-        "eye_white": material("EyeWhite", "#fbf8ff", 0.48),
-        "eye": material("EyeIris", face["eyeColor"], 0.36),
-        "pupil": material("Pupil", "#14111c", 0.52),
-        "brow": material("Brow", face["browColor"], 0.6),
-        "hair": material("Hair", hair["color"], 0.56),
-        "hair_highlight": material("HairHighlight", hair["highlightColor"], 0.52),
+        "skin": material("Skin", "#ffe3d4", 0.58, emission_strength=0.08),
+        "skin_warm": material("SkinWarm", "#ffc3ae", 0.62, emission_strength=0.06),
+        "skin_shadow": material("SkinSoftShadow", "#f0ad99", 0.68),
+        "cheek": material("CheekTint", face["cheekTint"], 0.82, alpha=0.82, backface_culling=False),
+        "eye_white": material("EyeWhite", "#fffaff", 0.44, backface_culling=False, emission_strength=0.1),
+        "eye": material("EyeIris", face["eyeColor"], 0.32, backface_culling=False, emission_strength=0.08),
+        "pupil": material("Pupil", "#14111c", 0.52, backface_culling=False),
+        "brow": material("Brow", face["browColor"], 0.6, backface_culling=False),
+        "hair": material("Hair", hair["color"], 0.52, backface_culling=False, emission_strength=0.04),
+        "hair_highlight": material("HairHighlight", hair["highlightColor"], 0.48, backface_culling=False, emission_strength=0.06),
         "outfit_primary": material("OutfitPrimary", outfit["primaryColor"], 0.64),
         "outfit_secondary": material("OutfitSecondary", outfit["secondaryColor"], 0.7),
         "outfit_dark": material("OutfitDark", outfit["darkColor"], 0.68),
@@ -450,7 +456,7 @@ def make_materials(spec: dict[str, Any]) -> dict[str, bpy.types.Material]:
         "trim": material("GoldTrim", outfit["trimColor"], 0.34, metallic=0.25),
         "shoe": material("Shoe", outfit["shoeColor"], 0.58),
         "sole": material("Sole", "#18141d", 0.64),
-        "outline": material("SoftInk", "#17131f", 0.8),
+        "outline": material("SoftInk", "#17131f", 0.8, backface_culling=False),
         "paper": material("BookPaper", "#f7efd7", 0.76),
     }
 
@@ -484,15 +490,20 @@ def add_body(
     collection: bpy.types.Collection,
 ) -> None:
     is_player = spec["id"] == "player"
+    outfit_style = spec["outfit"].get("style")
+    is_astrologer = outfit_style == "astrologer-uniform"
     scale = m["scale"]
-    jacket_mat = mats["outfit_dark"] if is_player else mats["outfit_primary"]
+    jacket_mat = mats["outfit_dark"] if is_player or is_astrologer else mats["outfit_primary"]
     shirt_mat = mats["outfit_secondary"] if is_player else mats["outfit_primary"]
+    torso_x = m["waist_width"] * (0.53 if is_player else 0.44 if is_astrologer else 0.48)
+    chest_x = m["shoulder_width"] * (0.47 if is_player else 0.40 if is_astrologer else 0.43)
+    shirt_x = m["waist_width"] * (0.30 if is_player else 0.16 if is_astrologer else 0.34)
 
     pelvis = add_uv_sphere(
         "Pelvis",
         mats["outfit_dark"] if is_player else mats["outfit_secondary"],
         (0, 0.01 * scale, m["hip_z"]),
-        (m["hip_width"] * (0.40 if is_player else 0.34), 0.105 * scale, 0.085 * scale),
+        (m["hip_width"] * (0.40 if is_player else 0.32), (0.105 if is_player else 0.088) * scale, 0.078 * scale),
         collection,
         segments=32,
         rings=14,
@@ -503,7 +514,7 @@ def add_body(
         "Torso",
         jacket_mat,
         (0, -0.005 * scale, 1.12 * scale),
-        (m["waist_width"] * (0.53 if is_player else 0.48), 0.105 * scale, 0.255 * scale),
+        (torso_x, (0.105 if is_player else 0.092) * scale, 0.255 * scale),
         collection,
         segments=40,
         rings=18,
@@ -514,7 +525,7 @@ def add_body(
         "ChestShape",
         jacket_mat,
         (0, -0.005 * scale, 1.24 * scale),
-        (m["shoulder_width"] * (0.47 if is_player else 0.43), 0.115 * scale, 0.19 * scale),
+        (chest_x, (0.115 if is_player else 0.098) * scale, 0.19 * scale),
         collection,
         segments=40,
         rings=18,
@@ -525,7 +536,7 @@ def add_body(
         "ShirtFront",
         shirt_mat,
         (0, -0.21 * scale, 1.18 * scale),
-        (m["waist_width"] * (0.30 if is_player else 0.34), 0.014 * scale, 0.24 * scale),
+        (shirt_x, 0.014 * scale, 0.25 * scale),
         collection,
         bevel=0.006 * scale,
     )
@@ -535,8 +546,8 @@ def add_body(
         lapel = add_cube(
             f"{side}JacketPanel",
             mats["outfit_primary"] if is_player else mats["outfit_secondary"],
-            (sx * 0.105 * scale, -0.222 * scale, 1.17 * scale),
-            (0.052 * scale, 0.012 * scale, 0.255 * scale),
+            (sx * (0.105 if is_player else 0.078) * scale, -0.222 * scale, 1.17 * scale),
+            ((0.052 if is_player else 0.038) * scale, 0.012 * scale, 0.255 * scale),
             collection,
             rotation=(0, 0, sx * 0.10),
             bevel=0.006 * scale,
@@ -546,7 +557,7 @@ def add_body(
         trim = add_cube(
             f"{side}JacketTrim",
             mats["trim"],
-            (sx * 0.18 * scale, -0.236 * scale, 1.17 * scale),
+            (sx * (0.18 if is_player else 0.13) * scale, -0.236 * scale, 1.17 * scale),
             (0.006 * scale, 0.008 * scale, 0.28 * scale),
             collection,
             rotation=(0, 0, sx * 0.20),
@@ -557,13 +568,26 @@ def add_body(
         front_edge = add_cube(
             f"{side}FrontGoldEdge",
             mats["trim"],
-            (sx * 0.055 * scale, -0.238 * scale, 1.18 * scale),
+            (sx * (0.055 if is_player else 0.041) * scale, -0.238 * scale, 1.18 * scale),
             (0.005 * scale, 0.006 * scale, 0.24 * scale),
             collection,
             rotation=(0, 0, sx * 0.03),
             bevel=0.0015 * scale,
         )
         parent_to_bone(front_edge, armature, "Chest")
+
+    if is_astrologer:
+        for index, z in enumerate((1.285, 1.215, 1.145, 1.075)):
+            button = add_uv_sphere(
+                f"AstrologerBodiceButton_{index}",
+                mats["trim"],
+                (0, -0.236 * scale, z * scale),
+                (0.008 * scale, 0.003 * scale, 0.008 * scale),
+                collection,
+                10,
+                6,
+            )
+            parent_to_bone(button, armature, "Chest")
 
     neck = add_cylinder("Neck", mats["skin"], (0, -0.005 * scale, m["neck_z"]), 0.055 * scale, 0.1 * scale, collection, vertices=24)
     parent_to_bone(neck, armature, "Neck")
@@ -584,13 +608,19 @@ def add_limbs(
     sleeve_mat = mats["outfit_primary"] if is_player else mats["outfit_primary"]
     glove_mat = mats["shoe"] if is_player else mats["skin"]
     leg_mat = mats["outfit_dark"] if is_player else mats["skin"]
+    upper_arm_radius = 0.044 if is_player else 0.032
+    lower_arm_radius = 0.037 if is_player else 0.028
+    upper_leg_radius = 0.049 if is_player else 0.037
+    lower_leg_radius = 0.041 if is_player else 0.031
+    arm_reach = 0.63 if is_player else 0.56
+    forearm_reach = 0.76 if is_player else 0.66
 
     for side, sx in (("Left", -1), ("Right", 1)):
         upper_arm = add_uv_sphere(
             f"{side}UpperArm",
             sleeve_mat,
-            (sx * (shoulder * 0.63), -0.006 * scale, 1.115 * scale),
-            (0.044 * scale, 0.044 * scale, 0.205 * scale),
+            (sx * (shoulder * arm_reach), -0.006 * scale, 1.105 * scale),
+            (upper_arm_radius * scale, upper_arm_radius * scale, 0.19 * scale),
             collection,
             segments=24,
             rings=12,
@@ -601,8 +631,8 @@ def add_limbs(
         lower_arm = add_uv_sphere(
             f"{side}LowerArm",
             sleeve_mat,
-            (sx * (shoulder * 0.76), -0.006 * scale, 0.875 * scale),
-            (0.037 * scale, 0.037 * scale, 0.19 * scale),
+            (sx * (shoulder * forearm_reach), -0.006 * scale, 0.87 * scale),
+            (lower_arm_radius * scale, lower_arm_radius * scale, 0.178 * scale),
             collection,
             segments=24,
             rings=12,
@@ -613,9 +643,9 @@ def add_limbs(
         cuff = add_cylinder(
             f"{side}Cuff",
             mats["trim"] if is_player else mats["accent"],
-            (sx * (shoulder * 0.83), -0.006 * scale, 0.74 * scale),
-            0.052 * scale,
-            0.035 * scale,
+            (sx * (shoulder * (0.83 if is_player else 0.71)), -0.006 * scale, 0.74 * scale),
+            (0.052 if is_player else 0.038) * scale,
+            (0.035 if is_player else 0.026) * scale,
             collection,
             vertices=18,
             rotation=(math.pi / 2, 0, 0),
@@ -626,8 +656,8 @@ def add_limbs(
         hand = add_uv_sphere(
             f"{side}Hand",
             glove_mat,
-            (sx * (shoulder * 0.84), -0.016 * scale, 0.67 * scale),
-            (0.038 * scale, 0.026 * scale, 0.045 * scale),
+            (sx * (shoulder * (0.84 if is_player else 0.72)), -0.016 * scale, 0.675 * scale),
+            ((0.038 if is_player else 0.03) * scale, 0.024 * scale, (0.045 if is_player else 0.037) * scale),
             collection,
             segments=20,
             rings=10,
@@ -638,7 +668,7 @@ def add_limbs(
             f"{side}UpperLeg",
             leg_mat,
             (sx * 0.095 * scale, 0, 0.55 * scale),
-            (0.049 * scale, 0.047 * scale, 0.255 * scale),
+            (upper_leg_radius * scale, (upper_leg_radius * 0.94) * scale, 0.25 * scale),
             collection,
             segments=24,
             rings=12,
@@ -649,7 +679,7 @@ def add_limbs(
             f"{side}LowerLeg",
             leg_mat,
             (sx * 0.09 * scale, 0, 0.28 * scale),
-            (0.041 * scale, 0.039 * scale, 0.23 * scale),
+            (lower_leg_radius * scale, (lower_leg_radius * 0.94) * scale, 0.225 * scale),
             collection,
             segments=24,
             rings=12,
@@ -674,8 +704,8 @@ def add_limbs(
                 f"{side}BootPurpleCuff",
                 mats["outfit_secondary"],
                 (sx * 0.09 * scale, -0.002 * scale, 0.18 * scale),
-                0.047 * scale,
-                0.04 * scale,
+                0.036 * scale,
+                0.03 * scale,
                 collection,
                 vertices=18,
                 rotation=(math.pi / 2, 0, 0),
@@ -687,7 +717,7 @@ def add_limbs(
             f"{side}Boot",
             mats["shoe"],
             (sx * 0.09 * scale, -0.048 * scale, 0.055 * scale),
-            (0.055 * scale, 0.118 * scale, 0.04 * scale),
+            ((0.055 if is_player else 0.043) * scale, (0.118 if is_player else 0.098) * scale, 0.038 * scale),
             collection,
             bevel=0.012 * scale,
         )
@@ -697,7 +727,7 @@ def add_limbs(
             f"{side}BootSole",
             mats["sole"],
             (sx * 0.09 * scale, -0.05 * scale, 0.024 * scale),
-            (0.058 * scale, 0.125 * scale, 0.011 * scale),
+            ((0.058 if is_player else 0.046) * scale, (0.125 if is_player else 0.104) * scale, 0.011 * scale),
             collection,
             bevel=0.006 * scale,
         )
@@ -723,8 +753,8 @@ def add_head(
             m["head_radius"] * 1.02 * float(head_scale[1]),
         ),
         collection,
-        segments=48,
-        rings=24,
+        segments=64,
+        rings=32,
     )
     parent_to_bone(head, armature, "Head")
 
@@ -739,14 +769,14 @@ def add_head(
 
     eye_scale = float(spec["face"]["eyeScale"])
     for side, sx in (("Left", -1), ("Right", 1)):
-        eye_x = sx * 0.06 * scale
+        eye_x = sx * 0.058 * scale
         eye_white = add_uv_sphere(
             f"{side}EyeWhite",
             mats["eye_white"],
-            (eye_x, -0.198 * scale, 1.545 * scale),
-            (0.044 * scale * eye_scale, 0.006 * scale, 0.030 * scale * eye_scale),
+            (eye_x, -0.214 * scale, 1.546 * scale),
+            (0.035 * scale * eye_scale, 0.0055 * scale, 0.024 * scale * eye_scale),
             collection,
-            segments=28,
+            segments=36,
             rings=12,
         )
         add_shape_key_transform(eye_white, "blink", scale=(1.0, 1.0, 0.16), offset=(0, 0, -0.002 * scale))
@@ -755,10 +785,10 @@ def add_head(
         iris = add_uv_sphere(
             f"{side}Iris",
             mats["eye"],
-            (eye_x + sx * 0.004 * scale, -0.203 * scale, 1.54 * scale),
-            (0.022 * scale * eye_scale, 0.003 * scale, 0.026 * scale * eye_scale),
+            (eye_x + sx * 0.003 * scale, -0.216 * scale, 1.542 * scale),
+            (0.016 * scale * eye_scale, 0.0035 * scale, 0.019 * scale * eye_scale),
             collection,
-            segments=24,
+            segments=32,
             rings=10,
         )
         add_shape_key_transform(iris, "blink", scale=(1.0, 1.0, 0.12), offset=(0, 0, -0.002 * scale))
@@ -767,10 +797,10 @@ def add_head(
         pupil = add_uv_sphere(
             f"{side}Pupil",
             mats["pupil"],
-            (eye_x + sx * 0.005 * scale, -0.207 * scale, 1.538 * scale),
-            (0.009 * scale, 0.002 * scale, 0.014 * scale),
+            (eye_x + sx * 0.004 * scale, -0.218 * scale, 1.54 * scale),
+            (0.007 * scale, 0.0022 * scale, 0.011 * scale),
             collection,
-            segments=16,
+            segments=24,
             rings=8,
         )
         add_shape_key_transform(pupil, "blink", scale=(1.0, 1.0, 0.1), offset=(0, 0, -0.002 * scale))
@@ -779,10 +809,10 @@ def add_head(
         highlight = add_uv_sphere(
             f"{side}EyeHighlight",
             mats["eye_white"],
-            (eye_x - sx * 0.011 * scale, -0.209 * scale, 1.558 * scale),
-            (0.006 * scale, 0.002 * scale, 0.008 * scale),
+            (eye_x - sx * 0.010 * scale, -0.22 * scale, 1.558 * scale),
+            (0.0052 * scale, 0.0018 * scale, 0.0068 * scale),
             collection,
-            segments=12,
+            segments=18,
             rings=6,
         )
         add_shape_key_transform(highlight, "blink", scale=(1.0, 1.0, 0.1), offset=(0, 0, -0.001 * scale))
@@ -791,21 +821,32 @@ def add_head(
         lash = add_cube(
             f"{side}UpperEyelash",
             mats["outline"],
-            (eye_x, -0.211 * scale, 1.57 * scale),
-            (0.048 * scale * eye_scale, 0.0025 * scale, 0.0035 * scale),
+            (eye_x, -0.221 * scale, 1.57 * scale),
+            (0.044 * scale * eye_scale, 0.0025 * scale, 0.0032 * scale),
             collection,
-            rotation=(0, 0, sx * 0.09),
+            rotation=(0, 0, sx * 0.075),
             bevel=0.001 * scale,
         )
         parent_to_bone(lash, armature, "Head")
 
+        lower_lash = add_cube(
+            f"{side}LowerEyelash",
+            mats["outline"],
+            (eye_x + sx * 0.002 * scale, -0.221 * scale, 1.523 * scale),
+            (0.026 * scale * eye_scale, 0.002 * scale, 0.0022 * scale),
+            collection,
+            rotation=(0, 0, -sx * 0.055),
+            bevel=0.001 * scale,
+        )
+        parent_to_bone(lower_lash, armature, "Head")
+
         brow = add_cube(
             f"{side}Brow",
             mats["brow"],
-            (eye_x, -0.202 * scale, 1.604 * scale),
-            (0.038 * scale, 0.003 * scale, 0.005 * scale),
+            (eye_x, -0.208 * scale, 1.607 * scale),
+            (0.04 * scale, 0.003 * scale, 0.0042 * scale),
             collection,
-            rotation=(0, 0, sx * 0.16),
+            rotation=(0, 0, sx * 0.12),
             bevel=0.0015 * scale,
         )
         parent_to_bone(brow, armature, "Head")
@@ -834,22 +875,22 @@ def add_hair(
     cap = add_uv_sphere(
         "HairCap",
         mats["hair"],
-        (0, -0.012 * scale, 1.635 * scale),
-        (0.205 * scale * volume, 0.158 * scale * volume, 0.112 * scale),
+        (0, 0.025 * scale, 1.655 * scale),
+        (0.168 * scale * volume, 0.09 * scale * volume, 0.074 * scale),
         collection,
-        segments=48,
-        rings=18,
+        segments=64,
+        rings=24,
     )
     parent_to_bone(cap, armature, "Head")
 
     back = add_uv_sphere(
         "BackHairMass",
         mats["hair"],
-        (0, 0.105 * scale, 1.49 * scale),
-        (0.175 * scale * volume, 0.09 * scale, 0.18 * scale),
+        (0, 0.115 * scale, 1.475 * scale),
+        (0.158 * scale * volume, 0.072 * scale, 0.19 * scale),
         collection,
-        segments=40,
-        rings=16,
+        segments=56,
+        rings=20,
     )
     parent_to_bone(back, armature, "Head")
 
@@ -899,15 +940,25 @@ def add_long_hair(
 ) -> None:
     scale = m["scale"]
     front_panels = [
-        ("LyraFrontBang_Left", mats["hair"], [(-0.17, -0.218, 1.66), (-0.052, -0.232, 1.695), (-0.098, -0.246, 1.50)]),
-        ("LyraFrontBang_Center", mats["hair_highlight"], [(-0.065, -0.235, 1.70), (0.065, -0.235, 1.70), (0.0, -0.254, 1.50)]),
-        ("LyraFrontBang_Right", mats["hair"], [(0.052, -0.232, 1.695), (0.17, -0.218, 1.66), (0.098, -0.246, 1.50)]),
-        ("LyraSideSweptBang", mats["hair_highlight"], [(-0.02, -0.246, 1.69), (0.18, -0.232, 1.615), (0.058, -0.258, 1.53)]),
-        ("LyraLeftFaceLock", mats["hair"], [(-0.185, -0.13, 1.61), (-0.13, -0.222, 1.56), (-0.14, -0.2, 1.1), (-0.22, -0.08, 1.12)]),
-        ("LyraRightFaceLock", mats["hair"], [(0.13, -0.222, 1.56), (0.185, -0.13, 1.61), (0.22, -0.08, 1.12), (0.14, -0.2, 1.1)]),
+        ("LongFrontBang_Left", mats["hair"], [(-0.155, -0.182, 1.675), (-0.07, -0.205, 1.705), (-0.118, -0.218, 1.615)]),
+        ("LongFrontBang_Center", mats["hair_highlight"], [(-0.045, -0.204, 1.71), (0.048, -0.204, 1.71), (-0.005, -0.222, 1.622)]),
+        ("LongFrontBang_Right", mats["hair"], [(0.06, -0.205, 1.705), (0.155, -0.182, 1.675), (0.105, -0.218, 1.615)]),
+        ("LongSideSweptBang", mats["hair_highlight"], [(-0.02, -0.214, 1.698), (0.176, -0.2, 1.646), (0.076, -0.225, 1.61)]),
+        ("LongLeftFaceLock", mats["hair"], [(-0.205, -0.065, 1.61), (-0.178, -0.145, 1.555), (-0.19, -0.12, 1.08), (-0.245, -0.01, 1.11)]),
+        ("LongRightFaceLock", mats["hair"], [(0.178, -0.145, 1.555), (0.205, -0.065, 1.61), (0.245, -0.01, 1.11), (0.19, -0.12, 1.08)]),
     ]
     for name, mat, verts in front_panels:
-        panel = add_hair_panel(name, mat, [(x * scale, y * scale, z * scale) for x, y, z in verts], collection, 0.008 * scale)
+        panel = add_hair_panel(name, mat, [(x * scale, y * scale, z * scale) for x, y, z in verts], collection, 0.0045 * scale)
+        parent_to_bone(panel, armature, "Head")
+
+    layered_bangs = [
+        ("LongHairForeheadCurtain", mats["hair"], [(-0.16, -0.215, 1.674), (0.13, -0.215, 1.668), (0.06, -0.224, 1.63), (-0.13, -0.224, 1.625)]),
+        ("LongHairSideSweepHighlight", mats["hair_highlight"], [(-0.03, -0.226, 1.686), (0.158, -0.214, 1.646), (0.09, -0.232, 1.615), (0.018, -0.232, 1.628)]),
+        ("LongHairLeftThinLock", mats["hair_highlight"], [(-0.225, -0.075, 1.56), (-0.19, -0.145, 1.53), (-0.198, -0.12, 1.05), (-0.26, -0.02, 1.08)]),
+        ("LongHairRightThinLock", mats["hair_highlight"], [(0.19, -0.145, 1.53), (0.225, -0.075, 1.56), (0.26, -0.02, 1.08), (0.198, -0.12, 1.05)]),
+    ]
+    for name, mat, verts in layered_bangs:
+        panel = add_hair_panel(name, mat, [(x * scale, y * scale, z * scale) for x, y, z in verts], collection, 0.004 * scale)
         parent_to_bone(panel, armature, "Head")
 
     long_panels = [
@@ -923,7 +974,7 @@ def add_long_hair(
         panel = add_hair_panel(name, mat, [(x * scale, y * scale, z * scale) for x, y, z in verts], collection, 0.012 * scale)
         parent_to_bone(panel, armature, "Head")
 
-    clip = add_cone("StarHairClip", mats["trim"], (0.165 * scale, -0.232 * scale, 1.62 * scale), 0.033 * scale, 0.033 * scale, 0.014 * scale, collection, vertices=5, rotation=(math.pi / 2, 0, math.pi / 5))
+    clip = add_cone("StarHairClip", mats["trim"], (0.172 * scale, -0.218 * scale, 1.635 * scale), 0.036 * scale, 0.036 * scale, 0.014 * scale, collection, vertices=5, rotation=(math.pi / 2, 0, math.pi / 5))
     parent_to_bone(clip, armature, "Head")
 
 
@@ -971,27 +1022,55 @@ def add_outfit(
         parent_to_bone(buckle, armature, "Hips")
     else:
         add_skirt(m, mats, armature, collection)
-        if spec["outfit"].get("style") == "astrologer-uniform":
+        is_astrologer = spec["outfit"].get("style") == "astrologer-uniform"
+        if is_astrologer:
             add_astrologer_details(m, mats, armature, collection)
-        bow_center = add_uv_sphere("RibbonCenter", mats["trim"], (0, -0.235 * scale, 1.29 * scale), (0.035 * scale, 0.012 * scale, 0.035 * scale), collection, 16, 8)
-        parent_to_bone(bow_center, armature, "Chest")
-        for side, sx in (("Left", -1), ("Right", 1)):
-            bow = add_uv_sphere(f"{side}RibbonLoop", mats["accent"], (sx * 0.065 * scale, -0.242 * scale, 1.29 * scale), (0.065 * scale, 0.012 * scale, 0.036 * scale), collection, 16, 8)
-            bow.rotation_euler[2] = sx * 0.18
-            parent_to_bone(bow, armature, "Chest")
-            ribbon_tail = add_cube(
-                f"{side}RibbonTail",
-                mats["accent"],
-                (sx * 0.035 * scale, -0.246 * scale, 1.205 * scale),
-                (0.018 * scale, 0.005 * scale, 0.105 * scale),
-                collection,
-                rotation=(0, 0, sx * 0.08),
-                bevel=0.002 * scale,
-            )
-            parent_to_bone(ribbon_tail, armature, "Chest")
+        if is_astrologer:
+            collar_gem = add_uv_sphere("AstrologerCollarGem", mats["trim"], (0, -0.247 * scale, 1.315 * scale), (0.024 * scale, 0.007 * scale, 0.024 * scale), collection, 16, 8)
+            parent_to_bone(collar_gem, armature, "Chest")
+            for side, sx in (("Left", -1), ("Right", 1)):
+                neck_ribbon = add_cube(
+                    f"{side}AstrologerNeckRibbon",
+                    mats["outfit_dark"],
+                    (sx * 0.035 * scale, -0.25 * scale, 1.255 * scale),
+                    (0.012 * scale, 0.005 * scale, 0.085 * scale),
+                    collection,
+                    rotation=(0, 0, sx * 0.15),
+                    bevel=0.0015 * scale,
+                )
+                parent_to_bone(neck_ribbon, armature, "Chest")
+        else:
+            bow_center = add_uv_sphere("RibbonCenter", mats["trim"], (0, -0.235 * scale, 1.29 * scale), (0.035 * scale, 0.012 * scale, 0.035 * scale), collection, 16, 8)
+            parent_to_bone(bow_center, armature, "Chest")
+            for side, sx in (("Left", -1), ("Right", 1)):
+                bow = add_uv_sphere(f"{side}RibbonLoop", mats["accent"], (sx * 0.065 * scale, -0.242 * scale, 1.29 * scale), (0.065 * scale, 0.012 * scale, 0.036 * scale), collection, 16, 8)
+                bow.rotation_euler[2] = sx * 0.18
+                parent_to_bone(bow, armature, "Chest")
+                ribbon_tail = add_cube(
+                    f"{side}RibbonTail",
+                    mats["accent"],
+                    (sx * 0.035 * scale, -0.246 * scale, 1.205 * scale),
+                    (0.018 * scale, 0.005 * scale, 0.105 * scale),
+                    collection,
+                    rotation=(0, 0, sx * 0.08),
+                    bevel=0.002 * scale,
+                )
+                parent_to_bone(ribbon_tail, armature, "Chest")
 
     cape = add_cape(spec, m, mats, collection)
     parent_to_bone(cape, armature, "Chest")
+    if spec["outfit"].get("style") == "astrologer-uniform":
+        for side, sx in (("Left", -1), ("Right", 1)):
+            trim = add_cube(
+                f"{side}CapeletGoldTrim",
+                mats["trim"],
+                (sx * 0.19 * scale, 0.198 * scale, 1.10 * scale),
+                (0.007 * scale, 0.006 * scale, 0.205 * scale),
+                collection,
+                rotation=(0, 0, sx * 0.26),
+                bevel=0.0015 * scale,
+            )
+            parent_to_bone(trim, armature, "Chest")
 
 
 def add_astrologer_details(
@@ -1003,7 +1082,7 @@ def add_astrologer_details(
     scale = m["scale"]
     sash = add_cube(
         "StarChartSash",
-        mats["outfit_primary"],
+        mats["outfit_secondary"],
         (-0.055 * scale, -0.246 * scale, 1.02 * scale),
         (0.032 * scale, 0.006 * scale, 0.31 * scale),
         collection,
@@ -1057,18 +1136,34 @@ def add_skirt(
     collection: bpy.types.Collection,
 ) -> None:
     scale = m["scale"]
-    skirt = add_cone("LayeredSkirt", mats["outfit_secondary"], (0, -0.005 * scale, 0.77 * scale), 0.27 * scale, 0.16 * scale, 0.23 * scale, collection, vertices=40)
+    skirt = add_cone("LayeredSkirt", mats["outfit_dark"], (0, -0.005 * scale, 0.77 * scale), 0.255 * scale, 0.14 * scale, 0.25 * scale, collection, vertices=48)
     parent_to_bone(skirt, armature, "Hips")
-    overskirt = add_cone("FrontApronPanel", mats["outfit_dark"], (0, -0.105 * scale, 0.765 * scale), 0.18 * scale, 0.11 * scale, 0.205 * scale, collection, vertices=4, rotation=(0, 0, math.pi / 4), scale=(0.9, 0.45, 1))
+    overskirt = add_cone("FrontApronPanel", mats["outfit_secondary"], (0.035 * scale, -0.108 * scale, 0.765 * scale), 0.17 * scale, 0.09 * scale, 0.22 * scale, collection, vertices=4, rotation=(0, 0, math.pi / 4 + 0.08), scale=(0.9, 0.44, 1))
     parent_to_bone(overskirt, armature, "Hips")
-    belt = add_cylinder("WaistRibbonBelt", mats["trim"], (0, -0.005 * scale, 0.89 * scale), 0.18 * scale, 0.024 * scale, collection, vertices=40, scale=(1.35, 0.7, 0.45))
+    back_panel = add_hair_panel(
+        "AsymmetricBackSkirtPanel",
+        mats["outfit_secondary"],
+        [(-0.22 * scale, 0.085 * scale, 0.88 * scale), (0.22 * scale, 0.085 * scale, 0.88 * scale), (0.29 * scale, 0.12 * scale, 0.56 * scale), (-0.18 * scale, 0.12 * scale, 0.62 * scale)],
+        collection,
+        0.006 * scale,
+    )
+    parent_to_bone(back_panel, armature, "Hips")
+    front_ruffle = add_hair_panel(
+        "FrontWhiteRuffleLayer",
+        mats["outfit_primary"],
+        [(-0.16 * scale, -0.234 * scale, 0.75 * scale), (0.16 * scale, -0.234 * scale, 0.75 * scale), (0.19 * scale, -0.236 * scale, 0.61 * scale), (-0.19 * scale, -0.236 * scale, 0.61 * scale)],
+        collection,
+        0.006 * scale,
+    )
+    parent_to_bone(front_ruffle, armature, "Hips")
+    belt = add_cylinder("WaistRibbonBelt", mats["trim"], (0, -0.005 * scale, 0.895 * scale), 0.18 * scale, 0.022 * scale, collection, vertices=48, scale=(1.28, 0.58, 0.42))
     parent_to_bone(belt, armature, "Hips")
     for index, x in enumerate((-0.18, -0.12, -0.06, 0.0, 0.06, 0.12, 0.18)):
         pleat = add_cube(
             f"SkirtFrontPleat_{index}",
-            mats["accent"] if index % 2 else mats["outfit_dark"],
+            mats["trim"] if index in {1, 5} else mats["accent"] if index % 2 else mats["outfit_dark"],
             (x * scale, -0.216 * scale, 0.75 * scale),
-            (0.011 * scale, 0.007 * scale, 0.17 * scale),
+            ((0.009 if index in {1, 5} else 0.011) * scale, 0.007 * scale, 0.17 * scale),
             collection,
             rotation=(0, 0, -x * 0.45),
             bevel=0.0015 * scale,
@@ -1098,7 +1193,8 @@ def add_cape(
         (width_bottom, y + 0.02 * scale, bottom_z),
         (-width_bottom, y + 0.02 * scale, bottom_z),
     ]
-    cape = add_plane_mesh("MageCape" if spec["id"] == "player" else "Capelet", mats["outfit_dark"], verts, [(0, 1, 2, 3)], collection)
+    cape_mat = mats["outfit_dark"] if spec["id"] == "player" else mats["outfit_primary"]
+    cape = add_plane_mesh("MageCape" if spec["id"] == "player" else "Capelet", cape_mat, verts, [(0, 1, 2, 3)], collection)
     add_modifier_if_possible(cape, "cloth thickness", "SOLIDIFY", thickness=0.006 * scale)
     return cape
 

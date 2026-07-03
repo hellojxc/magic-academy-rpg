@@ -92,6 +92,42 @@
       "projectUse": "Use for fast local or remote silhouette probes when no GPU-backed CharacterGen/Hunyuan3D environment is available."
     },
     {
+      "id": "makehuman",
+      "name": "MakeHuman",
+      "repo": "https://github.com/makehumancommunity/makehuman",
+      "role": "parameterized humanoid base mesh fallback",
+      "priority": 6,
+      "expectedInput": ["height", "body proportions", "anime stylization plan"],
+      "expectedOutput": ["editable humanoid mesh base"],
+      "strengths": [
+        "open source human body generation",
+        "useful when AI 3D generation is unavailable or inconsistent"
+      ],
+      "risks": [
+        "not anime-stylized by default",
+        "face, hair, clothing, textures, and expressions still require Blender authoring"
+      ],
+      "projectUse": "Use as a legal base-mesh fallback for player and supporting NPC body proportions before anime stylization in Blender."
+    },
+    {
+      "id": "mb-lab",
+      "name": "MB-Lab",
+      "repo": "https://github.com/animate1978/MB-Lab",
+      "role": "Blender-native humanoid base mesh and rig fallback",
+      "priority": 6,
+      "expectedInput": ["body proportions", "facial targets", "clothing plan"],
+      "expectedOutput": ["Blender source character base"],
+      "strengths": [
+        "runs inside Blender",
+        "fits a headless or scripted source-model workflow better than GUI-only avatar tools"
+      ],
+      "risks": [
+        "not a final anime character generator",
+        "requires retopology, stylized head editing, custom hair, custom clothing, and toon materials"
+      ],
+      "projectUse": "Use to create reusable editable body bases for story NPCs, then replace the head, hair, outfit, and face with character-specific anime meshes."
+    },
+    {
       "id": "unirig",
       "name": "UniRig",
       "repo": "https://github.com/VAST-AI-Research/UniRig",

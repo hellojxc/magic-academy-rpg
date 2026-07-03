@@ -29,13 +29,15 @@ The project should test tools in this order:
 
 1. CharacterGen: first choice for portrait-to-character candidate generation.
 2. Hunyuan3D: first fallback for image-to-3D shape and texture candidates.
-3. ComfyUI-3D-Pack: harness for comparing several 3D generation backends.
-4. TRELLIS: general 3D generation fallback.
-5. TripoSR: lightweight single-image mesh baseline when GPU generation is not
+3. TRELLIS: general 3D generation fallback.
+4. TripoSR: lightweight single-image mesh baseline when GPU generation is not
    available.
-6. UniRig: automatic skeleton and skinning candidate pass for a cleaned humanoid
+5. MakeHuman or MB-Lab: parameterized humanoid base mesh fallback when AI
+   generation is unavailable or too unstable.
+6. ComfyUI-3D-Pack: harness for comparing several 3D generation backends.
+7. UniRig: automatic skeleton and skinning candidate pass for a cleaned humanoid
    mesh.
-7. VRM Addon for Blender: export route when a character needs VRM metadata,
+8. VRM Addon for Blender: export route when a character needs VRM metadata,
    expressions, MToon materials, and spring-bone motion.
 
 The repository list and intended use live in:
@@ -186,10 +188,12 @@ A model is not accepted just because it loads in Three.js. It must pass:
 The current `player.glb` and `lyra.glb` are runtime prototypes. The
 `*.blender-template.glb` files are technical pipeline probes. Mira Voss now has
 the first NPC runtime candidate at `public/assets/models/mira_voss.glb`. It is a
-Blender-generated skinned GLB with 20,104 triangles, 17 bones, 9 morph-target
+Blender-generated skinned GLB with 25,164 triangles, 17 bones, 9 morph-target
 primitives, and `idle`, `walk`, and `talk` animation clips, so it passes the
-current runtime audit. It is still a template-quality candidate, not the final
-mainstream Japanese RPG character target.
+current runtime audit. The latest pass improves the Mira-specific silhouette,
+visible eyes, white capelet, deep-blue bodice, layered skirt, and side-framed
+silver hair from the model sheet. It is still a template-quality candidate, not
+the final mainstream Japanese RPG character target.
 
 The model-sheet references for both player and Lyra are now registered in
 `assets/characters/<id>/references` and mirrored to
