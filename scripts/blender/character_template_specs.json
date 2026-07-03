@@ -1,0 +1,96 @@
+{
+  "version": "blender-character-template-v1",
+  "outputDir": "public/assets/models",
+  "characters": [
+    {
+      "id": "player",
+      "displayName": "Academy Protagonist",
+      "heightMeters": 1.68,
+      "body": {
+        "headScale": [0.9, 1.03, 0.78],
+        "shoulderWidth": 0.43,
+        "torsoLength": 0.54,
+        "waistWidth": 0.31,
+        "hipWidth": 0.34,
+        "armLength": 0.61,
+        "legLength": 0.83,
+        "handScale": 0.96,
+        "footScale": 1.0
+      },
+      "face": {
+        "eyeScale": 1.08,
+        "eyeColor": "#355c9a",
+        "browColor": "#2d1f18",
+        "cheekTint": "#f0b8aa"
+      },
+      "hair": {
+        "style": "layered-short",
+        "length": "short",
+        "color": "#2a1d17",
+        "highlightColor": "#6d4a32",
+        "volume": 0.74
+      },
+      "outfit": {
+        "style": "academy-uniform-male",
+        "primaryColor": "#132b68",
+        "secondaryColor": "#f6f0dc",
+        "darkColor": "#18204c",
+        "accentColor": "#8d2834",
+        "trimColor": "#d7b45f",
+        "shoeColor": "#16131c",
+        "cape": "short-mage-cape",
+        "heldItem": "practice-wand"
+      },
+      "animation": {
+        "idlePersonality": "reserved",
+        "walkPersonality": "calm",
+        "talkPersonality": "confident"
+      }
+    },
+    {
+      "id": "lyra",
+      "displayName": "Lyra",
+      "heightMeters": 1.55,
+      "body": {
+        "headScale": [0.94, 1.08, 0.8],
+        "shoulderWidth": 0.33,
+        "torsoLength": 0.47,
+        "waistWidth": 0.24,
+        "hipWidth": 0.35,
+        "armLength": 0.54,
+        "legLength": 0.74,
+        "handScale": 0.9,
+        "footScale": 0.88
+      },
+      "face": {
+        "eyeScale": 1.18,
+        "eyeColor": "#7b66ff",
+        "browColor": "#8a6cff",
+        "cheekTint": "#f4a8c4"
+      },
+      "hair": {
+        "style": "long-layered",
+        "length": "long",
+        "color": "#9f7cff",
+        "highlightColor": "#d8c5ff",
+        "volume": 0.88
+      },
+      "outfit": {
+        "style": "academy-uniform-heroine",
+        "primaryColor": "#f8f2ff",
+        "secondaryColor": "#7d56d9",
+        "darkColor": "#4b2d78",
+        "accentColor": "#a568df",
+        "trimColor": "#f0c86e",
+        "shoeColor": "#1e1630",
+        "cape": "short-capelet",
+        "heldItem": "spellbook"
+      },
+      "animation": {
+        "idlePersonality": "gentle",
+        "walkPersonality": "light",
+        "talkPersonality": "warm"
+      }
+    }
+  ]
+}

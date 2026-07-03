@@ -11,3 +11,7 @@ The existing Three.js procedural characters are useful as temporary fallbacks, b
 5. Let the runtime select an optimized asset or the procedural fallback based on availability and distance.
 
 `CharacterFactory` returns the build plan consumed by `src/three/CharacterModel3D.ts`. The Three layer now receives a `CharacterSpec`, resolves an optimized GLB/VRM asset through the character manifest, and falls back to `ProceduralCharacterRig` only when a production asset is unavailable.
+
+The first reusable DCC template path lives in `scripts/blender`. See
+`docs/blender-character-template.md` for the headless Blender command, template
+contract, and generated GLB output names.

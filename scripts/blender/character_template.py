@@ -1,0 +1,1194 @@
+#!/usr/bin/env python3
+"""
+Headless Blender character template generator.
+
+Run with:
+  blender --background --python scripts/blender/character_template.py -- \
+    --config scripts/blender/character_template_specs.json
+
+The generated GLB is intentionally a reusable anime RPG character template:
+- humanoid armature with stable bone names
+- modular face, hair, outfit, accessories, and held items
+- NLA animation clips for idle, walk, and talk
+- toon-friendly materials with simple color palettes
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import math
+import sys
+from pathlib import Path
+from typing import Any, Iterable
+
+import bpy
+from mathutils import Euler, Matrix, Vector
+
+
+SCRIPT_DIR = Path(__file__).resolve().parent
+REPO_ROOT = SCRIPT_DIR.parents[1]
+DEFAULT_CONFIG = SCRIPT_DIR / "character_template_specs.json"
+
+
+def blender_args() -> list[str]:
+    if "--" not in sys.argv:
+        return []
+    return sys.argv[sys.argv.index("--") + 1 :]
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Generate reusable anime RPG GLB character templates.")
+    parser.add_argument("--config", default=str(DEFAULT_CONFIG), help="Path to character_template_specs.json.")
+    parser.add_argument("--out-dir", default=None, help="Override output directory.")
+    parser.add_argument("--character", default="all", help="Character id to export, or all.")
+    parser.add_argument("--blend", action="store_true", help="Also save a .blend source file next to each GLB.")
+    return parser.parse_args(blender_args())
+
+
+def load_config(path: Path) -> dict[str, Any]:
+    with path.open("r", encoding="utf-8") as handle:
+        return json.load(handle)
+
+
+def repo_path(value: str | Path) -> Path:
+    path = Path(value)
+    if path.is_absolute():
+        return path
+    return (REPO_ROOT / path).resolve()
+
+
+def hex_to_rgba(value: str, alpha: float = 1.0) -> tuple[float, float, float, float]:
+    raw = value.strip().lstrip("#")
+    if len(raw) != 6:
+        raise ValueError(f"Expected #rrggbb color, got {value!r}")
+    return (
+        int(raw[0:2], 16) / 255.0,
+        int(raw[2:4], 16) / 255.0,
+        int(raw[4:6], 16) / 255.0,
+        alpha,
+    )
+
+
+def clear_scene() -> None:
+    bpy.ops.object.select_all(action="SELECT")
+    bpy.ops.object.delete()
+
+    for action in list(bpy.data.actions):
+        action.use_fake_user = False
+        bpy.data.actions.remove(action)
+
+    for block in (
+        bpy.data.meshes,
+        bpy.data.materials,
+        bpy.data.armatures,
+        bpy.data.collections,
+    ):
+        for item in list(block):
+            if item.users == 0:
+                block.remove(item)
+
+
+def create_collection(name: str) -> bpy.types.Collection:
+    collection = bpy.data.collections.new(name)
+    bpy.context.scene.collection.children.link(collection)
+    return collection
+
+
+def link_to_collection(obj: bpy.types.Object, collection: bpy.types.Collection) -> None:
+    if obj.name not in collection.objects.keys():
+        collection.objects.link(obj)
+    for existing in list(obj.users_collection):
+        if existing != collection:
+            existing.objects.unlink(obj)
+
+
+def create_root(name: str, collection: bpy.types.Collection) -> bpy.types.Object:
+    root = bpy.data.objects.new(name, None)
+    root.empty_display_type = "PLAIN_AXES"
+    root.empty_display_size = 0.25
+    collection.objects.link(root)
+    return root
+
+
+def material(
+    name: str,
+    color: str,
+    roughness: float = 0.68,
+    metallic: float = 0.0,
+    alpha: float = 1.0,
+) -> bpy.types.Material:
+    mat = bpy.data.materials.new(name)
+    mat.use_nodes = True
+    mat.diffuse_color = hex_to_rgba(color, alpha)
+    mat.use_backface_culling = True
+    if alpha < 1:
+        mat.blend_method = "BLEND"
+        mat.show_transparent_back = False
+
+    bsdf = mat.node_tree.nodes.get("Principled BSDF")
+    if bsdf:
+        if "Base Color" in bsdf.inputs:
+            bsdf.inputs["Base Color"].default_value = hex_to_rgba(color, alpha)
+        if "Roughness" in bsdf.inputs:
+            bsdf.inputs["Roughness"].default_value = roughness
+        if "Metallic" in bsdf.inputs:
+            bsdf.inputs["Metallic"].default_value = metallic
+        if "Alpha" in bsdf.inputs:
+            bsdf.inputs["Alpha"].default_value = alpha
+    return mat
+
+
+def shade_smooth(obj: bpy.types.Object) -> bpy.types.Object:
+    mesh = getattr(obj, "data", None)
+    if mesh and hasattr(mesh, "polygons"):
+        for polygon in mesh.polygons:
+            polygon.use_smooth = True
+    return obj
+
+
+def apply_object_scale(obj: bpy.types.Object) -> None:
+    bpy.ops.object.select_all(action="DESELECT")
+    bpy.context.view_layer.objects.active = obj
+    obj.select_set(True)
+    bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
+    obj.select_set(False)
+
+
+def add_modifier_if_possible(obj: bpy.types.Object, name: str, modifier_type: str, **values: Any) -> None:
+    try:
+        modifier = obj.modifiers.new(name=name, type=modifier_type)
+        for key, value in values.items():
+            setattr(modifier, key, value)
+    except Exception:
+        pass
+
+
+def parent_keep_world(obj: bpy.types.Object, parent: bpy.types.Object) -> None:
+    world = obj.matrix_world.copy()
+    obj.parent = parent
+    obj.matrix_world = world
+
+
+def parent_to_bone(obj: bpy.types.Object, armature: Any, bone_name: str) -> None:
+    if isinstance(armature, dict):
+        parent_keep_world(obj, armature["controls"][bone_name])
+        return
+
+    world = obj.matrix_world.copy()
+    obj.parent = armature
+    obj.parent_type = "BONE"
+    obj.parent_bone = bone_name
+    obj.matrix_world = world
+
+
+def add_uv_sphere(
+    name: str,
+    mat: bpy.types.Material,
+    loc: tuple[float, float, float],
+    scale: tuple[float, float, float],
+    collection: bpy.types.Collection,
+    segments: int = 32,
+    rings: int = 16,
+) -> bpy.types.Object:
+    bpy.ops.mesh.primitive_uv_sphere_add(segments=segments, ring_count=rings, radius=1.0, location=loc)
+    obj = bpy.context.object
+    obj.name = name
+    obj.scale = scale
+    obj.data.materials.append(mat)
+    apply_object_scale(obj)
+    shade_smooth(obj)
+    link_to_collection(obj, collection)
+    return obj
+
+
+def add_cube(
+    name: str,
+    mat: bpy.types.Material,
+    loc: tuple[float, float, float],
+    scale: tuple[float, float, float],
+    collection: bpy.types.Collection,
+    rotation: tuple[float, float, float] = (0, 0, 0),
+    bevel: float = 0.0,
+) -> bpy.types.Object:
+    bpy.ops.mesh.primitive_cube_add(size=1.0, location=loc, rotation=rotation)
+    obj = bpy.context.object
+    obj.name = name
+    obj.scale = scale
+    apply_object_scale(obj)
+    obj.data.materials.append(mat)
+    if bevel > 0:
+        add_modifier_if_possible(obj, "soft bevel", "BEVEL", width=bevel, segments=3)
+    link_to_collection(obj, collection)
+    return obj
+
+
+def add_cylinder(
+    name: str,
+    mat: bpy.types.Material,
+    loc: tuple[float, float, float],
+    radius: float,
+    depth: float,
+    collection: bpy.types.Collection,
+    vertices: int = 24,
+    rotation: tuple[float, float, float] = (0, 0, 0),
+    scale: tuple[float, float, float] = (1, 1, 1),
+) -> bpy.types.Object:
+    bpy.ops.mesh.primitive_cylinder_add(vertices=vertices, radius=radius, depth=depth, location=loc, rotation=rotation)
+    obj = bpy.context.object
+    obj.name = name
+    obj.scale = scale
+    apply_object_scale(obj)
+    obj.data.materials.append(mat)
+    shade_smooth(obj)
+    link_to_collection(obj, collection)
+    return obj
+
+
+def add_cone(
+    name: str,
+    mat: bpy.types.Material,
+    loc: tuple[float, float, float],
+    radius1: float,
+    radius2: float,
+    depth: float,
+    collection: bpy.types.Collection,
+    vertices: int = 32,
+    rotation: tuple[float, float, float] = (0, 0, 0),
+    scale: tuple[float, float, float] = (1, 1, 1),
+) -> bpy.types.Object:
+    bpy.ops.mesh.primitive_cone_add(
+        vertices=vertices,
+        radius1=radius1,
+        radius2=radius2,
+        depth=depth,
+        location=loc,
+        rotation=rotation,
+    )
+    obj = bpy.context.object
+    obj.name = name
+    obj.scale = scale
+    apply_object_scale(obj)
+    obj.data.materials.append(mat)
+    shade_smooth(obj)
+    link_to_collection(obj, collection)
+    return obj
+
+
+def add_plane_mesh(
+    name: str,
+    mat: bpy.types.Material,
+    verts: list[tuple[float, float, float]],
+    faces: list[tuple[int, ...]],
+    collection: bpy.types.Collection,
+) -> bpy.types.Object:
+    mesh = bpy.data.meshes.new(name + "Mesh")
+    mesh.from_pydata(verts, [], faces)
+    mesh.update()
+    obj = bpy.data.objects.new(name, mesh)
+    obj.data.materials.append(mat)
+    collection.objects.link(obj)
+    return obj
+
+
+def add_hair_panel(
+    name: str,
+    mat: bpy.types.Material,
+    verts: list[tuple[float, float, float]],
+    collection: bpy.types.Collection,
+    thickness: float,
+) -> bpy.types.Object:
+    obj = add_plane_mesh(name, mat, verts, [(0, 1, 2, 3)] if len(verts) == 4 else [(0, 1, 2)], collection)
+    add_modifier_if_possible(obj, "panel thickness", "SOLIDIFY", thickness=thickness)
+    return obj
+
+
+def make_armature(character_id: str, collection: bpy.types.Collection, root: bpy.types.Object) -> dict[str, Any]:
+    """Create a transform-node humanoid rig.
+
+    This first Blender template intentionally uses animated control nodes rather
+    than skinned mesh weights. The GLB remains simple, stable in web runtimes,
+    and still exposes humanoid node names for later replacement by a true
+    Armature + skinning pass.
+    """
+
+    controls: dict[str, bpy.types.Object] = {}
+    rest: dict[str, Vector] = {}
+
+    def add_control(
+        name: str,
+        location: tuple[float, float, float],
+        parent_name: str | None,
+        size: float = 0.08,
+    ) -> bpy.types.Object:
+        control = bpy.data.objects.new(name, None)
+        control.empty_display_type = "PLAIN_AXES"
+        control.empty_display_size = size
+        control.location = location
+        collection.objects.link(control)
+        parent_keep_world(control, controls[parent_name] if parent_name else root)
+        controls[name] = control
+        rest[name] = control.location.copy()
+        return control
+
+    add_control("Hips", (0, 0, 0.82), None, 0.12)
+    add_control("Spine", (0, 0, 0.98), "Hips")
+    add_control("Chest", (0, 0, 1.18), "Spine")
+    add_control("Neck", (0, 0, 1.36), "Chest")
+    add_control("Head", (0, 0, 1.45), "Neck", 0.1)
+
+    for side in ("Left", "Right"):
+        sign = -1 if side == "Left" else 1
+        add_control(f"{side}UpperArm", (sign * 0.22, 0, 1.28), "Chest")
+        add_control(f"{side}LowerArm", (sign * 0.24, 0, -0.2), f"{side}UpperArm")
+        add_control(f"{side}Hand", (sign * 0.09, -0.01, -0.25), f"{side}LowerArm")
+        add_control(f"{side}UpperLeg", (sign * 0.12, 0, -0.02), "Hips")
+        add_control(f"{side}LowerLeg", (sign * 0.02, 0, -0.37), f"{side}UpperLeg")
+        add_control(f"{side}Foot", (0, -0.12, -0.31), f"{side}LowerLeg")
+
+    return {
+        "scene_root": root,
+        "root": controls["Hips"],
+        "controls": controls,
+        "rest": rest,
+        "id": f"{character_id}_TemplateRig",
+    }
+
+
+def build_character(spec: dict[str, Any], out_dir: Path, save_blend: bool) -> Path:
+    clear_scene()
+    scene = bpy.context.scene
+    try:
+        scene.render.engine = "BLENDER_EEVEE_NEXT"
+    except TypeError:
+        scene.render.engine = "BLENDER_EEVEE"
+    scene.frame_start = 1
+    scene.frame_end = 60
+    scene.render.fps = 30
+
+    character_id = spec["id"]
+    collection = create_collection(f"{character_id}_character_template")
+    root = create_root(f"{character_id}_Root", collection)
+    armature = make_armature(character_id, collection, root)
+
+    mats = make_materials(spec)
+    metrics = make_metrics(spec)
+
+    add_body(spec, metrics, mats, armature, collection)
+    add_head(spec, metrics, mats, armature, collection)
+    add_hair(spec, metrics, mats, armature, collection)
+    add_outfit(spec, metrics, mats, armature, collection)
+    add_accessories(spec, metrics, mats, armature, collection)
+    add_template_helpers(spec, metrics, mats, armature, collection)
+    make_actions(armature, spec)
+
+    fit_root_to_height(root, collection, spec["heightMeters"])
+    tag_scene(root, armature, spec)
+    add_camera_and_light(spec)
+
+    out_dir.mkdir(parents=True, exist_ok=True)
+    output = out_dir / f"{character_id}.blender-template.glb"
+    export_glb(output)
+
+    if save_blend:
+        bpy.ops.wm.save_as_mainfile(filepath=str(out_dir / f"{character_id}.blender-template.blend"))
+
+    print(f"[character-template] exported {output}")
+    return output
+
+
+def make_materials(spec: dict[str, Any]) -> dict[str, bpy.types.Material]:
+    outfit = spec["outfit"]
+    face = spec["face"]
+    hair = spec["hair"]
+    return {
+        "skin": material("Skin", "#f3c7ad", 0.72),
+        "skin_warm": material("SkinWarm", "#e7aa91", 0.76),
+        "cheek": material("CheekTint", face["cheekTint"], 0.82, alpha=0.82),
+        "eye_white": material("EyeWhite", "#fbf8ff", 0.48),
+        "eye": material("EyeIris", face["eyeColor"], 0.36),
+        "pupil": material("Pupil", "#14111c", 0.52),
+        "brow": material("Brow", face["browColor"], 0.6),
+        "hair": material("Hair", hair["color"], 0.56),
+        "hair_highlight": material("HairHighlight", hair["highlightColor"], 0.52),
+        "outfit_primary": material("OutfitPrimary", outfit["primaryColor"], 0.64),
+        "outfit_secondary": material("OutfitSecondary", outfit["secondaryColor"], 0.7),
+        "outfit_dark": material("OutfitDark", outfit["darkColor"], 0.68),
+        "accent": material("Accent", outfit["accentColor"], 0.62),
+        "trim": material("GoldTrim", outfit["trimColor"], 0.34, metallic=0.25),
+        "shoe": material("Shoe", outfit["shoeColor"], 0.58),
+        "outline": material("SoftInk", "#17131f", 0.8),
+        "paper": material("BookPaper", "#f7efd7", 0.76),
+    }
+
+
+def make_metrics(spec: dict[str, Any]) -> dict[str, float]:
+    height = float(spec["heightMeters"])
+    scale = height / 1.68
+    body = spec["body"]
+    return {
+        "height": height,
+        "scale": scale,
+        "hip_z": 0.82 * scale,
+        "chest_z": 1.18 * scale,
+        "shoulder_z": 1.29 * scale,
+        "neck_z": 1.38 * scale,
+        "head_z": 1.52 * scale,
+        "head_radius": 0.178 * scale,
+        "shoulder_width": float(body["shoulderWidth"]) * scale,
+        "hip_width": float(body["hipWidth"]) * scale,
+        "waist_width": float(body["waistWidth"]) * scale,
+        "arm_len": float(body["armLength"]) * scale,
+        "leg_len": float(body["legLength"]) * scale,
+    }
+
+
+def add_body(
+    spec: dict[str, Any],
+    m: dict[str, float],
+    mats: dict[str, bpy.types.Material],
+    armature: bpy.types.Object,
+    collection: bpy.types.Collection,
+) -> None:
+    is_player = spec["id"] == "player"
+    scale = m["scale"]
+
+    pelvis = add_uv_sphere(
+        "Pelvis",
+        mats["outfit_dark"] if is_player else mats["outfit_secondary"],
+        (0, 0.01 * scale, m["hip_z"]),
+        (m["hip_width"] * 0.46, 0.135 * scale, 0.105 * scale),
+        collection,
+    )
+    parent_to_bone(pelvis, armature, "Hips")
+
+    torso = add_uv_sphere(
+        "Torso",
+        mats["outfit_primary"] if is_player else mats["outfit_secondary"],
+        (0, -0.005 * scale, 1.12 * scale),
+        (m["waist_width"] * 0.62, 0.14 * scale, 0.285 * scale),
+        collection,
+        segments=40,
+        rings=18,
+    )
+    parent_to_bone(torso, armature, "Spine")
+
+    chest = add_uv_sphere(
+        "ChestShape",
+        mats["outfit_primary"],
+        (0, -0.005 * scale, 1.24 * scale),
+        (m["shoulder_width"] * 0.54, 0.15 * scale, 0.22 * scale),
+        collection,
+        segments=40,
+        rings=18,
+    )
+    parent_to_bone(chest, armature, "Chest")
+
+    shirt = add_uv_sphere(
+        "ShirtFront",
+        mats["outfit_secondary"] if is_player else mats["outfit_primary"],
+        (0, -0.185 * scale, 1.19 * scale),
+        (m["waist_width"] * 0.42, 0.028 * scale, 0.23 * scale),
+        collection,
+        segments=28,
+        rings=12,
+    )
+    parent_to_bone(shirt, armature, "Chest")
+
+    for side, sx in (("Left", -1), ("Right", 1)):
+        lapel = add_cube(
+            f"{side}JacketPanel",
+            mats["outfit_dark"],
+            (sx * 0.075 * scale, -0.215 * scale, 1.17 * scale),
+            (0.035 * scale, 0.014 * scale, 0.23 * scale),
+            collection,
+            rotation=(0, 0, sx * 0.16),
+            bevel=0.006 * scale,
+        )
+        parent_to_bone(lapel, armature, "Chest")
+
+        trim = add_cube(
+            f"{side}JacketTrim",
+            mats["trim"],
+            (sx * 0.16 * scale, -0.233 * scale, 1.18 * scale),
+            (0.008 * scale, 0.009 * scale, 0.29 * scale),
+            collection,
+            rotation=(0, 0, sx * 0.26),
+            bevel=0.002 * scale,
+        )
+        parent_to_bone(trim, armature, "Chest")
+
+    neck = add_cylinder("Neck", mats["skin"], (0, -0.005 * scale, m["neck_z"]), 0.055 * scale, 0.1 * scale, collection, vertices=24)
+    parent_to_bone(neck, armature, "Neck")
+
+    add_limbs(spec, m, mats, armature, collection)
+
+
+def add_limbs(
+    spec: dict[str, Any],
+    m: dict[str, float],
+    mats: dict[str, bpy.types.Material],
+    armature: bpy.types.Object,
+    collection: bpy.types.Collection,
+) -> None:
+    scale = m["scale"]
+    shoulder = m["shoulder_width"]
+    is_player = spec["id"] == "player"
+
+    for side, sx in (("Left", -1), ("Right", 1)):
+        upper_arm = add_uv_sphere(
+            f"{side}UpperArm",
+            mats["outfit_primary"],
+            (sx * (shoulder * 0.66), -0.005 * scale, 1.12 * scale),
+            (0.055 * scale, 0.055 * scale, 0.19 * scale),
+            collection,
+            segments=24,
+            rings=12,
+        )
+        upper_arm.rotation_euler[1] = sx * 0.2
+        parent_to_bone(upper_arm, armature, f"{side}UpperArm")
+
+        lower_arm = add_uv_sphere(
+            f"{side}LowerArm",
+            mats["outfit_primary"],
+            (sx * (shoulder * 0.78), -0.005 * scale, 0.88 * scale),
+            (0.047 * scale, 0.047 * scale, 0.18 * scale),
+            collection,
+            segments=24,
+            rings=12,
+        )
+        lower_arm.rotation_euler[1] = sx * 0.12
+        parent_to_bone(lower_arm, armature, f"{side}LowerArm")
+
+        cuff = add_cylinder(
+            f"{side}Cuff",
+            mats["trim"] if is_player else mats["accent"],
+            (sx * (shoulder * 0.83), -0.006 * scale, 0.74 * scale),
+            0.052 * scale,
+            0.035 * scale,
+            collection,
+            vertices=18,
+            rotation=(math.pi / 2, 0, 0),
+            scale=(1, 0.65, 1),
+        )
+        parent_to_bone(cuff, armature, f"{side}LowerArm")
+
+        hand = add_uv_sphere(
+            f"{side}Hand",
+            mats["skin"],
+            (sx * (shoulder * 0.84), -0.015 * scale, 0.68 * scale),
+            (0.047 * scale, 0.034 * scale, 0.052 * scale),
+            collection,
+            segments=20,
+            rings=10,
+        )
+        parent_to_bone(hand, armature, f"{side}Hand")
+
+        thigh_mat = mats["outfit_dark"] if is_player else mats["outfit_secondary"]
+        thigh = add_uv_sphere(
+            f"{side}UpperLeg",
+            thigh_mat,
+            (sx * 0.095 * scale, 0, 0.55 * scale),
+            (0.062 * scale, 0.062 * scale, 0.24 * scale),
+            collection,
+            segments=24,
+            rings=12,
+        )
+        parent_to_bone(thigh, armature, f"{side}UpperLeg")
+
+        lower_leg = add_uv_sphere(
+            f"{side}LowerLeg",
+            thigh_mat,
+            (sx * 0.09 * scale, 0, 0.28 * scale),
+            (0.052 * scale, 0.052 * scale, 0.22 * scale),
+            collection,
+            segments=24,
+            rings=12,
+        )
+        parent_to_bone(lower_leg, armature, f"{side}LowerLeg")
+
+        boot = add_cube(
+            f"{side}Boot",
+            mats["shoe"],
+            (sx * 0.09 * scale, -0.045 * scale, 0.06 * scale),
+            (0.06 * scale, 0.105 * scale, 0.035 * scale),
+            collection,
+            bevel=0.012 * scale,
+        )
+        parent_to_bone(boot, armature, f"{side}Foot")
+
+
+def add_head(
+    spec: dict[str, Any],
+    m: dict[str, float],
+    mats: dict[str, bpy.types.Material],
+    armature: bpy.types.Object,
+    collection: bpy.types.Collection,
+) -> None:
+    scale = m["scale"]
+    head_scale = spec["body"]["headScale"]
+    head = add_uv_sphere(
+        "Face",
+        mats["skin"],
+        (0, -0.015 * scale, m["head_z"]),
+        (
+            m["head_radius"] * float(head_scale[0]),
+            m["head_radius"] * 0.82 * float(head_scale[2]),
+            m["head_radius"] * 1.05 * float(head_scale[1]),
+        ),
+        collection,
+        segments=48,
+        rings=24,
+    )
+    parent_to_bone(head, armature, "Head")
+
+    nose = add_uv_sphere("Nose", mats["skin_warm"], (0, -0.198 * scale, 1.51 * scale), (0.014 * scale, 0.011 * scale, 0.026 * scale), collection, 16, 8)
+    parent_to_bone(nose, armature, "Head")
+
+    mouth = add_cube("Mouth", mats["pupil"], (0.008 * scale, -0.212 * scale, 1.45 * scale), (0.036 * scale, 0.004 * scale, 0.006 * scale), collection, rotation=(0, 0, 0.04), bevel=0.002 * scale)
+    parent_to_bone(mouth, armature, "Head")
+
+    eye_scale = float(spec["face"]["eyeScale"])
+    for side, sx in (("Left", -1), ("Right", 1)):
+        eye_x = sx * 0.067 * scale
+        eye_white = add_uv_sphere(
+            f"{side}EyeWhite",
+            mats["eye_white"],
+            (eye_x, -0.206 * scale, 1.545 * scale),
+            (0.05 * scale * eye_scale, 0.009 * scale, 0.034 * scale * eye_scale),
+            collection,
+            segments=28,
+            rings=12,
+        )
+        parent_to_bone(eye_white, armature, "Head")
+
+        iris = add_uv_sphere(
+            f"{side}Iris",
+            mats["eye"],
+            (eye_x + sx * 0.005 * scale, -0.214 * scale, 1.54 * scale),
+            (0.025 * scale * eye_scale, 0.004 * scale, 0.028 * scale * eye_scale),
+            collection,
+            segments=24,
+            rings=10,
+        )
+        parent_to_bone(iris, armature, "Head")
+
+        pupil = add_uv_sphere(
+            f"{side}Pupil",
+            mats["pupil"],
+            (eye_x + sx * 0.006 * scale, -0.218 * scale, 1.538 * scale),
+            (0.011 * scale, 0.003 * scale, 0.016 * scale),
+            collection,
+            segments=16,
+            rings=8,
+        )
+        parent_to_bone(pupil, armature, "Head")
+
+        highlight = add_uv_sphere(
+            f"{side}EyeHighlight",
+            mats["eye_white"],
+            (eye_x - sx * 0.012 * scale, -0.221 * scale, 1.558 * scale),
+            (0.006 * scale, 0.002 * scale, 0.008 * scale),
+            collection,
+            segments=12,
+            rings=6,
+        )
+        parent_to_bone(highlight, armature, "Head")
+
+        lash = add_cube(
+            f"{side}UpperEyelash",
+            mats["outline"],
+            (eye_x, -0.224 * scale, 1.57 * scale),
+            (0.054 * scale * eye_scale, 0.003 * scale, 0.004 * scale),
+            collection,
+            rotation=(0, 0, sx * 0.09),
+            bevel=0.001 * scale,
+        )
+        parent_to_bone(lash, armature, "Head")
+
+        brow = add_cube(
+            f"{side}Brow",
+            mats["brow"],
+            (eye_x, -0.212 * scale, 1.602 * scale),
+            (0.042 * scale, 0.004 * scale, 0.006 * scale),
+            collection,
+            rotation=(0, 0, sx * 0.16),
+            bevel=0.0015 * scale,
+        )
+        parent_to_bone(brow, armature, "Head")
+
+        cheek = add_uv_sphere(
+            f"{side}CheekTint",
+            mats["cheek"],
+            (sx * 0.115 * scale, -0.207 * scale, 1.485 * scale),
+            (0.034 * scale, 0.004 * scale, 0.014 * scale),
+            collection,
+            segments=16,
+            rings=8,
+        )
+        parent_to_bone(cheek, armature, "Head")
+
+
+def add_hair(
+    spec: dict[str, Any],
+    m: dict[str, float],
+    mats: dict[str, bpy.types.Material],
+    armature: bpy.types.Object,
+    collection: bpy.types.Collection,
+) -> None:
+    scale = m["scale"]
+    volume = float(spec["hair"]["volume"])
+    cap = add_uv_sphere(
+        "HairCap",
+        mats["hair"],
+        (0, -0.005 * scale, 1.62 * scale),
+        (0.235 * scale * volume, 0.205 * scale * volume, 0.13 * scale),
+        collection,
+        segments=48,
+        rings=18,
+    )
+    parent_to_bone(cap, armature, "Head")
+
+    back = add_uv_sphere(
+        "BackHairMass",
+        mats["hair"],
+        (0, 0.12 * scale, 1.5 * scale),
+        (0.185 * scale * volume, 0.12 * scale, 0.17 * scale),
+        collection,
+        segments=40,
+        rings=16,
+    )
+    parent_to_bone(back, armature, "Head")
+
+    if spec["hair"]["length"] == "long":
+        add_long_hair(m, mats, armature, collection)
+    else:
+        add_short_hair(m, mats, armature, collection)
+
+
+def add_short_hair(
+    m: dict[str, float],
+    mats: dict[str, bpy.types.Material],
+    armature: bpy.types.Object,
+    collection: bpy.types.Collection,
+) -> None:
+    scale = m["scale"]
+    bangs = [
+        ("FrontHairLock_Left", mats["hair"], [(-0.19, -0.218, 1.65), (-0.065, -0.226, 1.68), (-0.105, -0.238, 1.49)]),
+        ("FrontHairLock_Center", mats["hair_highlight"], [(-0.07, -0.226, 1.685), (0.072, -0.228, 1.685), (0.012, -0.242, 1.505)]),
+        ("FrontHairLock_Right", mats["hair"], [(0.065, -0.226, 1.675), (0.19, -0.218, 1.645), (0.122, -0.238, 1.49)]),
+        ("SideSweptBang", mats["hair_highlight"], [(-0.035, -0.236, 1.675), (0.178, -0.224, 1.625), (0.072, -0.244, 1.525)]),
+    ]
+    for name, mat, verts in bangs:
+        lock = add_hair_panel(name, mat, [(x * scale, y * scale, z * scale) for x, y, z in verts], collection, 0.008 * scale)
+        parent_to_bone(lock, armature, "Head")
+
+    side_panels = [
+        ("LeftSideHairLayer", mats["hair"], [(-0.225, -0.06, 1.62), (-0.165, -0.185, 1.58), (-0.18, -0.16, 1.36), (-0.245, 0.015, 1.34)]),
+        ("RightSideHairLayer", mats["hair"], [(0.165, -0.185, 1.58), (0.225, -0.06, 1.62), (0.245, 0.015, 1.34), (0.18, -0.16, 1.36)]),
+        ("BackHairNape", mats["hair_highlight"], [(-0.18, 0.125, 1.56), (0.18, 0.125, 1.56), (0.14, 0.15, 1.32), (-0.14, 0.15, 1.32)]),
+    ]
+    for name, mat, verts in side_panels:
+        panel = add_hair_panel(name, mat, [(x * scale, y * scale, z * scale) for x, y, z in verts], collection, 0.01 * scale)
+        parent_to_bone(panel, armature, "Head")
+
+
+def add_long_hair(
+    m: dict[str, float],
+    mats: dict[str, bpy.types.Material],
+    armature: bpy.types.Object,
+    collection: bpy.types.Collection,
+) -> None:
+    scale = m["scale"]
+    front_panels = [
+        ("LyraFrontBang_Left", mats["hair"], [(-0.185, -0.224, 1.65), (-0.055, -0.234, 1.69), (-0.105, -0.248, 1.505)]),
+        ("LyraFrontBang_Center", mats["hair_highlight"], [(-0.07, -0.238, 1.695), (0.07, -0.238, 1.695), (0.0, -0.254, 1.515)]),
+        ("LyraFrontBang_Right", mats["hair"], [(0.055, -0.234, 1.69), (0.185, -0.224, 1.65), (0.105, -0.248, 1.505)]),
+        ("LyraSideSweptBang", mats["hair_highlight"], [(-0.03, -0.246, 1.69), (0.185, -0.232, 1.615), (0.06, -0.258, 1.54)]),
+    ]
+    for name, mat, verts in front_panels:
+        panel = add_hair_panel(name, mat, [(x * scale, y * scale, z * scale) for x, y, z in verts], collection, 0.008 * scale)
+        parent_to_bone(panel, armature, "Head")
+
+    long_panels = [
+        ("LongHairBackSheet", mats["hair"], [(-0.22, 0.13, 1.62), (0.22, 0.13, 1.62), (0.18, 0.18, 0.82), (-0.18, 0.18, 0.82)]),
+        ("LongHairLeftOuter", mats["hair"], [(-0.23, -0.04, 1.60), (-0.16, 0.07, 1.58), (-0.17, 0.1, 0.86), (-0.28, -0.01, 0.92)]),
+        ("LongHairRightOuter", mats["hair"], [(0.16, 0.07, 1.58), (0.23, -0.04, 1.60), (0.28, -0.01, 0.92), (0.17, 0.1, 0.86)]),
+        ("LongHairLeftHighlight", mats["hair_highlight"], [(-0.19, -0.085, 1.52), (-0.14, -0.02, 1.51), (-0.145, 0.02, 1.02), (-0.215, -0.055, 1.04)]),
+        ("LongHairRightHighlight", mats["hair_highlight"], [(0.14, -0.02, 1.51), (0.19, -0.085, 1.52), (0.215, -0.055, 1.04), (0.145, 0.02, 1.02)]),
+    ]
+    for name, mat, verts in long_panels:
+        panel = add_hair_panel(name, mat, [(x * scale, y * scale, z * scale) for x, y, z in verts], collection, 0.012 * scale)
+        parent_to_bone(panel, armature, "Head")
+
+    clip = add_cone("StarHairClip", mats["trim"], (0.2 * scale, -0.238 * scale, 1.63 * scale), 0.033 * scale, 0.033 * scale, 0.014 * scale, collection, vertices=5, rotation=(math.pi / 2, 0, math.pi / 5))
+    parent_to_bone(clip, armature, "Head")
+
+
+def add_outfit(
+    spec: dict[str, Any],
+    m: dict[str, float],
+    mats: dict[str, bpy.types.Material],
+    armature: bpy.types.Object,
+    collection: bpy.types.Collection,
+) -> None:
+    scale = m["scale"]
+    if spec["id"] == "player":
+        tie = add_cone("Necktie", mats["accent"], (0, -0.235 * scale, 1.22 * scale), 0.035 * scale, 0.012 * scale, 0.23 * scale, collection, vertices=4, rotation=(0, 0, math.pi / 4))
+        parent_to_bone(tie, armature, "Chest")
+        knot = add_uv_sphere("TieKnot", mats["trim"], (0, -0.238 * scale, 1.35 * scale), (0.035 * scale, 0.012 * scale, 0.03 * scale), collection, 16, 8)
+        parent_to_bone(knot, armature, "Chest")
+    else:
+        add_skirt(m, mats, armature, collection)
+        bow_center = add_uv_sphere("RibbonCenter", mats["trim"], (0, -0.235 * scale, 1.29 * scale), (0.035 * scale, 0.012 * scale, 0.035 * scale), collection, 16, 8)
+        parent_to_bone(bow_center, armature, "Chest")
+        for side, sx in (("Left", -1), ("Right", 1)):
+            bow = add_uv_sphere(f"{side}RibbonLoop", mats["accent"], (sx * 0.065 * scale, -0.242 * scale, 1.29 * scale), (0.065 * scale, 0.012 * scale, 0.036 * scale), collection, 16, 8)
+            bow.rotation_euler[2] = sx * 0.18
+            parent_to_bone(bow, armature, "Chest")
+
+    cape = add_cape(spec, m, mats, collection)
+    parent_to_bone(cape, armature, "Chest")
+
+
+def add_skirt(
+    m: dict[str, float],
+    mats: dict[str, bpy.types.Material],
+    armature: bpy.types.Object,
+    collection: bpy.types.Collection,
+) -> None:
+    scale = m["scale"]
+    skirt = add_cone("LayeredSkirt", mats["outfit_secondary"], (0, -0.005 * scale, 0.77 * scale), 0.29 * scale, 0.18 * scale, 0.24 * scale, collection, vertices=32)
+    parent_to_bone(skirt, armature, "Hips")
+    belt = add_cylinder("WaistRibbonBelt", mats["trim"], (0, -0.005 * scale, 0.89 * scale), 0.19 * scale, 0.028 * scale, collection, vertices=32, scale=(1.35, 0.72, 0.45))
+    parent_to_bone(belt, armature, "Hips")
+    for index, x in enumerate((-0.18, -0.105, -0.035, 0.035, 0.105, 0.18)):
+        pleat = add_cube(
+            f"SkirtFrontPleat_{index}",
+            mats["accent"] if index % 2 else mats["outfit_dark"],
+            (x * scale, -0.216 * scale, 0.75 * scale),
+            (0.014 * scale, 0.009 * scale, 0.18 * scale),
+            collection,
+            rotation=(0, 0, -x * 0.45),
+            bevel=0.0015 * scale,
+        )
+        parent_to_bone(pleat, armature, "Hips")
+    hem = add_cylinder("SkirtTrim", mats["trim"], (0, -0.005 * scale, 0.65 * scale), 0.294 * scale, 0.018 * scale, collection, vertices=32, scale=(1, 1, 0.55))
+    parent_to_bone(hem, armature, "Hips")
+
+
+def add_cape(
+    spec: dict[str, Any],
+    m: dict[str, float],
+    mats: dict[str, bpy.types.Material],
+    collection: bpy.types.Collection,
+) -> bpy.types.Object:
+    scale = m["scale"]
+    width_top = 0.31 * scale if spec["id"] == "player" else 0.27 * scale
+    width_bottom = 0.5 * scale if spec["id"] == "player" else 0.42 * scale
+    top_z = 1.3 * scale
+    bottom_z = 0.78 * scale if spec["id"] == "player" else 0.98 * scale
+    y = 0.205 * scale
+    verts = [
+        (-width_top, y, top_z),
+        (width_top, y, top_z),
+        (width_bottom, y + 0.02 * scale, bottom_z),
+        (-width_bottom, y + 0.02 * scale, bottom_z),
+    ]
+    cape = add_plane_mesh("MageCape" if spec["id"] == "player" else "Capelet", mats["outfit_dark"], verts, [(0, 1, 2, 3)], collection)
+    add_modifier_if_possible(cape, "cloth thickness", "SOLIDIFY", thickness=0.006 * scale)
+    return cape
+
+
+def add_accessories(
+    spec: dict[str, Any],
+    m: dict[str, float],
+    mats: dict[str, bpy.types.Material],
+    armature: bpy.types.Object,
+    collection: bpy.types.Collection,
+) -> None:
+    scale = m["scale"]
+    held = spec["outfit"]["heldItem"]
+    if held == "practice-wand":
+        wand = add_cylinder("PracticeWand", mats["shoe"], (0.39 * scale, -0.08 * scale, 0.79 * scale), 0.012 * scale, 0.58 * scale, collection, vertices=10, rotation=(0.25, 0.18, 0.2))
+        parent_to_bone(wand, armature, "RightHand")
+        gem = add_uv_sphere("WandGem", mats["trim"], (0.31 * scale, -0.135 * scale, 1.06 * scale), (0.035 * scale, 0.035 * scale, 0.035 * scale), collection, 12, 8)
+        parent_to_bone(gem, armature, "RightHand")
+    elif held == "spellbook":
+        book = add_cube("SpellbookCover", mats["outfit_dark"], (-0.38 * scale, -0.12 * scale, 0.86 * scale), (0.09 * scale, 0.025 * scale, 0.125 * scale), collection, rotation=(0.2, 0.1, -0.08), bevel=0.006 * scale)
+        parent_to_bone(book, armature, "LeftHand")
+        pages = add_cube("SpellbookPages", mats["paper"], (-0.38 * scale, -0.147 * scale, 0.86 * scale), (0.076 * scale, 0.011 * scale, 0.106 * scale), collection, rotation=(0.2, 0.1, -0.08), bevel=0.004 * scale)
+        parent_to_bone(pages, armature, "LeftHand")
+
+    brooch = add_uv_sphere("AcademyCrest", mats["trim"], (0.07 * scale, -0.246 * scale, 1.33 * scale), (0.026 * scale, 0.008 * scale, 0.026 * scale), collection, 16, 8)
+    parent_to_bone(brooch, armature, "Chest")
+
+
+def add_template_helpers(
+    spec: dict[str, Any],
+    m: dict[str, float],
+    mats: dict[str, bpy.types.Material],
+    armature: Any,
+    collection: bpy.types.Collection,
+) -> None:
+    scale = m["scale"]
+    ring = add_cylinder("SelectionRing", mats["trim"], (0, 0, 0.018 * scale), 0.42 * scale, 0.008 * scale, collection, vertices=64, scale=(1, 1, 0.08))
+    ring.name = "SelectionRing_TemplateHelper"
+    parent_keep_world(ring, armature["scene_root"] if isinstance(armature, dict) else armature)
+
+
+def make_actions(armature: Any, spec: dict[str, Any]) -> None:
+    if isinstance(armature, dict):
+        make_node_actions(armature, spec)
+        return
+
+    actions = [
+        ("idle", make_idle_keys(spec)),
+        ("walk", make_walk_keys(spec)),
+        ("talk", make_talk_keys(spec)),
+    ]
+    armature.animation_data_create()
+    for name, frames in actions:
+        clear_pose(armature)
+        action = bpy.data.actions.new(name)
+        action.use_fake_user = True
+        armature.animation_data.action = action
+        for frame, pose in frames:
+            set_pose_frame(armature, frame, pose)
+        track = armature.animation_data.nla_tracks.new()
+        track.name = name
+        strip = track.strips.new(name, int(frames[0][0]), action)
+        strip.name = name
+        strip.action = action
+    armature.animation_data.action = None
+    clear_pose(armature)
+
+
+def make_node_actions(rig: dict[str, Any], spec: dict[str, Any]) -> None:
+    actions = [
+        ("idle", make_idle_keys(spec)),
+        ("walk", make_walk_keys(spec)),
+        ("talk", make_talk_keys(spec)),
+    ]
+
+    for clip_name, frames in actions:
+        animated_nodes = sorted({node_name for _, pose in frames for node_name in pose.keys()})
+        for node_name in animated_nodes:
+            control = rig["controls"].get(node_name)
+            if not control:
+                continue
+            control.animation_data_create()
+            action = bpy.data.actions.new(f"{node_name}_{clip_name}")
+            action.use_fake_user = True
+            control.animation_data.action = action
+            for frame, pose in frames:
+                rotation, offset = pose.get(node_name, ((0, 0, 0), (0, 0, 0)))
+                control.rotation_euler = Euler(rotation, "XYZ")
+                control.location = rig["rest"][node_name] + Vector(offset)
+                control.keyframe_insert(data_path="rotation_euler", frame=frame)
+                control.keyframe_insert(data_path="location", frame=frame)
+
+            track = control.animation_data.nla_tracks.new()
+            track.name = clip_name
+            strip = track.strips.new(clip_name, int(frames[0][0]), action)
+            strip.name = clip_name
+            strip.action = action
+            control.animation_data.action = None
+
+    clear_pose(rig)
+
+
+def make_idle_keys(spec: dict[str, Any]) -> list[tuple[int, dict[str, Any]]]:
+    soft = 0.025 if spec["animation"]["idlePersonality"] == "gentle" else 0.018
+    return [
+        (1, {"Chest": ((0, 0, 0), (0, 0, 0)), "Head": ((0.02, 0, 0), (0, 0, 0))}),
+        (30, {"Chest": ((soft, 0, 0), (0, 0, 0.012)), "Head": ((-0.015, 0.02, 0.01), (0, 0, 0))}),
+        (60, {"Chest": ((0, 0, 0), (0, 0, 0)), "Head": ((0.02, 0, 0), (0, 0, 0))}),
+    ]
+
+
+def make_walk_keys(spec: dict[str, Any]) -> list[tuple[int, dict[str, Any]]]:
+    light = spec["animation"]["walkPersonality"] == "light"
+    stride = 0.42 if light else 0.34
+    arm = 0.32 if light else 0.26
+    bounce = 0.025 if light else 0.018
+    return [
+        (
+            1,
+            {
+                "Hips": ((0, 0, 0), (0, 0, 0)),
+                "LeftUpperLeg": ((stride, 0, 0), (0, 0, 0)),
+                "RightUpperLeg": ((-stride, 0, 0), (0, 0, 0)),
+                "LeftUpperArm": ((-arm, 0, 0.08), (0, 0, 0)),
+                "RightUpperArm": ((arm, 0, -0.08), (0, 0, 0)),
+            },
+        ),
+        (
+            15,
+            {
+                "Hips": ((0, 0, 0), (0, 0, bounce)),
+                "LeftUpperLeg": ((0, 0, 0), (0, 0, 0)),
+                "RightUpperLeg": ((0, 0, 0), (0, 0, 0)),
+                "LeftUpperArm": ((0, 0, 0), (0, 0, 0)),
+                "RightUpperArm": ((0, 0, 0), (0, 0, 0)),
+            },
+        ),
+        (
+            30,
+            {
+                "Hips": ((0, 0, 0), (0, 0, 0)),
+                "LeftUpperLeg": ((-stride, 0, 0), (0, 0, 0)),
+                "RightUpperLeg": ((stride, 0, 0), (0, 0, 0)),
+                "LeftUpperArm": ((arm, 0, 0.08), (0, 0, 0)),
+                "RightUpperArm": ((-arm, 0, -0.08), (0, 0, 0)),
+            },
+        ),
+        (
+            45,
+            {
+                "Hips": ((0, 0, 0), (0, 0, bounce)),
+                "LeftUpperLeg": ((0, 0, 0), (0, 0, 0)),
+                "RightUpperLeg": ((0, 0, 0), (0, 0, 0)),
+                "LeftUpperArm": ((0, 0, 0), (0, 0, 0)),
+                "RightUpperArm": ((0, 0, 0), (0, 0, 0)),
+            },
+        ),
+        (
+            60,
+            {
+                "Hips": ((0, 0, 0), (0, 0, 0)),
+                "LeftUpperLeg": ((stride, 0, 0), (0, 0, 0)),
+                "RightUpperLeg": ((-stride, 0, 0), (0, 0, 0)),
+                "LeftUpperArm": ((-arm, 0, 0.08), (0, 0, 0)),
+                "RightUpperArm": ((arm, 0, -0.08), (0, 0, 0)),
+            },
+        ),
+    ]
+
+
+def make_talk_keys(spec: dict[str, Any]) -> list[tuple[int, dict[str, Any]]]:
+    warm = spec["animation"]["talkPersonality"] == "warm"
+    hand_side = "LeftUpperArm" if warm else "RightUpperArm"
+    hand_lower = "LeftLowerArm" if warm else "RightLowerArm"
+    return [
+        (1, {"Head": ((0.0, 0.0, 0.0), (0, 0, 0)), hand_side: ((0.0, 0.0, 0.0), (0, 0, 0)), hand_lower: ((0.0, 0.0, 0.0), (0, 0, 0))}),
+        (20, {"Head": ((-0.025, 0.03, 0.02), (0, 0, 0)), hand_side: ((-0.38, 0.0, 0.18), (0, 0, 0)), hand_lower: ((-0.32, 0.1, 0.0), (0, 0, 0))}),
+        (40, {"Head": ((0.018, -0.02, -0.015), (0, 0, 0)), hand_side: ((-0.24, 0.0, 0.08), (0, 0, 0)), hand_lower: ((-0.16, 0.06, 0.0), (0, 0, 0))}),
+        (60, {"Head": ((0.0, 0.0, 0.0), (0, 0, 0)), hand_side: ((0.0, 0.0, 0.0), (0, 0, 0)), hand_lower: ((0.0, 0.0, 0.0), (0, 0, 0))}),
+    ]
+
+
+def clear_pose(armature: Any) -> None:
+    if isinstance(armature, dict):
+        for node_name, control in armature["controls"].items():
+            control.rotation_euler = (0, 0, 0)
+            control.location = armature["rest"][node_name].copy()
+        bpy.context.view_layer.update()
+        return
+
+    bpy.context.view_layer.objects.active = armature
+    bpy.ops.object.mode_set(mode="POSE")
+    for bone in armature.pose.bones:
+        bone.rotation_mode = "XYZ"
+        bone.rotation_euler = (0, 0, 0)
+        bone.location = (0, 0, 0)
+    bpy.ops.object.mode_set(mode="OBJECT")
+
+
+def set_pose_frame(armature: bpy.types.Object, frame: int, pose: dict[str, Any]) -> None:
+    scene = bpy.context.scene
+    scene.frame_set(frame)
+    bpy.context.view_layer.objects.active = armature
+    bpy.ops.object.mode_set(mode="POSE")
+    for bone_name, values in pose.items():
+        bone = armature.pose.bones.get(bone_name)
+        if not bone:
+            continue
+        rotation, location = values
+        bone.rotation_mode = "XYZ"
+        bone.rotation_euler = Euler(rotation, "XYZ")
+        bone.location = Vector(location)
+        bone.keyframe_insert(data_path="rotation_euler", frame=frame)
+        bone.keyframe_insert(data_path="location", frame=frame)
+    bpy.ops.object.mode_set(mode="OBJECT")
+
+
+def fit_root_to_height(root: bpy.types.Object, collection: bpy.types.Collection, target_height: float) -> None:
+    bpy.context.view_layer.update()
+    bbox_min = Vector((10**9, 10**9, 10**9))
+    bbox_max = Vector((-10**9, -10**9, -10**9))
+    for obj in collection.objects:
+        if obj.type not in {"MESH", "ARMATURE"}:
+            continue
+        for corner in obj.bound_box:
+            world = obj.matrix_world @ Vector(corner)
+            bbox_min.x = min(bbox_min.x, world.x)
+            bbox_min.y = min(bbox_min.y, world.y)
+            bbox_min.z = min(bbox_min.z, world.z)
+            bbox_max.x = max(bbox_max.x, world.x)
+            bbox_max.y = max(bbox_max.y, world.y)
+            bbox_max.z = max(bbox_max.z, world.z)
+    height = max(0.001, bbox_max.z - bbox_min.z)
+    factor = target_height / height
+    root.scale = (factor, factor, factor)
+    root.location.z -= bbox_min.z * factor
+
+
+def tag_scene(root: bpy.types.Object, armature: Any, spec: dict[str, Any]) -> None:
+    root["generatedBy"] = "scripts/blender/character_template.py"
+    root["templateVersion"] = "blender-character-template-v1"
+    root["characterId"] = spec["id"]
+    root["displayName"] = spec["displayName"]
+    root["targetHeightMeters"] = spec["heightMeters"]
+    if isinstance(armature, dict):
+        armature["root"]["rigType"] = "transform-node-template"
+        armature["root"]["animationClips"] = "idle,walk,talk"
+    else:
+        armature["animationClips"] = "idle,walk,talk"
+
+
+def add_camera_and_light(spec: dict[str, Any]) -> None:
+    scale = float(spec["heightMeters"]) / 1.68
+    bpy.ops.object.light_add(type="AREA", location=(0, -2.4 * scale, 3.0 * scale))
+    light = bpy.context.object
+    light.name = "Template_KeyLight"
+    light.data.energy = 450
+    light.data.size = 3.2
+
+    bpy.ops.object.camera_add(location=(0, -4.2 * scale, 1.45 * scale), rotation=(math.radians(76), 0, 0))
+    camera = bpy.context.object
+    bpy.context.scene.camera = camera
+
+
+def export_glb(output: Path) -> None:
+    output.parent.mkdir(parents=True, exist_ok=True)
+    kwargs = {
+        "filepath": str(output),
+        "export_format": "GLB",
+        "export_animations": True,
+        "export_nla_strips": True,
+        "export_force_sampling": True,
+    }
+    bpy.ops.export_scene.gltf(**kwargs)
+
+
+def main() -> None:
+    args = parse_args()
+    config_path = repo_path(args.config)
+    config = load_config(config_path)
+    out_dir = repo_path(args.out_dir or config.get("outputDir", "public/assets/models"))
+    selected = args.character
+
+    exports: list[Path] = []
+    for spec in config["characters"]:
+        if selected != "all" and spec["id"] != selected:
+            continue
+        exports.append(build_character(spec, out_dir, args.blend))
+
+    if not exports:
+        known = ", ".join(character["id"] for character in config["characters"])
+        raise SystemExit(f"No character matched {selected!r}. Known characters: {known}")
+
+
+if __name__ == "__main__":
+    main()
