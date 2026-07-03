@@ -184,8 +184,14 @@ A model is not accepted just because it loads in Three.js. It must pass:
 ## Current Status
 
 The current `player.glb` and `lyra.glb` are runtime prototypes. The
-`*.blender-template.glb` files are technical pipeline probes. The model-sheet
-references for both player and Lyra are now registered in
+`*.blender-template.glb` files are technical pipeline probes. Mira Voss now has
+the first NPC runtime candidate at `public/assets/models/mira_voss.glb`. It is a
+Blender-generated skinned GLB with 20,104 triangles, 17 bones, 9 morph-target
+primitives, and `idle`, `walk`, and `talk` animation clips, so it passes the
+current runtime audit. It is still a template-quality candidate, not the final
+mainstream Japanese RPG character target.
+
+The model-sheet references for both player and Lyra are now registered in
 `assets/characters/<id>/references` and mirrored to
 `public/assets/character-reviews`.
 
@@ -194,6 +200,6 @@ additional NPC model briefs have been generated from that roster and its
 dialogue data. Mira Voss is the first non-Lyra NPC with a registered model sheet
 and split front, side, back, face, hair, and outfit reference images.
 
-The next real milestone is a Lyra source `.blend` produced through an AI
-candidate plus Blender cleanup workflow, then exported through
-`assets:characters:source:export`.
+The next real milestone is replacing Mira's template geometry with a higher
+fidelity AI/generated or hand-modeled source mesh, then repeating the accepted
+runtime path for Lyra and the remaining story NPCs.

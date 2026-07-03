@@ -132,7 +132,7 @@
       "displayName": "Mira Voss",
       "reviewUrl": "/assets/character-reviews/mira_voss.json",
       "runtimeModelUrl": "/assets/models/mira_voss.glb",
-      "hasRuntimeModel": false
+      "hasRuntimeModel": true
     },
     {
       "id": "nara_veil",
