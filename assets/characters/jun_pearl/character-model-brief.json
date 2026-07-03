@@ -1,0 +1,106 @@
+{
+  "version": "character-model-brief-v1",
+  "characterId": "jun_pearl",
+  "displayName": "Jun Pearl",
+  "runtimeAssetId": "jun_pearl-supporting-v1",
+  "narrativeSource": {
+    "title": "珍珠算术导师",
+    "role": "算术导师",
+    "area": "lake",
+    "arc": "算不平的债",
+    "description": "珍珠算术导师。主线功能：每次钟塔失准都会从全校借走三百七十二秒。个人矛盾：他必须用冷冰冰的数字解释朋友的痛苦",
+    "worldPosition": {
+      "x": -7.9,
+      "z": 18.9
+    },
+    "order": 26,
+    "dialogueSummary": {
+      "trees": 4,
+      "pages": 153,
+      "firstTreeId": "jun_pearl_chapter_001"
+    }
+  },
+  "referenceImages": {
+    "portrait": "/assets/portraits/jun_pearl-concept.png",
+    "front": "assets/characters/jun_pearl/references/front.png",
+    "side": "assets/characters/jun_pearl/references/side.png",
+    "back": "assets/characters/jun_pearl/references/back.png"
+  },
+  "targetIdentity": {
+    "style": "mainstream Japanese RPG academy NPC, 算术导师",
+    "silhouette": "readable academy supporting character for 珍珠算术导师",
+    "heightMeters": 1.6300000000000001,
+    "headToBodyRatio": 0.19,
+    "facePriorities": [
+      "large readable anime eyes matching the role mood",
+      "clear brows that show the personal conflict",
+      "minimal stylized nose",
+      "small expressive mouth"
+    ],
+    "hairPriorities": [
+      "distinct silhouette hair matching the role",
+      "separate bangs and side locks",
+      "one recognizable hair accessory",
+      "game-ready hair chunks for later rigging"
+    ],
+    "outfitPriorities": [
+      "waterproof academy cloak",
+      "shell or pearl accessory",
+      "soft boots",
+      "water pearl accessory",
+      "school crest detail"
+    ]
+  },
+  "sourceModelRequirements": {
+    "sourceFile": "assets/characters/jun_pearl/source/jun_pearl.blend",
+    "targetRuntimeFile": "public/assets/models/jun_pearl.glb",
+    "preferredFormat": "glb",
+    "acceptableFormat": "vrm",
+    "triangleBudget": {
+      "hero": [
+        14000,
+        26000
+      ],
+      "mid": [
+        8000,
+        14000
+      ],
+      "low": [
+        2500,
+        6000
+      ]
+    },
+    "textureBudgetKb": 2048,
+    "requiredAnimationClips": [
+      "idle",
+      "walk",
+      "talk"
+    ],
+    "requiredExpressions": [
+      "neutral",
+      "blink",
+      "smile",
+      "concerned",
+      "surprised"
+    ],
+    "requiredSecondaryMotion": [
+      "hair-tip-sway",
+      "cloth-sway",
+      "accessory-sway"
+    ]
+  },
+  "aiCandidatePlan": {
+    "primaryTool": "hunyuan3d",
+    "secondaryTool": "triposr",
+    "riggingTool": "unirig",
+    "candidateFolder": "assets/characters/jun_pearl/candidates",
+    "minimumCandidates": 2,
+    "acceptanceGate": [
+      "identity reads from the third-person camera",
+      "face and hair silhouette match the narrative role",
+      "outfit contains the signature prop and school crest",
+      "mesh can be retopologized and rigged for idle, walk, and talk",
+      "web runtime budget stays suitable for supporting NPCs"
+    ]
+  }
+}

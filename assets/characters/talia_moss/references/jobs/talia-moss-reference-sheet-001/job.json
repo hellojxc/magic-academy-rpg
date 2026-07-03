@@ -1,0 +1,28 @@
+{
+  "version": "character-reference-sheet-job-v1",
+  "jobId": "talia-moss-reference-sheet-001",
+  "characterId": "talia_moss",
+  "displayName": "Talia Moss",
+  "tool": "imagegen",
+  "viewSet": "complete",
+  "status": "ready-to-run",
+  "input": {
+    "portraitUrl": "/assets/portraits/talia_moss-concept.png",
+    "localPortraitPath": "public/assets/portraits/talia_moss-concept.png",
+    "sourceBrief": "assets/characters/talia_moss/character-model-brief.json"
+  },
+  "files": {
+    "prompt": "assets/characters/talia_moss/references/jobs/talia-moss-reference-sheet-001/prompt.md",
+    "runbook": "assets/characters/talia_moss/references/jobs/talia-moss-reference-sheet-001/RUNBOOK.md",
+    "outputsDir": "assets/characters/talia_moss/references/jobs/talia-moss-reference-sheet-001/outputs"
+  },
+  "expectedReferenceTypes": [
+    "model-sheet",
+    "front",
+    "side",
+    "back",
+    "face-detail",
+    "hair-breakdown",
+    "outfit-breakdown"
+  ]
+}

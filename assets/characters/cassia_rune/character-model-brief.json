@@ -1,0 +1,105 @@
+{
+  "version": "character-model-brief-v1",
+  "characterId": "cassia_rune",
+  "displayName": "Cassia Rune",
+  "runtimeAssetId": "cassia_rune-supporting-v1",
+  "narrativeSource": {
+    "title": "符文学优等生",
+    "role": "符文研究者",
+    "area": "training_ground",
+    "arc": "反写符文",
+    "description": "符文学优等生。主线功能：反写符号组合后正是封印星钟的钥文。个人矛盾：她必须承认自己最优秀的论文来自禁书启发",
+    "worldPosition": {
+      "x": 21.2,
+      "z": 30.8
+    },
+    "order": 9,
+    "dialogueSummary": {
+      "trees": 4,
+      "pages": 153,
+      "firstTreeId": "cassia_rune_chapter_001"
+    }
+  },
+  "referenceImages": {
+    "portrait": "/assets/portraits/cassia_rune-concept.png",
+    "front": "assets/characters/cassia_rune/references/front.png",
+    "side": "assets/characters/cassia_rune/references/side.png",
+    "back": "assets/characters/cassia_rune/references/back.png"
+  },
+  "targetIdentity": {
+    "style": "polished Japanese RPG rune honor student",
+    "silhouette": "neat elite student with rune ribbons and formal robe panels",
+    "heightMeters": 1.63,
+    "headToBodyRatio": 0.19,
+    "facePriorities": [
+      "violet analytical eyes",
+      "precise confident brows",
+      "small proud mouth",
+      "cool cheek tint"
+    ],
+    "hairPriorities": [
+      "straight dark violet hair",
+      "blunt bangs",
+      "rune hair ribbon",
+      "clean back sheet"
+    ],
+    "outfitPriorities": [
+      "purple rune scholar uniform",
+      "formal robe panels",
+      "glowing rune belt",
+      "book clasp accessory",
+      "black academy boots"
+    ]
+  },
+  "sourceModelRequirements": {
+    "sourceFile": "assets/characters/cassia_rune/source/cassia_rune.blend",
+    "targetRuntimeFile": "public/assets/models/cassia_rune.glb",
+    "preferredFormat": "glb",
+    "acceptableFormat": "vrm",
+    "triangleBudget": {
+      "hero": [
+        18000,
+        32000
+      ],
+      "mid": [
+        8000,
+        14000
+      ],
+      "low": [
+        2500,
+        6000
+      ]
+    },
+    "textureBudgetKb": 2048,
+    "requiredAnimationClips": [
+      "idle",
+      "walk",
+      "talk"
+    ],
+    "requiredExpressions": [
+      "neutral",
+      "blink",
+      "smile",
+      "concerned",
+      "surprised"
+    ],
+    "requiredSecondaryMotion": [
+      "robe-panel-sway",
+      "ribbon-sway"
+    ]
+  },
+  "aiCandidatePlan": {
+    "primaryTool": "hunyuan3d",
+    "secondaryTool": "triposr",
+    "riggingTool": "unirig",
+    "candidateFolder": "assets/characters/cassia_rune/candidates",
+    "minimumCandidates": 2,
+    "acceptanceGate": [
+      "identity reads from the third-person camera",
+      "face and hair silhouette match the narrative role",
+      "outfit contains the signature prop and school crest",
+      "mesh can be retopologized and rigged for idle, walk, and talk",
+      "web runtime budget stays suitable for supporting NPCs"
+    ]
+  }
+}

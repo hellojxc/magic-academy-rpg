@@ -1,4 +1,4 @@
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 const supportedTools = new Set(['imagegen', 'comfyui', 'manual']);
@@ -31,15 +31,33 @@ function localPublicPath(url) {
 
 function promptFor(brief, viewSet) {
   const identity = brief.targetIdentity;
+  const portraitPath = localPublicPath(brief.referenceImages.portrait);
+  const hasPortrait = existsSync(resolve(portraitPath));
   const parts = [
     `Create a clean anime RPG character model sheet for ${brief.displayName}.`,
     '',
-    `Use the portrait target as the source identity: ${localPublicPath(brief.referenceImages.portrait)}.`,
+    hasPortrait
+      ? `Use the portrait target as the source identity: ${portraitPath}.`
+      : 'No approved portrait target exists yet. Use the design identity, narrative role, and outfit priorities below as the source of truth.',
     `Style: ${identity.style}.`,
     `Silhouette: ${identity.silhouette}.`,
     `Height: ${identity.heightMeters} meters.`,
     `Head-to-body ratio: ${identity.headToBodyRatio}.`,
     '',
+  ];
+
+  if (brief.narrativeSource) {
+    parts.push(
+      'Narrative role:',
+      `- Title: ${brief.narrativeSource.title}`,
+      `- Role: ${brief.narrativeSource.role}`,
+      `- Arc: ${brief.narrativeSource.arc}`,
+      `- Story function: ${brief.narrativeSource.description}`,
+      '',
+    );
+  }
+
+  parts.push(
     'Required views:',
     '- Orthographic front view, neutral A-pose, full body.',
     '- Orthographic side view, neutral A-pose, full body.',
@@ -64,7 +82,7 @@ function promptFor(brief, viewSet) {
     '- Avoid painterly background, effects, props that hide anatomy, or excessive lighting.',
     '- Prefer flat neutral studio lighting on a plain light background.',
     '- The result is a modeling reference, not marketing art.',
-  ];
+  );
 
   if (viewSet === 'turnaround') {
     parts.push('', 'Layout: front, side, and back full-body views aligned on one sheet.');

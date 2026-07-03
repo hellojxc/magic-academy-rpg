@@ -1,0 +1,141 @@
+{
+  "version": "character-review-v1",
+  "characterId": "vera_night",
+  "displayName": "Vera Night",
+  "portraitUrl": "/assets/portraits/vera_night-concept.png",
+  "currentRuntimeModelUrl": "/assets/models/vera_night.glb",
+  "currentPreviewUrl": "/assets/portraits/story-npc-placeholder.svg",
+  "runtimeAuditUrl": "/assets/character-reviews/vera_night-runtime-audit.json",
+  "sourceModelPath": "assets/characters/vera_night/source/vera_night.blend",
+  "targetRuntimeFile": "public/assets/models/vera_night.glb",
+  "referenceStatus": [
+    {
+      "type": "portrait",
+      "exists": false,
+      "sourcePath": "public/assets/portraits/vera_night-concept.png",
+      "publicUrl": "/assets/portraits/story-npc-placeholder.svg"
+    },
+    {
+      "type": "front",
+      "exists": false,
+      "sourcePath": "assets/characters/vera_night/references/front.png"
+    },
+    {
+      "type": "side",
+      "exists": false,
+      "sourcePath": "assets/characters/vera_night/references/side.png"
+    },
+    {
+      "type": "back",
+      "exists": false,
+      "sourcePath": "assets/characters/vera_night/references/back.png"
+    },
+    {
+      "type": "model-sheet",
+      "exists": false,
+      "sourcePath": "assets/characters/vera_night/references/model-sheet.png"
+    },
+    {
+      "type": "face-detail",
+      "exists": false,
+      "sourcePath": "assets/characters/vera_night/references/face-detail.png"
+    },
+    {
+      "type": "hair-breakdown",
+      "exists": false,
+      "sourcePath": "assets/characters/vera_night/references/hair-breakdown.png"
+    },
+    {
+      "type": "outfit-breakdown",
+      "exists": false,
+      "sourcePath": "assets/characters/vera_night/references/outfit-breakdown.png"
+    }
+  ],
+  "targetIdentity": {
+    "style": "mysterious Japanese RPG night archive heroine",
+    "silhouette": "quiet midnight archivist with dark cardigan robe and future-ink motifs",
+    "heightMeters": 1.61,
+    "headToBodyRatio": 0.2,
+    "facePriorities": [
+      "deep violet tired eyes",
+      "soft uncertain brows",
+      "small hesitant mouth",
+      "subtle under-eye shadow"
+    ],
+    "hairPriorities": [
+      "long midnight-blue hair",
+      "soft side bangs",
+      "ink-black ribbon",
+      "loose low tail"
+    ],
+    "outfitPriorities": [
+      "dark archive cardigan robe",
+      "blue-black academy dress",
+      "silver book chain",
+      "midnight ledger accessory",
+      "soft black boots"
+    ]
+  },
+  "requirements": {
+    "sourceFile": "assets/characters/vera_night/source/vera_night.blend",
+    "targetRuntimeFile": "public/assets/models/vera_night.glb",
+    "preferredFormat": "glb",
+    "acceptableFormat": "vrm",
+    "triangleBudget": {
+      "hero": [
+        18000,
+        32000
+      ],
+      "mid": [
+        8000,
+        14000
+      ],
+      "low": [
+        2500,
+        6000
+      ]
+    },
+    "textureBudgetKb": 2048,
+    "requiredAnimationClips": [
+      "idle",
+      "walk",
+      "talk"
+    ],
+    "requiredExpressions": [
+      "neutral",
+      "blink",
+      "smile",
+      "concerned",
+      "surprised"
+    ],
+    "requiredSecondaryMotion": [
+      "low-tail-sway",
+      "robe-sway",
+      "book-chain-sway"
+    ]
+  },
+  "aiCandidatePlan": {
+    "primaryTool": "hunyuan3d",
+    "secondaryTool": "triposr",
+    "riggingTool": "unirig",
+    "candidateFolder": "assets/characters/vera_night/candidates",
+    "minimumCandidates": 2,
+    "acceptanceGate": [
+      "identity reads from the third-person camera",
+      "face and hair silhouette match the narrative role",
+      "outfit contains the signature prop and school crest",
+      "mesh can be retopologized and rigged for idle, walk, and talk",
+      "web runtime budget stays suitable for supporting NPCs"
+    ]
+  },
+  "reviewChecklist": [
+    "portrait likeness: head silhouette, eyes, face shape, expression",
+    "hair structure: separate editable bangs, side locks, back hair, tips",
+    "body proportion: target height, head ratio, shoulder and hip silhouette",
+    "outfit accuracy: blouse, ribbon, skirt or trousers, cape, shoes, accessories",
+    "animation readiness: humanoid skeleton, skin weights, idle/walk/talk clips",
+    "facial readiness: blink, smile, shy, surprised, thinking morphs",
+    "web budget: triangles, materials, texture memory, animation count",
+    "runtime proof: model loads through CharacterManifest without fallback"
+  ]
+}

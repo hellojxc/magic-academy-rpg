@@ -1,0 +1,106 @@
+{
+  "version": "character-model-brief-v1",
+  "characterId": "mira_voss",
+  "displayName": "Mira Voss",
+  "runtimeAssetId": "mira_voss-supporting-v1",
+  "narrativeSource": {
+    "title": "镜像占星课代表",
+    "role": "占星学生",
+    "area": "atrium",
+    "arc": "镜面预兆",
+    "description": "镜像占星课代表。主线功能：镜面星盘显示钟塔影子每天提前七秒落下。个人矛盾：她的预言越准确，越会被同学当成灾厄源头",
+    "worldPosition": {
+      "x": -3.7,
+      "z": -2.1
+    },
+    "order": 1,
+    "dialogueSummary": {
+      "trees": 4,
+      "pages": 153,
+      "firstTreeId": "mira_voss_chapter_001"
+    }
+  },
+  "referenceImages": {
+    "portrait": "/assets/portraits/mira_voss-concept.png",
+    "front": "assets/characters/mira_voss/references/front.png",
+    "side": "assets/characters/mira_voss/references/side.png",
+    "back": "assets/characters/mira_voss/references/back.png"
+  },
+  "targetIdentity": {
+    "style": "mainstream Japanese RPG mirror astrologer heroine",
+    "silhouette": "slim academy astrologer with reflective silver-blue accents",
+    "heightMeters": 1.62,
+    "headToBodyRatio": 0.2,
+    "facePriorities": [
+      "clear aqua eyes with mirror-like highlights",
+      "calm worried brows",
+      "small reserved mouth",
+      "cool cheek tint"
+    ],
+    "hairPriorities": [
+      "long silver-blue hair",
+      "side-swept fringe",
+      "mirror shard hairpin",
+      "separate glossy side locks"
+    ],
+    "outfitPriorities": [
+      "blue-white astrologer uniform",
+      "reflective capelet",
+      "star chart waist sash",
+      "mirror star compass accessory",
+      "ankle boots with silver trim"
+    ]
+  },
+  "sourceModelRequirements": {
+    "sourceFile": "assets/characters/mira_voss/source/mira_voss.blend",
+    "targetRuntimeFile": "public/assets/models/mira_voss.glb",
+    "preferredFormat": "glb",
+    "acceptableFormat": "vrm",
+    "triangleBudget": {
+      "hero": [
+        18000,
+        32000
+      ],
+      "mid": [
+        8000,
+        14000
+      ],
+      "low": [
+        2500,
+        6000
+      ]
+    },
+    "textureBudgetKb": 2048,
+    "requiredAnimationClips": [
+      "idle",
+      "walk",
+      "talk"
+    ],
+    "requiredExpressions": [
+      "neutral",
+      "blink",
+      "smile",
+      "concerned",
+      "surprised"
+    ],
+    "requiredSecondaryMotion": [
+      "long-hair-sway",
+      "capelet-sway",
+      "sash-sway"
+    ]
+  },
+  "aiCandidatePlan": {
+    "primaryTool": "hunyuan3d",
+    "secondaryTool": "triposr",
+    "riggingTool": "unirig",
+    "candidateFolder": "assets/characters/mira_voss/candidates",
+    "minimumCandidates": 2,
+    "acceptanceGate": [
+      "identity reads from the third-person camera",
+      "face and hair silhouette match the narrative role",
+      "outfit contains the signature prop and school crest",
+      "mesh can be retopologized and rigged for idle, walk, and talk",
+      "web runtime budget stays suitable for supporting NPCs"
+    ]
+  }
+}

@@ -1,0 +1,106 @@
+{
+  "version": "character-model-brief-v1",
+  "characterId": "ren_shio",
+  "displayName": "Ren Shio",
+  "runtimeAssetId": "ren_shio-supporting-v1",
+  "narrativeSource": {
+    "title": "东境交换生",
+    "role": "剑咒学生",
+    "area": "training_ground",
+    "arc": "断刃誓约",
+    "description": "东境交换生。主线功能：他的断刃能切开钟声留下的影线。个人矛盾：他被要求在决斗中故意输给贵族学生",
+    "worldPosition": {
+      "x": 14.4,
+      "z": 27.3
+    },
+    "order": 6,
+    "dialogueSummary": {
+      "trees": 4,
+      "pages": 153,
+      "firstTreeId": "ren_shio_chapter_001"
+    }
+  },
+  "referenceImages": {
+    "portrait": "/assets/portraits/ren_shio-concept.png",
+    "front": "assets/characters/ren_shio/references/front.png",
+    "side": "assets/characters/ren_shio/references/side.png",
+    "back": "assets/characters/ren_shio/references/back.png"
+  },
+  "targetIdentity": {
+    "style": "Japanese RPG eastern exchange sword-mage",
+    "silhouette": "athletic exchange student with short haori cape and broken blade",
+    "heightMeters": 1.74,
+    "headToBodyRatio": 0.18,
+    "facePriorities": [
+      "deep blue focused eyes",
+      "straight determined brows",
+      "restrained serious mouth",
+      "small cheek scar"
+    ],
+    "hairPriorities": [
+      "dark indigo tied-back hair",
+      "loose front strands",
+      "short ponytail",
+      "separate swordmage locks"
+    ],
+    "outfitPriorities": [
+      "east-inspired academy haori",
+      "blue-black uniform layers",
+      "sword charm belt",
+      "broken blade accessory",
+      "split-toe boots"
+    ]
+  },
+  "sourceModelRequirements": {
+    "sourceFile": "assets/characters/ren_shio/source/ren_shio.blend",
+    "targetRuntimeFile": "public/assets/models/ren_shio.glb",
+    "preferredFormat": "glb",
+    "acceptableFormat": "vrm",
+    "triangleBudget": {
+      "hero": [
+        18000,
+        32000
+      ],
+      "mid": [
+        8000,
+        14000
+      ],
+      "low": [
+        2500,
+        6000
+      ]
+    },
+    "textureBudgetKb": 2048,
+    "requiredAnimationClips": [
+      "idle",
+      "walk",
+      "talk"
+    ],
+    "requiredExpressions": [
+      "neutral",
+      "blink",
+      "smile",
+      "concerned",
+      "surprised"
+    ],
+    "requiredSecondaryMotion": [
+      "ponytail-sway",
+      "haori-sway",
+      "blade-charm-sway"
+    ]
+  },
+  "aiCandidatePlan": {
+    "primaryTool": "hunyuan3d",
+    "secondaryTool": "triposr",
+    "riggingTool": "unirig",
+    "candidateFolder": "assets/characters/ren_shio/candidates",
+    "minimumCandidates": 2,
+    "acceptanceGate": [
+      "identity reads from the third-person camera",
+      "face and hair silhouette match the narrative role",
+      "outfit contains the signature prop and school crest",
+      "mesh can be retopologized and rigged for idle, walk, and talk",
+      "web runtime budget stays suitable for supporting NPCs"
+    ]
+  }
+}

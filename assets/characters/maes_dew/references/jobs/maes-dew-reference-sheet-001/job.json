@@ -1,0 +1,28 @@
+{
+  "version": "character-reference-sheet-job-v1",
+  "jobId": "maes-dew-reference-sheet-001",
+  "characterId": "maes_dew",
+  "displayName": "Maes Dew",
+  "tool": "imagegen",
+  "viewSet": "complete",
+  "status": "ready-to-run",
+  "input": {
+    "portraitUrl": "/assets/portraits/maes_dew-concept.png",
+    "localPortraitPath": "public/assets/portraits/maes_dew-concept.png",
+    "sourceBrief": "assets/characters/maes_dew/character-model-brief.json"
+  },
+  "files": {
+    "prompt": "assets/characters/maes_dew/references/jobs/maes-dew-reference-sheet-001/prompt.md",
+    "runbook": "assets/characters/maes_dew/references/jobs/maes-dew-reference-sheet-001/RUNBOOK.md",
+    "outputsDir": "assets/characters/maes_dew/references/jobs/maes-dew-reference-sheet-001/outputs"
+  },
+  "expectedReferenceTypes": [
+    "model-sheet",
+    "front",
+    "side",
+    "back",
+    "face-detail",
+    "hair-breakdown",
+    "outfit-breakdown"
+  ]
+}

@@ -1,0 +1,106 @@
+{
+  "version": "character-model-brief-v1",
+  "characterId": "theo_wake",
+  "displayName": "Theo Wake",
+  "runtimeAssetId": "theo_wake-supporting-v1",
+  "narrativeSource": {
+    "title": "梦境治疗志愿者",
+    "role": "梦疗志愿者",
+    "area": "moonstone_grotto",
+    "arc": "醒不来的梦",
+    "description": "梦境治疗志愿者。主线功能：梦境里的钟塔没有门，只有玩家的名字。个人矛盾：他每进入一次梦，现实中的一天就会变模糊",
+    "worldPosition": {
+      "x": -33.5,
+      "z": 19.6
+    },
+    "order": 15,
+    "dialogueSummary": {
+      "trees": 4,
+      "pages": 153,
+      "firstTreeId": "theo_wake_chapter_001"
+    }
+  },
+  "referenceImages": {
+    "portrait": "/assets/portraits/theo_wake-concept.png",
+    "front": "assets/characters/theo_wake/references/front.png",
+    "side": "assets/characters/theo_wake/references/side.png",
+    "back": "assets/characters/theo_wake/references/back.png"
+  },
+  "targetIdentity": {
+    "style": "mainstream Japanese RPG academy NPC, 梦疗志愿者",
+    "silhouette": "readable academy supporting character for 梦境治疗志愿者",
+    "heightMeters": 1.7550000000000001,
+    "headToBodyRatio": 0.19,
+    "facePriorities": [
+      "large readable anime eyes matching the role mood",
+      "clear brows that show the personal conflict",
+      "minimal stylized nose",
+      "small expressive mouth"
+    ],
+    "hairPriorities": [
+      "distinct silhouette hair matching the role",
+      "separate bangs and side locks",
+      "one recognizable hair accessory",
+      "game-ready hair chunks for later rigging"
+    ],
+    "outfitPriorities": [
+      "moonstone-trim robe",
+      "glow charm",
+      "soft cave-walking boots",
+      "梦疗志愿者 signature prop",
+      "school crest detail"
+    ]
+  },
+  "sourceModelRequirements": {
+    "sourceFile": "assets/characters/theo_wake/source/theo_wake.blend",
+    "targetRuntimeFile": "public/assets/models/theo_wake.glb",
+    "preferredFormat": "glb",
+    "acceptableFormat": "vrm",
+    "triangleBudget": {
+      "hero": [
+        14000,
+        26000
+      ],
+      "mid": [
+        8000,
+        14000
+      ],
+      "low": [
+        2500,
+        6000
+      ]
+    },
+    "textureBudgetKb": 2048,
+    "requiredAnimationClips": [
+      "idle",
+      "walk",
+      "talk"
+    ],
+    "requiredExpressions": [
+      "neutral",
+      "blink",
+      "smile",
+      "concerned",
+      "surprised"
+    ],
+    "requiredSecondaryMotion": [
+      "hair-tip-sway",
+      "cloth-sway",
+      "accessory-sway"
+    ]
+  },
+  "aiCandidatePlan": {
+    "primaryTool": "hunyuan3d",
+    "secondaryTool": "triposr",
+    "riggingTool": "unirig",
+    "candidateFolder": "assets/characters/theo_wake/candidates",
+    "minimumCandidates": 2,
+    "acceptanceGate": [
+      "identity reads from the third-person camera",
+      "face and hair silhouette match the narrative role",
+      "outfit contains the signature prop and school crest",
+      "mesh can be retopologized and rigged for idle, walk, and talk",
+      "web runtime budget stays suitable for supporting NPCs"
+    ]
+  }
+}

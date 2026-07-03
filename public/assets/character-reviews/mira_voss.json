@@ -1,0 +1,148 @@
+{
+  "version": "character-review-v1",
+  "characterId": "mira_voss",
+  "displayName": "Mira Voss",
+  "portraitUrl": "/assets/portraits/mira_voss-concept.png",
+  "currentRuntimeModelUrl": "/assets/models/mira_voss.glb",
+  "currentPreviewUrl": "/assets/portraits/story-npc-placeholder.svg",
+  "runtimeAuditUrl": "/assets/character-reviews/mira_voss-runtime-audit.json",
+  "sourceModelPath": "assets/characters/mira_voss/source/mira_voss.blend",
+  "targetRuntimeFile": "public/assets/models/mira_voss.glb",
+  "referenceStatus": [
+    {
+      "type": "portrait",
+      "exists": false,
+      "sourcePath": "public/assets/portraits/mira_voss-concept.png",
+      "publicUrl": "/assets/portraits/story-npc-placeholder.svg"
+    },
+    {
+      "type": "front",
+      "exists": true,
+      "sourcePath": "assets/characters/mira_voss/references/front.png",
+      "publicUrl": "/assets/character-reviews/mira_voss-front.png"
+    },
+    {
+      "type": "side",
+      "exists": true,
+      "sourcePath": "assets/characters/mira_voss/references/side.png",
+      "publicUrl": "/assets/character-reviews/mira_voss-side.png"
+    },
+    {
+      "type": "back",
+      "exists": true,
+      "sourcePath": "assets/characters/mira_voss/references/back.png",
+      "publicUrl": "/assets/character-reviews/mira_voss-back.png"
+    },
+    {
+      "type": "model-sheet",
+      "exists": true,
+      "sourcePath": "assets/characters/mira_voss/references/model-sheet.png",
+      "publicUrl": "/assets/character-reviews/mira_voss-model-sheet.png"
+    },
+    {
+      "type": "face-detail",
+      "exists": true,
+      "sourcePath": "assets/characters/mira_voss/references/face-detail.png",
+      "publicUrl": "/assets/character-reviews/mira_voss-face-detail.png"
+    },
+    {
+      "type": "hair-breakdown",
+      "exists": true,
+      "sourcePath": "assets/characters/mira_voss/references/hair-breakdown.png",
+      "publicUrl": "/assets/character-reviews/mira_voss-hair-breakdown.png"
+    },
+    {
+      "type": "outfit-breakdown",
+      "exists": true,
+      "sourcePath": "assets/characters/mira_voss/references/outfit-breakdown.png",
+      "publicUrl": "/assets/character-reviews/mira_voss-outfit-breakdown.png"
+    }
+  ],
+  "targetIdentity": {
+    "style": "mainstream Japanese RPG mirror astrologer heroine",
+    "silhouette": "slim academy astrologer with reflective silver-blue accents",
+    "heightMeters": 1.62,
+    "headToBodyRatio": 0.2,
+    "facePriorities": [
+      "clear aqua eyes with mirror-like highlights",
+      "calm worried brows",
+      "small reserved mouth",
+      "cool cheek tint"
+    ],
+    "hairPriorities": [
+      "long silver-blue hair",
+      "side-swept fringe",
+      "mirror shard hairpin",
+      "separate glossy side locks"
+    ],
+    "outfitPriorities": [
+      "blue-white astrologer uniform",
+      "reflective capelet",
+      "star chart waist sash",
+      "mirror star compass accessory",
+      "ankle boots with silver trim"
+    ]
+  },
+  "requirements": {
+    "sourceFile": "assets/characters/mira_voss/source/mira_voss.blend",
+    "targetRuntimeFile": "public/assets/models/mira_voss.glb",
+    "preferredFormat": "glb",
+    "acceptableFormat": "vrm",
+    "triangleBudget": {
+      "hero": [
+        18000,
+        32000
+      ],
+      "mid": [
+        8000,
+        14000
+      ],
+      "low": [
+        2500,
+        6000
+      ]
+    },
+    "textureBudgetKb": 2048,
+    "requiredAnimationClips": [
+      "idle",
+      "walk",
+      "talk"
+    ],
+    "requiredExpressions": [
+      "neutral",
+      "blink",
+      "smile",
+      "concerned",
+      "surprised"
+    ],
+    "requiredSecondaryMotion": [
+      "long-hair-sway",
+      "capelet-sway",
+      "sash-sway"
+    ]
+  },
+  "aiCandidatePlan": {
+    "primaryTool": "hunyuan3d",
+    "secondaryTool": "triposr",
+    "riggingTool": "unirig",
+    "candidateFolder": "assets/characters/mira_voss/candidates",
+    "minimumCandidates": 2,
+    "acceptanceGate": [
+      "identity reads from the third-person camera",
+      "face and hair silhouette match the narrative role",
+      "outfit contains the signature prop and school crest",
+      "mesh can be retopologized and rigged for idle, walk, and talk",
+      "web runtime budget stays suitable for supporting NPCs"
+    ]
+  },
+  "reviewChecklist": [
+    "portrait likeness: head silhouette, eyes, face shape, expression",
+    "hair structure: separate editable bangs, side locks, back hair, tips",
+    "body proportion: target height, head ratio, shoulder and hip silhouette",
+    "outfit accuracy: blouse, ribbon, skirt or trousers, cape, shoes, accessories",
+    "animation readiness: humanoid skeleton, skin weights, idle/walk/talk clips",
+    "facial readiness: blink, smile, shy, surprised, thinking morphs",
+    "web budget: triangles, materials, texture memory, animation count",
+    "runtime proof: model loads through CharacterManifest without fallback"
+  ]
+}

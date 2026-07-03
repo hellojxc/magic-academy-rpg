@@ -1,0 +1,63 @@
+{
+  "version": "runtime-character-audit-v1",
+  "characterId": "ilya_glass",
+  "displayName": "Ilya Glass",
+  "accepted": false,
+  "requirements": {
+    "triangleBudgetHero": [
+      14000,
+      26000
+    ],
+    "requiredAnimationClips": [
+      "idle",
+      "walk",
+      "talk"
+    ],
+    "requiredExpressions": [
+      "neutral",
+      "blink",
+      "smile",
+      "concerned",
+      "surprised"
+    ],
+    "requiredSecondaryMotion": [
+      "hair-tip-sway",
+      "cloth-sway",
+      "accessory-sway"
+    ]
+  },
+  "checks": [
+    {
+      "name": "runtime model exists",
+      "passed": false,
+      "detail": "public/assets/models/ilya_glass.glb"
+    },
+    {
+      "name": "triangle budget",
+      "passed": false,
+      "detail": "missing model"
+    },
+    {
+      "name": "humanoid skin",
+      "passed": false,
+      "detail": "missing model"
+    },
+    {
+      "name": "facial morph targets",
+      "passed": false,
+      "detail": "missing model"
+    },
+    {
+      "name": "required animation clips",
+      "passed": false,
+      "detail": "missing model"
+    },
+    {
+      "name": "material count",
+      "passed": false,
+      "detail": "missing model"
+    }
+  ],
+  "conclusion": "Runtime asset is not yet a production-quality RPG character model.",
+  "generatedAt": "2026-07-03T21:48:44.367Z"
+}

@@ -116,6 +116,18 @@ npm run assets:characters:reference:register -- --character lyra --type side --i
 npm run assets:characters:reference:register -- --character lyra --type back --input /path/to/back.png
 ```
 
+Import the current story NPC roster from a preview/generated `npcs.json` file:
+
+```sh
+npm run assets:characters:story:import -- --input /tmp/npcs.json --dialogues /tmp/dialogues.json
+```
+
+This writes `assets/characters/story-npc-roster.json` and one
+`assets/characters/<id>/character-model-brief.json` for every story NPC outside
+Lyra. The generated briefs preserve role, area, arc, world position, dialogue
+coverage, target silhouette, face priorities, hair priorities, outfit
+priorities, runtime budgets, and AI candidate gates.
+
 Export a production source `.blend`:
 
 ```sh
@@ -146,10 +158,13 @@ another machine. The generated mesh is then registered back into
 `assets/characters/<id>/candidates/registered` and continues through Blender
 cleanup and source export.
 
-Open the review page after running the review command:
+Open the review page after running the review command. The page reads
+`public/assets/character-reviews/index.json`, so it can review every generated
+NPC brief, not just player and Lyra:
 
 ```text
 /tools/character-model-review.html?character=lyra
+/tools/character-model-review.html?character=mira_voss
 ```
 
 ## Quality Gate
@@ -173,6 +188,11 @@ The current `player.glb` and `lyra.glb` are runtime prototypes. The
 references for both player and Lyra are now registered in
 `assets/characters/<id>/references` and mirrored to
 `public/assets/character-reviews`.
+
+The preview story roster currently contains 31 NPCs including Lyra. Thirty
+additional NPC model briefs have been generated from that roster and its
+dialogue data. Mira Voss is the first non-Lyra NPC with a registered model sheet
+and split front, side, back, face, hair, and outfit reference images.
 
 The next real milestone is a Lyra source `.blend` produced through an AI
 candidate plus Blender cleanup workflow, then exported through

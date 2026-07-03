@@ -1,0 +1,106 @@
+{
+  "version": "character-model-brief-v1",
+  "characterId": "vera_night",
+  "displayName": "Vera Night",
+  "runtimeAssetId": "vera_night-supporting-v1",
+  "narrativeSource": {
+    "title": "夜课档案员",
+    "role": "档案员",
+    "area": "library",
+    "arc": "午夜借阅簿",
+    "description": "夜课档案员。主线功能：借阅簿的墨迹来自未来三天后的午夜。个人矛盾：她担心自己才是那位不存在的借阅者",
+    "worldPosition": {
+      "x": 4,
+      "z": -4.9
+    },
+    "order": 30,
+    "dialogueSummary": {
+      "trees": 4,
+      "pages": 153,
+      "firstTreeId": "vera_night_chapter_001"
+    }
+  },
+  "referenceImages": {
+    "portrait": "/assets/portraits/vera_night-concept.png",
+    "front": "assets/characters/vera_night/references/front.png",
+    "side": "assets/characters/vera_night/references/side.png",
+    "back": "assets/characters/vera_night/references/back.png"
+  },
+  "targetIdentity": {
+    "style": "mysterious Japanese RPG night archive heroine",
+    "silhouette": "quiet midnight archivist with dark cardigan robe and future-ink motifs",
+    "heightMeters": 1.61,
+    "headToBodyRatio": 0.2,
+    "facePriorities": [
+      "deep violet tired eyes",
+      "soft uncertain brows",
+      "small hesitant mouth",
+      "subtle under-eye shadow"
+    ],
+    "hairPriorities": [
+      "long midnight-blue hair",
+      "soft side bangs",
+      "ink-black ribbon",
+      "loose low tail"
+    ],
+    "outfitPriorities": [
+      "dark archive cardigan robe",
+      "blue-black academy dress",
+      "silver book chain",
+      "midnight ledger accessory",
+      "soft black boots"
+    ]
+  },
+  "sourceModelRequirements": {
+    "sourceFile": "assets/characters/vera_night/source/vera_night.blend",
+    "targetRuntimeFile": "public/assets/models/vera_night.glb",
+    "preferredFormat": "glb",
+    "acceptableFormat": "vrm",
+    "triangleBudget": {
+      "hero": [
+        18000,
+        32000
+      ],
+      "mid": [
+        8000,
+        14000
+      ],
+      "low": [
+        2500,
+        6000
+      ]
+    },
+    "textureBudgetKb": 2048,
+    "requiredAnimationClips": [
+      "idle",
+      "walk",
+      "talk"
+    ],
+    "requiredExpressions": [
+      "neutral",
+      "blink",
+      "smile",
+      "concerned",
+      "surprised"
+    ],
+    "requiredSecondaryMotion": [
+      "low-tail-sway",
+      "robe-sway",
+      "book-chain-sway"
+    ]
+  },
+  "aiCandidatePlan": {
+    "primaryTool": "hunyuan3d",
+    "secondaryTool": "triposr",
+    "riggingTool": "unirig",
+    "candidateFolder": "assets/characters/vera_night/candidates",
+    "minimumCandidates": 2,
+    "acceptanceGate": [
+      "identity reads from the third-person camera",
+      "face and hair silhouette match the narrative role",
+      "outfit contains the signature prop and school crest",
+      "mesh can be retopologized and rigged for idle, walk, and talk",
+      "web runtime budget stays suitable for supporting NPCs"
+    ]
+  }
+}

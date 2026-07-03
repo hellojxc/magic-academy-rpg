@@ -1,0 +1,28 @@
+{
+  "version": "character-reference-sheet-job-v1",
+  "jobId": "aria-frost-reference-sheet-001",
+  "characterId": "aria_frost",
+  "displayName": "Aria Frost",
+  "tool": "imagegen",
+  "viewSet": "complete",
+  "status": "ready-to-run",
+  "input": {
+    "portraitUrl": "/assets/portraits/aria_frost-concept.png",
+    "localPortraitPath": "public/assets/portraits/aria_frost-concept.png",
+    "sourceBrief": "assets/characters/aria_frost/character-model-brief.json"
+  },
+  "files": {
+    "prompt": "assets/characters/aria_frost/references/jobs/aria-frost-reference-sheet-001/prompt.md",
+    "runbook": "assets/characters/aria_frost/references/jobs/aria-frost-reference-sheet-001/RUNBOOK.md",
+    "outputsDir": "assets/characters/aria_frost/references/jobs/aria-frost-reference-sheet-001/outputs"
+  },
+  "expectedReferenceTypes": [
+    "model-sheet",
+    "front",
+    "side",
+    "back",
+    "face-detail",
+    "hair-breakdown",
+    "outfit-breakdown"
+  ]
+}

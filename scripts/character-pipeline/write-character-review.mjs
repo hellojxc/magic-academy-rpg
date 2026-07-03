@@ -1,8 +1,24 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 const ids = process.argv.slice(2);
-const characterIds = ids.length > 0 ? ids : ['player', 'lyra'];
+const characterIds = ids.length > 0 ? ids : discoverCharacterIds();
+
+function discoverCharacterIds() {
+  const root = resolve('assets/characters');
+  if (!existsSync(root)) return ['player', 'lyra'];
+  return readdirSync(root, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => entry.name)
+    .filter((id) => existsSync(resolve(`assets/characters/${id}/character-model-brief.json`)))
+    .sort((left, right) => {
+      if (left === 'player') return -1;
+      if (right === 'player') return 1;
+      if (left === 'lyra') return -1;
+      if (right === 'lyra') return 1;
+      return left.localeCompare(right);
+    });
+}
 
 function readJson(path) {
   return JSON.parse(readFileSync(path, 'utf8'));
@@ -12,7 +28,7 @@ function firstExistingUrl(paths) {
   for (const path of paths) {
     if (existsSync(resolve(`public${path}`))) return path;
   }
-  return paths[0];
+  return '/assets/portraits/story-npc-placeholder.svg';
 }
 
 function referenceStatus(id, type, brief) {
@@ -20,11 +36,12 @@ function referenceStatus(id, type, brief) {
     const portraitPath = brief.referenceImages.portrait.startsWith('/')
       ? `public${brief.referenceImages.portrait}`
       : brief.referenceImages.portrait;
+    const exists = existsSync(resolve(portraitPath));
     return {
       type,
-      exists: existsSync(resolve(portraitPath)),
+      exists,
       sourcePath: portraitPath,
-      publicUrl: brief.referenceImages.portrait,
+      publicUrl: exists ? brief.referenceImages.portrait : '/assets/portraits/story-npc-placeholder.svg',
     };
   }
 
@@ -53,6 +70,11 @@ function referenceStatus(id, type, brief) {
 
 mkdirSync(resolve('public/assets/character-reviews'), { recursive: true });
 
+const index = {
+  version: 'character-review-index-v1',
+  characters: [],
+};
+
 for (const id of characterIds) {
   const briefPath = resolve(`assets/characters/${id}/character-model-brief.json`);
   if (!existsSync(briefPath)) {
@@ -61,6 +83,14 @@ for (const id of characterIds) {
   }
 
   const brief = readJson(briefPath);
+  index.characters.push({
+    id,
+    displayName: brief.displayName,
+    reviewUrl: `/assets/character-reviews/${id}.json`,
+    runtimeModelUrl: `/assets/models/${id}.glb`,
+    hasRuntimeModel: existsSync(resolve(`public/assets/models/${id}.glb`)),
+  });
+
   const review = {
     version: 'character-review-v1',
     characterId: id,
@@ -106,3 +136,9 @@ for (const id of characterIds) {
   );
   console.log(`[character-review] wrote public/assets/character-reviews/${id}.json`);
 }
+
+writeFileSync(
+  resolve('public/assets/character-reviews/index.json'),
+  `${JSON.stringify(index, null, 2)}\n`
+);
+console.log('[character-review] wrote public/assets/character-reviews/index.json');

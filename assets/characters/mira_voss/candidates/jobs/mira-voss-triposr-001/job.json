@@ -1,0 +1,28 @@
+{
+  "version": "ai-character-candidate-job-v1",
+  "jobId": "mira-voss-triposr-001",
+  "characterId": "mira_voss",
+  "displayName": "Mira Voss",
+  "tool": "triposr",
+  "status": "ready-to-run",
+  "input": {
+    "portraitUrl": "/assets/portraits/mira_voss-concept.png",
+    "localPortraitPath": "public/assets/portraits/mira_voss-concept.png",
+    "sourceBrief": "assets/characters/mira_voss/character-model-brief.json"
+  },
+  "files": {
+    "prompt": "assets/characters/mira_voss/candidates/jobs/mira-voss-triposr-001/prompt.md",
+    "runbook": "assets/characters/mira_voss/candidates/jobs/mira-voss-triposr-001/RUNBOOK.md",
+    "outputsDir": "assets/characters/mira_voss/candidates/jobs/mira-voss-triposr-001/outputs"
+  },
+  "expectedOutput": {
+    "registerCommand": "npm run assets:characters:candidate:register -- --character mira_voss --tool triposr --job mira-voss-triposr-001 --input /path/to/generated.glb"
+  },
+  "acceptanceGate": [
+    "identity reads from the third-person camera",
+    "face and hair silhouette match the narrative role",
+    "outfit contains the signature prop and school crest",
+    "mesh can be retopologized and rigged for idle, walk, and talk",
+    "web runtime budget stays suitable for supporting NPCs"
+  ]
+}

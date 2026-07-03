@@ -1,0 +1,28 @@
+{
+  "version": "character-reference-sheet-job-v1",
+  "jobId": "rowan-mint-reference-sheet-001",
+  "characterId": "rowan_mint",
+  "displayName": "Rowan Mint",
+  "tool": "imagegen",
+  "viewSet": "complete",
+  "status": "ready-to-run",
+  "input": {
+    "portraitUrl": "/assets/portraits/rowan_mint-concept.png",
+    "localPortraitPath": "public/assets/portraits/rowan_mint-concept.png",
+    "sourceBrief": "assets/characters/rowan_mint/character-model-brief.json"
+  },
+  "files": {
+    "prompt": "assets/characters/rowan_mint/references/jobs/rowan-mint-reference-sheet-001/prompt.md",
+    "runbook": "assets/characters/rowan_mint/references/jobs/rowan-mint-reference-sheet-001/RUNBOOK.md",
+    "outputsDir": "assets/characters/rowan_mint/references/jobs/rowan-mint-reference-sheet-001/outputs"
+  },
+  "expectedReferenceTypes": [
+    "model-sheet",
+    "front",
+    "side",
+    "back",
+    "face-detail",
+    "hair-breakdown",
+    "outfit-breakdown"
+  ]
+}

@@ -1,0 +1,106 @@
+{
+  "version": "character-model-brief-v1",
+  "characterId": "owen_grove",
+  "displayName": "Owen Grove",
+  "runtimeAssetId": "owen_grove-supporting-v1",
+  "narrativeSource": {
+    "title": "草坪星兽饲育员",
+    "role": "星兽饲育员",
+    "area": "lawn",
+    "arc": "不肯归巢的星兽",
+    "description": "草坪星兽饲育员。主线功能：星兽在钟声失准前会排列成七芒星。个人矛盾：他必须冒险放开最胆小的星兽引路",
+    "worldPosition": {
+      "x": 13.6,
+      "z": 11.7
+    },
+    "order": 29,
+    "dialogueSummary": {
+      "trees": 4,
+      "pages": 153,
+      "firstTreeId": "owen_grove_chapter_001"
+    }
+  },
+  "referenceImages": {
+    "portrait": "/assets/portraits/owen_grove-concept.png",
+    "front": "assets/characters/owen_grove/references/front.png",
+    "side": "assets/characters/owen_grove/references/side.png",
+    "back": "assets/characters/owen_grove/references/back.png"
+  },
+  "targetIdentity": {
+    "style": "mainstream Japanese RPG academy NPC, 星兽饲育员",
+    "silhouette": "readable academy supporting character for 草坪星兽饲育员",
+    "heightMeters": 1.705,
+    "headToBodyRatio": 0.19,
+    "facePriorities": [
+      "large readable anime eyes matching the role mood",
+      "clear brows that show the personal conflict",
+      "minimal stylized nose",
+      "small expressive mouth"
+    ],
+    "hairPriorities": [
+      "distinct silhouette hair matching the role",
+      "separate bangs and side locks",
+      "one recognizable hair accessory",
+      "game-ready hair chunks for later rigging"
+    ],
+    "outfitPriorities": [
+      "outdoor academy cape",
+      "messenger pouch",
+      "weathered boots",
+      "botanical charm accessory",
+      "school crest detail"
+    ]
+  },
+  "sourceModelRequirements": {
+    "sourceFile": "assets/characters/owen_grove/source/owen_grove.blend",
+    "targetRuntimeFile": "public/assets/models/owen_grove.glb",
+    "preferredFormat": "glb",
+    "acceptableFormat": "vrm",
+    "triangleBudget": {
+      "hero": [
+        14000,
+        26000
+      ],
+      "mid": [
+        8000,
+        14000
+      ],
+      "low": [
+        2500,
+        6000
+      ]
+    },
+    "textureBudgetKb": 2048,
+    "requiredAnimationClips": [
+      "idle",
+      "walk",
+      "talk"
+    ],
+    "requiredExpressions": [
+      "neutral",
+      "blink",
+      "smile",
+      "concerned",
+      "surprised"
+    ],
+    "requiredSecondaryMotion": [
+      "hair-tip-sway",
+      "cloth-sway",
+      "accessory-sway"
+    ]
+  },
+  "aiCandidatePlan": {
+    "primaryTool": "hunyuan3d",
+    "secondaryTool": "triposr",
+    "riggingTool": "unirig",
+    "candidateFolder": "assets/characters/owen_grove/candidates",
+    "minimumCandidates": 2,
+    "acceptanceGate": [
+      "identity reads from the third-person camera",
+      "face and hair silhouette match the narrative role",
+      "outfit contains the signature prop and school crest",
+      "mesh can be retopologized and rigged for idle, walk, and talk",
+      "web runtime budget stays suitable for supporting NPCs"
+    ]
+  }
+}

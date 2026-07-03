@@ -1,0 +1,28 @@
+{
+  "version": "character-reference-sheet-job-v1",
+  "jobId": "lina-clock-reference-sheet-001",
+  "characterId": "lina_clock",
+  "displayName": "Lina Clock",
+  "tool": "imagegen",
+  "viewSet": "complete",
+  "status": "ready-to-run",
+  "input": {
+    "portraitUrl": "/assets/portraits/lina_clock-concept.png",
+    "localPortraitPath": "public/assets/portraits/lina_clock-concept.png",
+    "sourceBrief": "assets/characters/lina_clock/character-model-brief.json"
+  },
+  "files": {
+    "prompt": "assets/characters/lina_clock/references/jobs/lina-clock-reference-sheet-001/prompt.md",
+    "runbook": "assets/characters/lina_clock/references/jobs/lina-clock-reference-sheet-001/RUNBOOK.md",
+    "outputsDir": "assets/characters/lina_clock/references/jobs/lina-clock-reference-sheet-001/outputs"
+  },
+  "expectedReferenceTypes": [
+    "model-sheet",
+    "front",
+    "side",
+    "back",
+    "face-detail",
+    "hair-breakdown",
+    "outfit-breakdown"
+  ]
+}

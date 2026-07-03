@@ -1,0 +1,141 @@
+{
+  "version": "character-review-v1",
+  "characterId": "evelyn_crow",
+  "displayName": "Evelyn Crow",
+  "portraitUrl": "/assets/portraits/evelyn_crow-concept.png",
+  "currentRuntimeModelUrl": "/assets/models/evelyn_crow.glb",
+  "currentPreviewUrl": "/assets/portraits/story-npc-placeholder.svg",
+  "runtimeAuditUrl": "/assets/character-reviews/evelyn_crow-runtime-audit.json",
+  "sourceModelPath": "assets/characters/evelyn_crow/source/evelyn_crow.blend",
+  "targetRuntimeFile": "public/assets/models/evelyn_crow.glb",
+  "referenceStatus": [
+    {
+      "type": "portrait",
+      "exists": false,
+      "sourcePath": "public/assets/portraits/evelyn_crow-concept.png",
+      "publicUrl": "/assets/portraits/story-npc-placeholder.svg"
+    },
+    {
+      "type": "front",
+      "exists": false,
+      "sourcePath": "assets/characters/evelyn_crow/references/front.png"
+    },
+    {
+      "type": "side",
+      "exists": false,
+      "sourcePath": "assets/characters/evelyn_crow/references/side.png"
+    },
+    {
+      "type": "back",
+      "exists": false,
+      "sourcePath": "assets/characters/evelyn_crow/references/back.png"
+    },
+    {
+      "type": "model-sheet",
+      "exists": false,
+      "sourcePath": "assets/characters/evelyn_crow/references/model-sheet.png"
+    },
+    {
+      "type": "face-detail",
+      "exists": false,
+      "sourcePath": "assets/characters/evelyn_crow/references/face-detail.png"
+    },
+    {
+      "type": "hair-breakdown",
+      "exists": false,
+      "sourcePath": "assets/characters/evelyn_crow/references/hair-breakdown.png"
+    },
+    {
+      "type": "outfit-breakdown",
+      "exists": false,
+      "sourcePath": "assets/characters/evelyn_crow/references/outfit-breakdown.png"
+    }
+  ],
+  "targetIdentity": {
+    "style": "strict Japanese RPG discipline committee heroine",
+    "silhouette": "tall black-uniform prefect with crow-feather capelet",
+    "heightMeters": 1.68,
+    "headToBodyRatio": 0.19,
+    "facePriorities": [
+      "dark red serious eyes",
+      "sharp disciplined brows",
+      "small firm mouth",
+      "cool pale cheek tone"
+    ],
+    "hairPriorities": [
+      "long black hair",
+      "straight side bangs",
+      "crow feather hairpiece",
+      "low tied back locks"
+    ],
+    "outfitPriorities": [
+      "black discipline uniform",
+      "red armband",
+      "crow-feather capelet",
+      "silver rulebook chain",
+      "polished black boots"
+    ]
+  },
+  "requirements": {
+    "sourceFile": "assets/characters/evelyn_crow/source/evelyn_crow.blend",
+    "targetRuntimeFile": "public/assets/models/evelyn_crow.glb",
+    "preferredFormat": "glb",
+    "acceptableFormat": "vrm",
+    "triangleBudget": {
+      "hero": [
+        18000,
+        32000
+      ],
+      "mid": [
+        8000,
+        14000
+      ],
+      "low": [
+        2500,
+        6000
+      ]
+    },
+    "textureBudgetKb": 2048,
+    "requiredAnimationClips": [
+      "idle",
+      "walk",
+      "talk"
+    ],
+    "requiredExpressions": [
+      "neutral",
+      "blink",
+      "smile",
+      "concerned",
+      "surprised"
+    ],
+    "requiredSecondaryMotion": [
+      "long-hair-sway",
+      "capelet-sway",
+      "chain-sway"
+    ]
+  },
+  "aiCandidatePlan": {
+    "primaryTool": "hunyuan3d",
+    "secondaryTool": "triposr",
+    "riggingTool": "unirig",
+    "candidateFolder": "assets/characters/evelyn_crow/candidates",
+    "minimumCandidates": 2,
+    "acceptanceGate": [
+      "identity reads from the third-person camera",
+      "face and hair silhouette match the narrative role",
+      "outfit contains the signature prop and school crest",
+      "mesh can be retopologized and rigged for idle, walk, and talk",
+      "web runtime budget stays suitable for supporting NPCs"
+    ]
+  },
+  "reviewChecklist": [
+    "portrait likeness: head silhouette, eyes, face shape, expression",
+    "hair structure: separate editable bangs, side locks, back hair, tips",
+    "body proportion: target height, head ratio, shoulder and hip silhouette",
+    "outfit accuracy: blouse, ribbon, skirt or trousers, cape, shoes, accessories",
+    "animation readiness: humanoid skeleton, skin weights, idle/walk/talk clips",
+    "facial readiness: blink, smile, shy, surprised, thinking morphs",
+    "web budget: triangles, materials, texture memory, animation count",
+    "runtime proof: model loads through CharacterManifest without fallback"
+  ]
+}

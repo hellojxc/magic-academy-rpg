@@ -1,0 +1,141 @@
+{
+  "version": "character-review-v1",
+  "characterId": "finn_rook",
+  "displayName": "Finn Rook",
+  "portraitUrl": "/assets/portraits/finn_rook-concept.png",
+  "currentRuntimeModelUrl": "/assets/models/finn_rook.glb",
+  "currentPreviewUrl": "/assets/portraits/story-npc-placeholder.svg",
+  "runtimeAuditUrl": "/assets/character-reviews/finn_rook-runtime-audit.json",
+  "sourceModelPath": "assets/characters/finn_rook/source/finn_rook.blend",
+  "targetRuntimeFile": "public/assets/models/finn_rook.glb",
+  "referenceStatus": [
+    {
+      "type": "portrait",
+      "exists": false,
+      "sourcePath": "public/assets/portraits/finn_rook-concept.png",
+      "publicUrl": "/assets/portraits/story-npc-placeholder.svg"
+    },
+    {
+      "type": "front",
+      "exists": false,
+      "sourcePath": "assets/characters/finn_rook/references/front.png"
+    },
+    {
+      "type": "side",
+      "exists": false,
+      "sourcePath": "assets/characters/finn_rook/references/side.png"
+    },
+    {
+      "type": "back",
+      "exists": false,
+      "sourcePath": "assets/characters/finn_rook/references/back.png"
+    },
+    {
+      "type": "model-sheet",
+      "exists": false,
+      "sourcePath": "assets/characters/finn_rook/references/model-sheet.png"
+    },
+    {
+      "type": "face-detail",
+      "exists": false,
+      "sourcePath": "assets/characters/finn_rook/references/face-detail.png"
+    },
+    {
+      "type": "hair-breakdown",
+      "exists": false,
+      "sourcePath": "assets/characters/finn_rook/references/hair-breakdown.png"
+    },
+    {
+      "type": "outfit-breakdown",
+      "exists": false,
+      "sourcePath": "assets/characters/finn_rook/references/outfit-breakdown.png"
+    }
+  ],
+  "targetIdentity": {
+    "style": "mainstream Japanese RPG academy NPC, 送信员",
+    "silhouette": "readable academy supporting character for 屋顶送信员",
+    "heightMeters": 1.6300000000000001,
+    "headToBodyRatio": 0.19,
+    "facePriorities": [
+      "large readable anime eyes matching the role mood",
+      "clear brows that show the personal conflict",
+      "minimal stylized nose",
+      "small expressive mouth"
+    ],
+    "hairPriorities": [
+      "distinct silhouette hair matching the role",
+      "separate bangs and side locks",
+      "one recognizable hair accessory",
+      "game-ready hair chunks for later rigging"
+    ],
+    "outfitPriorities": [
+      "outdoor academy cape",
+      "messenger pouch",
+      "weathered boots",
+      "letter satchel accessory",
+      "school crest detail"
+    ]
+  },
+  "requirements": {
+    "sourceFile": "assets/characters/finn_rook/source/finn_rook.blend",
+    "targetRuntimeFile": "public/assets/models/finn_rook.glb",
+    "preferredFormat": "glb",
+    "acceptableFormat": "vrm",
+    "triangleBudget": {
+      "hero": [
+        14000,
+        26000
+      ],
+      "mid": [
+        8000,
+        14000
+      ],
+      "low": [
+        2500,
+        6000
+      ]
+    },
+    "textureBudgetKb": 2048,
+    "requiredAnimationClips": [
+      "idle",
+      "walk",
+      "talk"
+    ],
+    "requiredExpressions": [
+      "neutral",
+      "blink",
+      "smile",
+      "concerned",
+      "surprised"
+    ],
+    "requiredSecondaryMotion": [
+      "hair-tip-sway",
+      "cloth-sway",
+      "accessory-sway"
+    ]
+  },
+  "aiCandidatePlan": {
+    "primaryTool": "hunyuan3d",
+    "secondaryTool": "triposr",
+    "riggingTool": "unirig",
+    "candidateFolder": "assets/characters/finn_rook/candidates",
+    "minimumCandidates": 2,
+    "acceptanceGate": [
+      "identity reads from the third-person camera",
+      "face and hair silhouette match the narrative role",
+      "outfit contains the signature prop and school crest",
+      "mesh can be retopologized and rigged for idle, walk, and talk",
+      "web runtime budget stays suitable for supporting NPCs"
+    ]
+  },
+  "reviewChecklist": [
+    "portrait likeness: head silhouette, eyes, face shape, expression",
+    "hair structure: separate editable bangs, side locks, back hair, tips",
+    "body proportion: target height, head ratio, shoulder and hip silhouette",
+    "outfit accuracy: blouse, ribbon, skirt or trousers, cape, shoes, accessories",
+    "animation readiness: humanoid skeleton, skin weights, idle/walk/talk clips",
+    "facial readiness: blink, smile, shy, surprised, thinking morphs",
+    "web budget: triangles, materials, texture memory, animation count",
+    "runtime proof: model loads through CharacterManifest without fallback"
+  ]
+}

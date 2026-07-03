@@ -1,0 +1,106 @@
+{
+  "version": "character-model-brief-v1",
+  "characterId": "aria_frost",
+  "displayName": "Aria Frost",
+  "runtimeAssetId": "aria_frost-supporting-v1",
+  "narrativeSource": {
+    "title": "冰音合唱首席",
+    "role": "合唱首席",
+    "area": "grand_hall",
+    "arc": "冻结的高音",
+    "description": "冰音合唱首席。主线功能：安魂曲最后一节会冻住虚假的时间。个人矛盾：她的声音一旦失控会伤害听众",
+    "worldPosition": {
+      "x": 10.1,
+      "z": -18.6
+    },
+    "order": 25,
+    "dialogueSummary": {
+      "trees": 4,
+      "pages": 153,
+      "firstTreeId": "aria_frost_chapter_001"
+    }
+  },
+  "referenceImages": {
+    "portrait": "/assets/portraits/aria_frost-concept.png",
+    "front": "assets/characters/aria_frost/references/front.png",
+    "side": "assets/characters/aria_frost/references/side.png",
+    "back": "assets/characters/aria_frost/references/back.png"
+  },
+  "targetIdentity": {
+    "style": "mainstream Japanese RPG academy NPC, 合唱首席",
+    "silhouette": "readable academy supporting character for 冰音合唱首席",
+    "heightMeters": 1.605,
+    "headToBodyRatio": 0.19,
+    "facePriorities": [
+      "large readable anime eyes matching the role mood",
+      "clear brows that show the personal conflict",
+      "minimal stylized nose",
+      "small expressive mouth"
+    ],
+    "hairPriorities": [
+      "distinct silhouette hair matching the role",
+      "separate bangs and side locks",
+      "one recognizable hair accessory",
+      "game-ready hair chunks for later rigging"
+    ],
+    "outfitPriorities": [
+      "ivory academy uniform",
+      "formal capelet",
+      "ceremonial sash",
+      "合唱首席 signature prop",
+      "school crest detail"
+    ]
+  },
+  "sourceModelRequirements": {
+    "sourceFile": "assets/characters/aria_frost/source/aria_frost.blend",
+    "targetRuntimeFile": "public/assets/models/aria_frost.glb",
+    "preferredFormat": "glb",
+    "acceptableFormat": "vrm",
+    "triangleBudget": {
+      "hero": [
+        14000,
+        26000
+      ],
+      "mid": [
+        8000,
+        14000
+      ],
+      "low": [
+        2500,
+        6000
+      ]
+    },
+    "textureBudgetKb": 2048,
+    "requiredAnimationClips": [
+      "idle",
+      "walk",
+      "talk"
+    ],
+    "requiredExpressions": [
+      "neutral",
+      "blink",
+      "smile",
+      "concerned",
+      "surprised"
+    ],
+    "requiredSecondaryMotion": [
+      "hair-tip-sway",
+      "cloth-sway",
+      "accessory-sway"
+    ]
+  },
+  "aiCandidatePlan": {
+    "primaryTool": "hunyuan3d",
+    "secondaryTool": "triposr",
+    "riggingTool": "unirig",
+    "candidateFolder": "assets/characters/aria_frost/candidates",
+    "minimumCandidates": 2,
+    "acceptanceGate": [
+      "identity reads from the third-person camera",
+      "face and hair silhouette match the narrative role",
+      "outfit contains the signature prop and school crest",
+      "mesh can be retopologized and rigged for idle, walk, and talk",
+      "web runtime budget stays suitable for supporting NPCs"
+    ]
+  }
+}

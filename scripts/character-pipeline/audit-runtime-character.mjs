@@ -1,7 +1,21 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-const DEFAULT_CHARACTERS = ['player', 'lyra'];
+function discoverCharacterIds() {
+  const root = resolve('assets/characters');
+  if (!existsSync(root)) return ['player', 'lyra'];
+  return readdirSync(root, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => entry.name)
+    .filter((id) => existsSync(resolve(`assets/characters/${id}/character-model-brief.json`)))
+    .sort((left, right) => {
+      if (left === 'player') return -1;
+      if (right === 'player') return 1;
+      if (left === 'lyra') return -1;
+      if (right === 'lyra') return 1;
+      return left.localeCompare(right);
+    });
+}
 
 function readJson(path) {
   return JSON.parse(readFileSync(path, 'utf8'));
@@ -141,7 +155,7 @@ function auditCharacter(characterId) {
 }
 
 const characters = process.argv.slice(2);
-const characterIds = characters.length > 0 ? characters : DEFAULT_CHARACTERS;
+const characterIds = characters.length > 0 ? characters : discoverCharacterIds();
 mkdirSync(resolve('public/assets/character-reviews'), { recursive: true });
 
 let failed = false;

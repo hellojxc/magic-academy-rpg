@@ -1,0 +1,106 @@
+{
+  "version": "character-model-brief-v1",
+  "characterId": "lina_clock",
+  "displayName": "Lina Clock",
+  "runtimeAssetId": "lina_clock-supporting-v1",
+  "narrativeSource": {
+    "title": "时间表管理员",
+    "role": "课程管理员",
+    "area": "atrium",
+    "arc": "错位课表",
+    "description": "时间表管理员。主线功能：改写后的课程都指向钟塔顶层的空教室。个人矛盾：她害怕承认自己也被课表安排过不存在的课程",
+    "worldPosition": {
+      "x": -7.3,
+      "z": 4.2
+    },
+    "order": 23,
+    "dialogueSummary": {
+      "trees": 4,
+      "pages": 153,
+      "firstTreeId": "lina_clock_chapter_001"
+    }
+  },
+  "referenceImages": {
+    "portrait": "/assets/portraits/lina_clock-concept.png",
+    "front": "assets/characters/lina_clock/references/front.png",
+    "side": "assets/characters/lina_clock/references/side.png",
+    "back": "assets/characters/lina_clock/references/back.png"
+  },
+  "targetIdentity": {
+    "style": "mainstream Japanese RPG academy NPC, 课程管理员",
+    "silhouette": "readable academy supporting character for 时间表管理员",
+    "heightMeters": 1.7550000000000001,
+    "headToBodyRatio": 0.19,
+    "facePriorities": [
+      "large readable anime eyes matching the role mood",
+      "clear brows that show the personal conflict",
+      "minimal stylized nose",
+      "small expressive mouth"
+    ],
+    "hairPriorities": [
+      "distinct silhouette hair matching the role",
+      "separate bangs and side locks",
+      "one recognizable hair accessory",
+      "game-ready hair chunks for later rigging"
+    ],
+    "outfitPriorities": [
+      "standard academy jacket",
+      "personalized waist sash",
+      "light travel satchel",
+      "clockwork charm accessory",
+      "school crest detail"
+    ]
+  },
+  "sourceModelRequirements": {
+    "sourceFile": "assets/characters/lina_clock/source/lina_clock.blend",
+    "targetRuntimeFile": "public/assets/models/lina_clock.glb",
+    "preferredFormat": "glb",
+    "acceptableFormat": "vrm",
+    "triangleBudget": {
+      "hero": [
+        14000,
+        26000
+      ],
+      "mid": [
+        8000,
+        14000
+      ],
+      "low": [
+        2500,
+        6000
+      ]
+    },
+    "textureBudgetKb": 2048,
+    "requiredAnimationClips": [
+      "idle",
+      "walk",
+      "talk"
+    ],
+    "requiredExpressions": [
+      "neutral",
+      "blink",
+      "smile",
+      "concerned",
+      "surprised"
+    ],
+    "requiredSecondaryMotion": [
+      "hair-tip-sway",
+      "cloth-sway",
+      "accessory-sway"
+    ]
+  },
+  "aiCandidatePlan": {
+    "primaryTool": "hunyuan3d",
+    "secondaryTool": "triposr",
+    "riggingTool": "unirig",
+    "candidateFolder": "assets/characters/lina_clock/candidates",
+    "minimumCandidates": 2,
+    "acceptanceGate": [
+      "identity reads from the third-person camera",
+      "face and hair silhouette match the narrative role",
+      "outfit contains the signature prop and school crest",
+      "mesh can be retopologized and rigged for idle, walk, and talk",
+      "web runtime budget stays suitable for supporting NPCs"
+    ]
+  }
+}

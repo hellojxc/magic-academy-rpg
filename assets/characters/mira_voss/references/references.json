@@ -1,0 +1,42 @@
+{
+  "version": "character-reference-index-v1",
+  "characterId": "mira_voss",
+  "displayName": "Mira Voss",
+  "references": {
+    "model-sheet": {
+      "path": "assets/characters/mira_voss/references/model-sheet.png",
+      "publicUrl": "/assets/character-reviews/mira_voss-model-sheet.png",
+      "registeredAt": "2026-07-03T21:41:34.139Z"
+    },
+    "front": {
+      "path": "assets/characters/mira_voss/references/front.png",
+      "publicUrl": "/assets/character-reviews/mira_voss-front.png",
+      "registeredAt": "2026-07-03T21:46:40.616Z"
+    },
+    "side": {
+      "path": "assets/characters/mira_voss/references/side.png",
+      "publicUrl": "/assets/character-reviews/mira_voss-side.png",
+      "registeredAt": "2026-07-03T21:47:08.440Z"
+    },
+    "back": {
+      "path": "assets/characters/mira_voss/references/back.png",
+      "publicUrl": "/assets/character-reviews/mira_voss-back.png",
+      "registeredAt": "2026-07-03T21:47:08.563Z"
+    },
+    "face-detail": {
+      "path": "assets/characters/mira_voss/references/face-detail.png",
+      "publicUrl": "/assets/character-reviews/mira_voss-face-detail.png",
+      "registeredAt": "2026-07-03T21:47:08.720Z"
+    },
+    "hair-breakdown": {
+      "path": "assets/characters/mira_voss/references/hair-breakdown.png",
+      "publicUrl": "/assets/character-reviews/mira_voss-hair-breakdown.png",
+      "registeredAt": "2026-07-03T21:47:38.862Z"
+    },
+    "outfit-breakdown": {
+      "path": "assets/characters/mira_voss/references/outfit-breakdown.png",
+      "publicUrl": "/assets/character-reviews/mira_voss-outfit-breakdown.png",
+      "registeredAt": "2026-07-03T21:47:39.369Z"
+    }
+  }
+}

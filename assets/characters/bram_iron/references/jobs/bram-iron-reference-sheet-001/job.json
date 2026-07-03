@@ -1,0 +1,28 @@
+{
+  "version": "character-reference-sheet-job-v1",
+  "jobId": "bram-iron-reference-sheet-001",
+  "characterId": "bram_iron",
+  "displayName": "Bram Iron",
+  "tool": "imagegen",
+  "viewSet": "complete",
+  "status": "ready-to-run",
+  "input": {
+    "portraitUrl": "/assets/portraits/bram_iron-concept.png",
+    "localPortraitPath": "public/assets/portraits/bram_iron-concept.png",
+    "sourceBrief": "assets/characters/bram_iron/character-model-brief.json"
+  },
+  "files": {
+    "prompt": "assets/characters/bram_iron/references/jobs/bram-iron-reference-sheet-001/prompt.md",
+    "runbook": "assets/characters/bram_iron/references/jobs/bram-iron-reference-sheet-001/RUNBOOK.md",
+    "outputsDir": "assets/characters/bram_iron/references/jobs/bram-iron-reference-sheet-001/outputs"
+  },
+  "expectedReferenceTypes": [
+    "model-sheet",
+    "front",
+    "side",
+    "back",
+    "face-detail",
+    "hair-breakdown",
+    "outfit-breakdown"
+  ]
+}

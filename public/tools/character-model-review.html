@@ -31,7 +31,11 @@
     }
     .tabs {
       display: flex;
+      flex-wrap: wrap;
       gap: 8px;
+      max-height: 120px;
+      overflow: auto;
+      justify-content: flex-end;
     }
     .tabs a {
       display: inline-flex;
@@ -171,10 +175,7 @@
   <main>
     <header>
       <h1 id="title">Character Model Review</h1>
-      <nav class="tabs" aria-label="Character">
-        <a id="tab-player" href="?character=player">Player</a>
-        <a id="tab-lyra" href="?character=lyra">Lyra</a>
-      </nav>
+      <nav id="character-tabs" class="tabs" aria-label="Character"></nav>
     </header>
 
     <div id="app" class="layout"></div>
@@ -182,8 +183,7 @@
 
   <script>
     const params = new URLSearchParams(window.location.search);
-    const character = params.get('character') === 'player' ? 'player' : 'lyra';
-    document.getElementById(`tab-${character}`).setAttribute('aria-current', 'page');
+    const requestedCharacter = params.get('character') || 'lyra';
 
     function list(items) {
       return `<ul>${items.map((item) => `<li>${String(item)}</li>`).join('')}</ul>`;
@@ -208,7 +208,17 @@
       `).join('')}</div>`;
     }
 
-    fetch(`/assets/character-reviews/${character}.json`, { cache: 'no-cache' })
+    function renderTabs(index, character) {
+      const tabs = document.getElementById('character-tabs');
+      tabs.innerHTML = index.characters.map((item) => `
+        <a id="tab-${item.id}" href="?character=${item.id}" ${item.id === character ? 'aria-current="page"' : ''}>
+          ${item.displayName}
+        </a>
+      `).join('');
+    }
+
+    function loadReview(character) {
+      fetch(`/assets/character-reviews/${character}.json`, { cache: 'no-cache' })
       .then((response) => {
         if (!response.ok) throw new Error(`Missing review JSON for ${character}`);
         return response.json();
@@ -267,6 +277,24 @@
             </section>
           </aside>
         `;
+      })
+      .catch((error) => {
+        document.getElementById('app').innerHTML = `<section class="section error">${error.stack || error.message}</section>`;
+      });
+    }
+
+    fetch('/assets/character-reviews/index.json', { cache: 'no-cache' })
+      .then((response) => response.ok ? response.json() : {
+        characters: [
+          { id: 'player', displayName: 'Player' },
+          { id: 'lyra', displayName: 'Lyra' }
+        ]
+      })
+      .then((index) => {
+        const known = new Set(index.characters.map((item) => item.id));
+        const character = known.has(requestedCharacter) ? requestedCharacter : (known.has('lyra') ? 'lyra' : index.characters[0]?.id);
+        renderTabs(index, character);
+        loadReview(character);
       })
       .catch((error) => {
         document.getElementById('app').innerHTML = `<section class="section error">${error.stack || error.message}</section>`;

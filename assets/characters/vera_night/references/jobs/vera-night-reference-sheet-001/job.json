@@ -1,0 +1,28 @@
+{
+  "version": "character-reference-sheet-job-v1",
+  "jobId": "vera-night-reference-sheet-001",
+  "characterId": "vera_night",
+  "displayName": "Vera Night",
+  "tool": "imagegen",
+  "viewSet": "complete",
+  "status": "ready-to-run",
+  "input": {
+    "portraitUrl": "/assets/portraits/vera_night-concept.png",
+    "localPortraitPath": "public/assets/portraits/vera_night-concept.png",
+    "sourceBrief": "assets/characters/vera_night/character-model-brief.json"
+  },
+  "files": {
+    "prompt": "assets/characters/vera_night/references/jobs/vera-night-reference-sheet-001/prompt.md",
+    "runbook": "assets/characters/vera_night/references/jobs/vera-night-reference-sheet-001/RUNBOOK.md",
+    "outputsDir": "assets/characters/vera_night/references/jobs/vera-night-reference-sheet-001/outputs"
+  },
+  "expectedReferenceTypes": [
+    "model-sheet",
+    "front",
+    "side",
+    "back",
+    "face-detail",
+    "hair-breakdown",
+    "outfit-breakdown"
+  ]
+}

@@ -1,0 +1,106 @@
+{
+  "version": "character-model-brief-v1",
+  "characterId": "silas_ink",
+  "displayName": "Silas Ink",
+  "runtimeAssetId": "silas_ink-supporting-v1",
+  "narrativeSource": {
+    "title": "墨灵契约生",
+    "role": "契约学生",
+    "area": "library",
+    "arc": "逃走的墨灵",
+    "description": "墨灵契约生。主线功能：墨灵写出的假名正是钟塔影社的成员表。个人矛盾：他若夺回名字，墨灵会重新变成普通墨水",
+    "worldPosition": {
+      "x": 7.35,
+      "z": -4.2
+    },
+    "order": 24,
+    "dialogueSummary": {
+      "trees": 4,
+      "pages": 153,
+      "firstTreeId": "silas_ink_chapter_001"
+    }
+  },
+  "referenceImages": {
+    "portrait": "/assets/portraits/silas_ink-concept.png",
+    "front": "assets/characters/silas_ink/references/front.png",
+    "side": "assets/characters/silas_ink/references/side.png",
+    "back": "assets/characters/silas_ink/references/back.png"
+  },
+  "targetIdentity": {
+    "style": "mainstream Japanese RPG academy NPC, 契约学生",
+    "silhouette": "readable academy supporting character for 墨灵契约生",
+    "heightMeters": 1.58,
+    "headToBodyRatio": 0.19,
+    "facePriorities": [
+      "large readable anime eyes matching the role mood",
+      "clear brows that show the personal conflict",
+      "minimal stylized nose",
+      "small expressive mouth"
+    ],
+    "hairPriorities": [
+      "distinct silhouette hair matching the role",
+      "separate bangs and side locks",
+      "one recognizable hair accessory",
+      "game-ready hair chunks for later rigging"
+    ],
+    "outfitPriorities": [
+      "scholar cardigan",
+      "book charm belt",
+      "soft boots",
+      "契约学生 signature prop",
+      "school crest detail"
+    ]
+  },
+  "sourceModelRequirements": {
+    "sourceFile": "assets/characters/silas_ink/source/silas_ink.blend",
+    "targetRuntimeFile": "public/assets/models/silas_ink.glb",
+    "preferredFormat": "glb",
+    "acceptableFormat": "vrm",
+    "triangleBudget": {
+      "hero": [
+        14000,
+        26000
+      ],
+      "mid": [
+        8000,
+        14000
+      ],
+      "low": [
+        2500,
+        6000
+      ]
+    },
+    "textureBudgetKb": 2048,
+    "requiredAnimationClips": [
+      "idle",
+      "walk",
+      "talk"
+    ],
+    "requiredExpressions": [
+      "neutral",
+      "blink",
+      "smile",
+      "concerned",
+      "surprised"
+    ],
+    "requiredSecondaryMotion": [
+      "hair-tip-sway",
+      "cloth-sway",
+      "accessory-sway"
+    ]
+  },
+  "aiCandidatePlan": {
+    "primaryTool": "hunyuan3d",
+    "secondaryTool": "triposr",
+    "riggingTool": "unirig",
+    "candidateFolder": "assets/characters/silas_ink/candidates",
+    "minimumCandidates": 2,
+    "acceptanceGate": [
+      "identity reads from the third-person camera",
+      "face and hair silhouette match the narrative role",
+      "outfit contains the signature prop and school crest",
+      "mesh can be retopologized and rigged for idle, walk, and talk",
+      "web runtime budget stays suitable for supporting NPCs"
+    ]
+  }
+}
