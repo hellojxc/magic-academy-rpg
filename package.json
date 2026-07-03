@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "preview:update": "scripts/update-preview.sh"
   },
   "dependencies": {
     "phaser": "^3.90.0",
