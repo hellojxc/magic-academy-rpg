@@ -808,6 +808,50 @@ def add_player_hand_details(
     parent_to_bone(thumb, armature, f"{side}Hand")
 
 
+def sculpt_player_head_mesh(head: bpy.types.Object) -> None:
+    mesh = getattr(head, "data", None)
+    if not mesh or not hasattr(mesh, "vertices"):
+        return
+
+    max_x = max((abs(vertex.co.x) for vertex in mesh.vertices), default=1.0)
+    max_y = max((abs(vertex.co.y) for vertex in mesh.vertices), default=1.0)
+    max_z = max((abs(vertex.co.z) for vertex in mesh.vertices), default=1.0)
+    if max_x <= 0 or max_y <= 0 or max_z <= 0:
+        return
+
+    for vertex in mesh.vertices:
+        co = vertex.co
+        xn = abs(co.x) / max_x
+        yn_front = max(0.0, -co.y / max_y)
+        zn = co.z / max_z
+
+        # Pull the central front of the sphere forward into an anime-style face
+        # plane so eyes, nose, and mouth sit on the head instead of floating.
+        face_width = max(0.0, 1.0 - (xn / 0.86) ** 2)
+        face_height = max(0.0, 1.0 - (abs(zn - 0.02) / 0.92) ** 2)
+        face_mask = face_width * face_height * (yn_front ** 1.35)
+        co.y -= max_y * 0.95 * face_mask
+
+        if zn < -0.12:
+            jaw_taper = min(1.0, (-zn - 0.12) / 0.78)
+            co.x *= 1.0 - 0.38 * (jaw_taper ** 1.35)
+            if co.y < 0:
+                co.y += max_y * 0.16 * jaw_taper
+
+        if zn > 0.26:
+            cranium = min(1.0, (zn - 0.26) / 0.74)
+            co.x *= 1.0 + 0.07 * cranium
+            if co.y > 0:
+                co.y *= 1.0 + 0.10 * cranium
+
+        if zn < -0.58 and co.y < 0:
+            chin = min(1.0, (-zn - 0.58) / 0.42)
+            co.y -= max_y * 0.18 * chin * max(0.0, 1.0 - (xn / 0.58) ** 2)
+
+    mesh.update()
+    shade_smooth(head)
+
+
 def add_head(
     spec: dict[str, Any],
     m: dict[str, float],
@@ -831,6 +875,8 @@ def add_head(
         segments=64,
         rings=32,
     )
+    if is_player:
+        sculpt_player_head_mesh(head)
     parent_to_bone(head, armature, "Head")
     if is_player:
         add_player_face_structure(m, mats, armature, collection)
@@ -964,17 +1010,6 @@ def add_player_face_structure(
     collection: bpy.types.Collection,
 ) -> None:
     scale = m["scale"]
-    chin = add_uv_sphere(
-        "HeroChinPlane",
-        mats["skin"],
-        (0, -0.186 * scale, 1.401 * scale),
-        (0.038 * scale, 0.010 * scale, 0.021 * scale),
-        collection,
-        segments=28,
-        rings=10,
-    )
-    parent_to_bone(chin, armature, "Head")
-
     lower_lip = add_cube(
         "HeroLowerLipSoftShade",
         mats["skin_warm"],
@@ -987,17 +1022,6 @@ def add_player_face_structure(
     parent_to_bone(lower_lip, armature, "Head")
 
     for side, sx in (("Left", -1), ("Right", 1)):
-        jaw = add_uv_sphere(
-            f"{side}HeroJawPlane",
-            mats["skin"],
-            (sx * 0.072 * scale, -0.163 * scale, 1.428 * scale),
-            (0.018 * scale, 0.006 * scale, 0.028 * scale),
-            collection,
-            segments=24,
-            rings=10,
-        )
-        parent_to_bone(jaw, armature, "Head")
-
         ear = add_uv_sphere(
             f"{side}HeroEar",
             mats["skin_warm"],

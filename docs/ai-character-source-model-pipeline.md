@@ -201,13 +201,14 @@ The current `player.glb` and `lyra.glb` are runtime prototypes. The
 `*.blender-template.glb` files are technical pipeline probes. The latest player
 source pass is generated from
 `assets/characters/player/source/player.blend` and exports to
-`public/assets/models/player.glb` with 27,334 runtime triangles, 17 bones, 11
+`public/assets/models/player.glb` with 25,966 runtime triangles, 17 bones, 11
 morph-target primitives, and `idle`, `walk`, and `talk` clips. The latest pass
-adds more readable player eyes, upper-eye shadow morph meshes, a lighter
-face-structure layer, ears, slimmer protagonist proportions, and individual
-gloved fingers. The runtime audit accepts it as a web-ready prototype, and the
-manifest now marks player facial morph support as enabled. It is still
-template-quality compared with a commercial Japanese RPG character.
+replaces the old ellipsoid-plus-face-patches head with a single deformed anime
+head mesh: a pulled-forward face plane, tapered jaw, broader cranium, ears, more
+readable eyes, upper-eye shadow morph meshes, and individual gloved fingers. The
+runtime audit accepts it as a web-ready prototype, and the manifest now marks
+player facial morph support as enabled. It is still template-quality compared
+with a commercial Japanese RPG character.
 
 Mira Voss has the first NPC runtime candidate at
 `public/assets/models/mira_voss.glb`. It is a Blender-generated skinned GLB with

@@ -77,8 +77,9 @@ The generated clips are:
 - `talk`
 
 The current pass exports a Blender Armature, weighted meshes, facial morph
-targets, and animation clips. It is still a template generator, not a final
-commercial model. The final quality pass should replace the primitive template
-sections with sculpted topology, UV textures, polished skin weights, richer
-facial shape keys, and spring-bone style secondary motion for hair, skirt, cape,
-and ribbons.
+targets, animation clips, and a player-specific deformed anime head mesh with a
+front face plane instead of only an ellipsoid head. It is still a template
+generator, not a final commercial model. The final quality pass should replace
+the remaining primitive body, hair, and clothing sections with sculpted topology,
+UV textures, polished skin weights, richer facial shape keys, and spring-bone
+style secondary motion for hair, skirt, cape, and ribbons.
