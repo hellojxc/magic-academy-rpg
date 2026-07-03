@@ -24,6 +24,7 @@ fi
 
 echo "[preview] fetching origin/main"
 git -C "$ROOT_DIR" fetch origin main
+git -C "$PREVIEW_DIR" fetch origin main
 
 current_branch="$(git -C "$PREVIEW_DIR" branch --show-current)"
 if [[ "$current_branch" != "preview" ]]; then
