@@ -10,7 +10,7 @@ LOG_FILE="$PREVIEW_DIR/vite-preview.log"
 echo "[preview] source repo: $ROOT_DIR"
 echo "[preview] preview dir: $PREVIEW_DIR"
 
-if [[ ! -d "$PREVIEW_DIR/.git" ]]; then
+if ! git -C "$PREVIEW_DIR" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
   echo "[preview] missing preview worktree: $PREVIEW_DIR" >&2
   echo "[preview] create it with: git -C \"$ROOT_DIR\" worktree add --track -b preview \"$PREVIEW_DIR\" origin/main" >&2
   exit 1
