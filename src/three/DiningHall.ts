@@ -46,6 +46,7 @@ export class DiningHall {
     // 南墙 (部分 — 留通道)
     addBox(this.scene, new THREE.Vector3(22, 2.3, 7.6), new THREE.Vector3(4.5, 4.6, 0.45), wallMat, false, true);
     addBox(this.scene, new THREE.Vector3(22, 0.6, 7.35), new THREE.Vector3(4, 0.9, 0.28), lowerMat, true, true);
+    this.addWallDetails(lowerMat, goldMat);
 
     // 天花板
     const ceilMat = new THREE.MeshStandardMaterial({ color: 0x6a5a4e, roughness: 0.62, metalness: 0.03 });
@@ -199,12 +200,18 @@ export class DiningHall {
   private addFireplace(x: number, z: number): void {
     const stoneMat = new THREE.MeshStandardMaterial({ color: 0x5a4a3e, roughness: 0.6, metalness: 0.06 });
     const fireMat = new THREE.MeshStandardMaterial({ color: 0xff6020, emissive: 0xff4010, emissiveIntensity: 2.5 });
+    const sootMat = new THREE.MeshBasicMaterial({ color: 0x1f1714, transparent: true, opacity: 0.28, depthWrite: false });
 
     // 壁炉框架
     addBox(this.scene, new THREE.Vector3(x - 0.6, 1.0, z), new THREE.Vector3(0.3, 2, 1.6), stoneMat, true, true);
     addBox(this.scene, new THREE.Vector3(x + 0.6, 1.0, z), new THREE.Vector3(0.3, 2, 1.6), stoneMat, true, true);
     addBox(this.scene, new THREE.Vector3(x, 2.1, z), new THREE.Vector3(1.8, 0.3, 1.6), stoneMat, true, true);
     addBox(this.scene, new THREE.Vector3(x, 0.5, z), new THREE.Vector3(1.4, 0.2, 0.8), stoneMat, true, true);
+
+    const soot = new THREE.Mesh(new THREE.PlaneGeometry(1.25, 1.55), sootMat);
+    soot.position.set(x - 0.03, 1.55, z);
+    soot.rotation.y = Math.PI / 2;
+    this.scene.add(soot);
 
     // 火焰
     const fire = new THREE.Mesh(new THREE.SphereGeometry(0.25, 12, 8), fireMat);
@@ -269,5 +276,52 @@ export class DiningHall {
     addBox(this.scene, new THREE.Vector3(x, y, z), new THREE.Vector3(0.06, 2.4, 1.7), frameMat, true, true);
     addBox(this.scene, new THREE.Vector3(x, y, z + 0.75), new THREE.Vector3(0.06, 0.08, 1.8), frameMat, true, true);
     addBox(this.scene, new THREE.Vector3(x, y, z - 0.75), new THREE.Vector3(0.06, 0.08, 1.8), frameMat, true, true);
+  }
+
+  private addWallDetails(lowerMat: THREE.Material, goldMat: THREE.Material): void {
+    const seamMat = new THREE.MeshStandardMaterial({ color: 0x756656, roughness: 0.72, metalness: 0.02 });
+    const darkWoodMat = new THREE.MeshStandardMaterial({ color: 0x3d2418, roughness: 0.58, metalness: 0.06, map: makeWoodTexture() });
+    const plateMat = new THREE.MeshStandardMaterial({ color: 0xe8dcc0, roughness: 0.38, metalness: 0.04 });
+
+    for (const y of [1.35, 2.3, 3.25]) {
+      addBox(this.scene, new THREE.Vector3(23.56, y, 1), new THREE.Vector3(0.05, 0.022, 13.2), seamMat, false, true);
+      addBox(this.scene, new THREE.Vector3(17, y, -6.08), new THREE.Vector3(13.0, 0.022, 0.05), seamMat, false, true);
+    }
+
+    for (const z of [-5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 6.8]) {
+      addBox(this.scene, new THREE.Vector3(23.55, 2.35, z), new THREE.Vector3(0.05, 2.05, 0.025), seamMat, false, true);
+    }
+    for (const x of [11.2, 13.2, 15.2, 17.2, 19.2, 21.2, 23.0]) {
+      addBox(this.scene, new THREE.Vector3(x, 2.35, -6.07), new THREE.Vector3(0.025, 2.0, 0.05), seamMat, false, true);
+    }
+
+    for (const z of [-4.8, -2.0, 3.8, 6.2]) {
+      addBox(this.scene, new THREE.Vector3(23.5, 1.05, z), new THREE.Vector3(0.09, 0.58, 1.05), lowerMat, true, true);
+      addBox(this.scene, new THREE.Vector3(23.43, 1.36, z), new THREE.Vector3(0.08, 0.045, 0.9), goldMat, true, true);
+    }
+
+    for (const [x, z, rot] of [[12.0, -6.02, 0], [16.3, -6.02, 0], [20.8, -6.02, 0], [23.48, -2.6, Math.PI / 2], [23.48, 4.2, Math.PI / 2]] as Array<[number, number, number]>) {
+      const bracket = new THREE.Group();
+      const rail = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 0.82, 8), darkWoodMat);
+      rail.rotation.z = Math.PI / 2;
+      bracket.add(rail);
+      for (const dx of [-0.32, 0.32]) {
+        const hook = new THREE.Mesh(new THREE.TorusGeometry(0.06, 0.01, 6, 14, Math.PI), goldMat);
+        hook.position.x = dx;
+        hook.rotation.z = Math.PI;
+        bracket.add(hook);
+      }
+      bracket.position.set(x, 2.05, z);
+      bracket.rotation.y = rot;
+      this.scene.add(bracket);
+    }
+
+    for (const [x, z, rot] of [[13.6, -6.0, 0], [18.4, -6.0, 0], [23.46, -0.3, Math.PI / 2], [23.46, 2.5, Math.PI / 2]] as Array<[number, number, number]>) {
+      const plate = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.18, 0.018, 24), plateMat);
+      plate.position.set(x, 2.74, z);
+      plate.rotation.set(Math.PI / 2, rot, 0);
+      plate.castShadow = true;
+      this.scene.add(plate);
+    }
   }
 }

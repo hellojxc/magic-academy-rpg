@@ -76,6 +76,7 @@ export class GrandHall {
     // 右墙 (东)
     addBox(this.scene, new THREE.Vector3(13.2, 2.5, -14.5), new THREE.Vector3(0.45, 5, 15.2), wallMat, false, true);
     addBox(this.scene, new THREE.Vector3(12.9, 0.6, -14.5), new THREE.Vector3(0.28, 0.9, 14.8), lowerMat, true, true);
+    this.addWallStonework(stoneMat, lowerMat, goldMat);
 
     // 穹顶 — 高拱形天花板
     const domeMat = new THREE.MeshStandardMaterial({ color: 0x6a5a6e, roughness: 0.6, metalness: 0.04, side: THREE.DoubleSide });
@@ -165,6 +166,71 @@ export class GrandHall {
       const ring = new THREE.Mesh(new THREE.CylinderGeometry(0.34, 0.36, 0.09, 28), trimMat);
       ring.position.set(x, y, z); ring.castShadow = true; ring.receiveShadow = true;
       this.scene.add(ring);
+    }
+
+    const grooveMat = new THREE.MeshStandardMaterial({ color: 0x514844, roughness: 0.68, metalness: 0.02 });
+    for (let i = 0; i < 8; i += 1) {
+      const angle = (i / 8) * Math.PI * 2;
+      const groove = new THREE.Mesh(new THREE.BoxGeometry(0.025, 3.65, 0.035), grooveMat);
+      groove.position.set(x + Math.cos(angle) * 0.265, 2.34, z + Math.sin(angle) * 0.265);
+      groove.rotation.y = -angle;
+      groove.castShadow = true;
+      groove.receiveShadow = true;
+      this.scene.add(groove);
+    }
+
+    for (const [dy, angle, width] of [[1.35, 0.4, 0.18], [2.55, 2.1, 0.14], [3.52, 4.3, 0.16]] as Array<[number, number, number]>) {
+      const scar = new THREE.Mesh(new THREE.BoxGeometry(width, 0.022, 0.026), grooveMat);
+      scar.position.set(x + Math.cos(angle) * 0.286, dy, z + Math.sin(angle) * 0.286);
+      scar.rotation.set(0, -angle + 0.35, 0.38);
+      scar.castShadow = true;
+      this.scene.add(scar);
+    }
+  }
+
+  private addWallStonework(stoneMat: THREE.Material, lowerMat: THREE.Material, trimMat: THREE.Material): void {
+    const seamMat = new THREE.MeshStandardMaterial({ color: 0x665a54, roughness: 0.72, metalness: 0.02 });
+    const reliefMat = new THREE.MeshStandardMaterial({ color: 0x9a8978, roughness: 0.58, metalness: 0.04 });
+
+    for (const y of [1.2, 2.05, 2.9, 3.75]) {
+      addBox(this.scene, new THREE.Vector3(0, y, -22.0), new THREE.Vector3(25.2, 0.026, 0.055), seamMat, false, true);
+      addBox(this.scene, new THREE.Vector3(-12.86, y, -14.5), new THREE.Vector3(0.055, 0.026, 14.1), seamMat, false, true);
+      addBox(this.scene, new THREE.Vector3(12.86, y, -14.5), new THREE.Vector3(0.055, 0.026, 14.1), seamMat, false, true);
+    }
+
+    for (const x of [-11.2, -8.4, -5.6, -2.8, 2.8, 5.6, 8.4, 11.2]) {
+      addBox(this.scene, new THREE.Vector3(x, 2.48, -21.98), new THREE.Vector3(0.03, 3.0, 0.06), seamMat, false, true);
+    }
+
+    for (const z of [-20.0, -17.4, -14.8, -12.2, -9.6]) {
+      addBox(this.scene, new THREE.Vector3(-12.84, 2.44, z), new THREE.Vector3(0.06, 3.0, 0.03), seamMat, false, true);
+      addBox(this.scene, new THREE.Vector3(12.84, 2.44, z), new THREE.Vector3(0.06, 3.0, 0.03), seamMat, false, true);
+    }
+
+    for (const [x, y, z, side] of [
+      [-7.2, 3.55, -21.93, 'back'],
+      [3.4, 1.85, -21.93, 'back'],
+      [-12.78, 3.1, -18.0, 'side'],
+      [12.78, 1.72, -11.8, 'side'],
+    ] as Array<[number, number, number, 'back' | 'side']>) {
+      const chip = new THREE.Mesh(new THREE.DodecahedronGeometry(0.16, 0), stoneMat);
+      chip.scale.set(1, 0.34, 0.55);
+      chip.position.set(x, y, z);
+      chip.rotation.set(Math.random() * 0.4, Math.random() * Math.PI, Math.random() * 0.6);
+      chip.castShadow = true;
+      chip.receiveShadow = true;
+      if (side === 'side') chip.scale.set(0.4, 0.34, 1.0);
+      this.scene.add(chip);
+    }
+
+    for (const x of [-6.6, 0, 6.6]) {
+      addBox(this.scene, new THREE.Vector3(x, 4.52, -22.02), new THREE.Vector3(1.6, 0.08, 0.08), trimMat, true, true);
+      addBox(this.scene, new THREE.Vector3(x, 0.98, -22.0), new THREE.Vector3(1.2, 0.05, 0.08), lowerMat, true, true);
+      const medallion = new THREE.Mesh(new THREE.TorusGeometry(0.28, 0.022, 8, 28), reliefMat);
+      medallion.position.set(x, 3.78, -21.96);
+      medallion.rotation.x = Math.PI / 2;
+      medallion.castShadow = true;
+      this.scene.add(medallion);
     }
   }
 

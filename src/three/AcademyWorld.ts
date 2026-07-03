@@ -229,6 +229,7 @@ export class AcademyWorld {
     this.addFloor();
     this.addWalls();
     this.addWallPanels();
+    this.addWallSurfaceDetails();
     this.addWindows();
     this.addArchedDoor();
     this.addColumnsAndBeams();
@@ -339,6 +340,53 @@ export class AcademyWorld {
     for (const z of [-4.85, -2.45, 2.45, 4.85]) {
       this.addFramedPanel(new THREE.Vector3(-8.68, 2.54, z), 1.22, 1.9, 'left', panelMat, insetMat, trimMat);
       this.addFramedPanel(new THREE.Vector3(8.68, 2.54, z), 1.22, 1.9, 'right', panelMat, insetMat, trimMat);
+    }
+  }
+
+  private addWallSurfaceDetails(): void {
+    const seamMat = new THREE.MeshStandardMaterial({ color: 0x6f6277, roughness: 0.72, metalness: 0.02 });
+    const chipMat = new THREE.MeshStandardMaterial({ color: 0x8f8197, roughness: 0.7, metalness: 0.03 });
+    const trimMat = new THREE.MeshStandardMaterial({ color: 0xc7a060, roughness: 0.3, metalness: 0.45 });
+
+    for (const x of [-7.6, -5.2, -2.8, 2.8, 5.2, 7.6]) {
+      this.addBox(new THREE.Vector3(x, 2.6, -6.04), new THREE.Vector3(0.024, 2.5, 0.05), seamMat, false, true);
+    }
+    for (const y of [1.45, 2.28, 3.12]) {
+      this.addBox(new THREE.Vector3(-4.8, y, -6.035), new THREE.Vector3(7.3, 0.022, 0.05), seamMat, false, true);
+      this.addBox(new THREE.Vector3(4.8, y, -6.035), new THREE.Vector3(7.3, 0.022, 0.05), seamMat, false, true);
+    }
+
+    for (const z of [-5.35, -3.45, 2.9, 4.75]) {
+      this.addBox(new THREE.Vector3(8.55, 2.48, z), new THREE.Vector3(0.05, 2.35, 0.024), seamMat, false, true);
+      this.addBox(new THREE.Vector3(-8.55, 2.48, z), new THREE.Vector3(0.05, 2.35, 0.024), seamMat, false, true);
+    }
+    for (const y of [1.38, 3.18]) {
+      this.addBox(new THREE.Vector3(8.55, y, -4.0), new THREE.Vector3(0.05, 0.022, 4.5), seamMat, false, true);
+      this.addBox(new THREE.Vector3(8.55, y, 3.5), new THREE.Vector3(0.05, 0.022, 4.45), seamMat, false, true);
+      this.addBox(new THREE.Vector3(-8.55, y, -1.0), new THREE.Vector3(0.05, 0.022, 11.2), seamMat, false, true);
+    }
+
+    for (const [x, y, z, side] of [
+      [-6.1, 3.48, -6.0, 'back'],
+      [4.4, 1.7, -6.0, 'back'],
+      [8.52, 2.85, -3.0, 'side'],
+      [-8.52, 2.2, 3.4, 'side'],
+    ] as Array<[number, number, number, 'back' | 'side']>) {
+      const chip = new THREE.Mesh(new THREE.DodecahedronGeometry(0.11, 0), chipMat);
+      chip.position.set(x, y, z);
+      chip.scale.set(side === 'back' ? 1 : 0.42, 0.32, side === 'back' ? 0.42 : 1);
+      chip.rotation.set(Math.random() * 0.5, Math.random() * Math.PI, Math.random() * 0.5);
+      chip.castShadow = true;
+      chip.receiveShadow = true;
+      this.scene.add(chip);
+    }
+
+    for (const [x, z] of [[-2.9, -6.0], [2.9, -6.0], [8.52, -1.95], [8.52, 2.05]] as Array<[number, number]>) {
+      const medallion = new THREE.Mesh(new THREE.TorusGeometry(0.18, 0.016, 8, 24), trimMat);
+      medallion.position.set(x, 3.58, z);
+      if (Math.abs(x) > 8) medallion.rotation.y = Math.PI / 2;
+      medallion.castShadow = true;
+      this.scene.add(medallion);
     }
   }
 
@@ -543,9 +591,61 @@ export class AcademyWorld {
       }
     }
 
+    this.addBookshelfDetails(shelf, shelfLevels, width, depth, goldMat);
+
     shelf.position.copy(position);
     shelf.rotation.y = rotationY;
     this.scene.add(shelf);
+  }
+
+  private addBookshelfDetails(
+    shelf: THREE.Group,
+    shelfLevels: number[],
+    width: number,
+    depth: number,
+    goldMat: THREE.Material
+  ): void {
+    const labelMat = new THREE.MeshStandardMaterial({ color: 0xe7c87a, roughness: 0.28, metalness: 0.45 });
+    const parchmentMat = new THREE.MeshStandardMaterial({ color: 0xd9c08e, roughness: 0.68, metalness: 0.02 });
+    const glassMats = [
+      new THREE.MeshStandardMaterial({ color: 0x75c6d8, roughness: 0.12, metalness: 0.02, transparent: true, opacity: 0.72 }),
+      new THREE.MeshStandardMaterial({ color: 0xa978d4, roughness: 0.12, metalness: 0.02, transparent: true, opacity: 0.72 }),
+      new THREE.MeshStandardMaterial({ color: 0x8ecf84, roughness: 0.12, metalness: 0.02, transparent: true, opacity: 0.72 }),
+    ];
+
+    for (const level of [shelfLevels[1], shelfLevels[3]]) {
+      this.addBoxToGroup(shelf, new THREE.Vector3(-width / 2 - 0.01, level + 0.25, depth / 2 + 0.055), new THREE.Vector3(0.05, 0.22, 0.018), labelMat);
+      this.addBoxToGroup(shelf, new THREE.Vector3(width / 2 + 0.01, level + 0.25, depth / 2 + 0.055), new THREE.Vector3(0.05, 0.22, 0.018), labelMat);
+    }
+
+    for (let i = 0; i < 3; i += 1) {
+      const scroll = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 0.42, 12), parchmentMat);
+      scroll.position.set(-0.38 + i * 0.18, shelfLevels[2] + 0.14, depth / 2 - 0.02);
+      scroll.rotation.z = Math.PI / 2;
+      scroll.castShadow = true;
+      scroll.receiveShadow = true;
+      shelf.add(scroll);
+    }
+
+    for (let i = 0; i < 3; i += 1) {
+      const bottle = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.055, 0.18, 12), glassMats[i]);
+      bottle.position.set(0.28 + i * 0.16, shelfLevels[0] + 0.18, depth / 2 - 0.03);
+      bottle.castShadow = true;
+      shelf.add(bottle);
+
+      const stopper = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.045, 0.04), goldMat);
+      stopper.position.set(bottle.position.x, bottle.position.y + 0.11, bottle.position.z);
+      stopper.castShadow = true;
+      shelf.add(stopper);
+    }
+
+    const charm = new THREE.Mesh(
+      new THREE.OctahedronGeometry(0.07, 0),
+      new THREE.MeshStandardMaterial({ color: 0x8fc7ff, emissive: 0x4f8cff, emissiveIntensity: 0.65, roughness: 0.2 })
+    );
+    charm.position.set(0, shelfLevels[4] + 0.28, depth / 2 + 0.03);
+    charm.castShadow = true;
+    shelf.add(charm);
   }
 
   private addLibraryLadder(): void {
@@ -596,6 +696,25 @@ export class AcademyWorld {
       ring.castShadow = true;
       ring.receiveShadow = true;
       this.scene.add(ring);
+    }
+
+    const grooveMat = new THREE.MeshStandardMaterial({ color: 0x554a5f, roughness: 0.64, metalness: 0.03 });
+    for (let i = 0; i < 8; i += 1) {
+      const angle = (i / 8) * Math.PI * 2;
+      const groove = new THREE.Mesh(new THREE.BoxGeometry(0.022, 1.62, 0.028), grooveMat);
+      groove.position.set(x + Math.cos(angle) * 0.242, 1.28, z + Math.sin(angle) * 0.242);
+      groove.rotation.y = -angle;
+      groove.castShadow = true;
+      groove.receiveShadow = true;
+      this.scene.add(groove);
+    }
+
+    for (const [dy, angle] of [[0.88, 0.35], [1.58, 2.25]] as Array<[number, number]>) {
+      const nick = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.018, 0.022), grooveMat);
+      nick.position.set(x + Math.cos(angle) * 0.262, dy, z + Math.sin(angle) * 0.262);
+      nick.rotation.set(0, -angle, 0.38);
+      nick.castShadow = true;
+      this.scene.add(nick);
     }
 
     const lamp = new THREE.Mesh(

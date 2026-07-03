@@ -22,6 +22,8 @@ export class Lawn {
 
     // 草地
     addFlatPlane(this.scene, new THREE.Vector3(0, -0.02, 14.5), new THREE.Vector2(32, 15), grassMat);
+    this.addGroundPatches();
+    this.addGrassBlades();
 
     // 石径 — 从中庭南门到草坪
     for (let z = 7; z <= 22; z += 1.5) {
@@ -137,6 +139,94 @@ export class Lawn {
     this.scene.add(spout);
     this.animatedObjects.push({ obj: spout, baseY: 1.2, amp: 0.04, speed: 4, phase: 0 });
     addPointLight(this.scene, x, 0.8, z, 0x6fc4ff, 0.6, 4);
+  }
+
+  private addGroundPatches(): void {
+    const patchMats = [
+      new THREE.MeshStandardMaterial({ color: 0x356f32, roughness: 0.92, metalness: 0.0 }),
+      new THREE.MeshStandardMaterial({ color: 0x5a8d42, roughness: 0.9, metalness: 0.0 }),
+      new THREE.MeshStandardMaterial({ color: 0x3d5f2f, roughness: 0.94, metalness: 0.0 }),
+      new THREE.MeshStandardMaterial({ color: 0x6a583a, roughness: 0.96, metalness: 0.0 }),
+    ];
+
+    for (let i = 0; i < 58; i += 1) {
+      const x = -15 + Math.random() * 30;
+      const z = 7.3 + Math.random() * 14.4;
+      if (this.isNearLawnFeature(x, z, 0.7)) continue;
+
+      const patch = new THREE.Mesh(
+        new THREE.CircleGeometry(0.28 + Math.random() * 0.9, 9 + Math.floor(Math.random() * 5)),
+        patchMats[i % patchMats.length]
+      );
+      patch.rotation.x = -Math.PI / 2;
+      patch.rotation.z = Math.random() * Math.PI;
+      patch.scale.set(1, 0.34 + Math.random() * 0.48, 1);
+      patch.position.set(x, -0.012 + i * 0.00001, z);
+      patch.receiveShadow = true;
+      this.scene.add(patch);
+    }
+
+    const edgeMat = new THREE.MeshStandardMaterial({ color: 0x2f6f2f, roughness: 0.9, metalness: 0.0 });
+    for (let i = 0; i < 46; i += 1) {
+      const alongMain = i % 2 === 0;
+      const x = alongMain ? (Math.random() > 0.5 ? -0.78 : 0.78) + (Math.random() - 0.5) * 0.24 : -15 + Math.random() * 30;
+      const z = alongMain ? 7 + Math.random() * 15 : 18 + (Math.random() > 0.5 ? -0.74 : 0.74) + (Math.random() - 0.5) * 0.22;
+      const tuft = new THREE.Mesh(new THREE.ConeGeometry(0.07, 0.28 + Math.random() * 0.18, 5), edgeMat);
+      tuft.position.set(x, 0.13, z);
+      tuft.rotation.y = Math.random() * Math.PI;
+      tuft.castShadow = true;
+      tuft.receiveShadow = true;
+      this.scene.add(tuft);
+    }
+  }
+
+  private addGrassBlades(): void {
+    const bladeGeometry = new THREE.ConeGeometry(0.026, 1, 4);
+    const bladeMaterials = [
+      new THREE.MeshStandardMaterial({ color: 0x3e8a35, roughness: 0.88, metalness: 0.0 }),
+      new THREE.MeshStandardMaterial({ color: 0x6fae54, roughness: 0.86, metalness: 0.0 }),
+      new THREE.MeshStandardMaterial({ color: 0x2f6c2c, roughness: 0.9, metalness: 0.0 }),
+    ];
+    const dummy = new THREE.Object3D();
+
+    for (let matIndex = 0; matIndex < bladeMaterials.length; matIndex += 1) {
+      const count = 190;
+      const mesh = new THREE.InstancedMesh(bladeGeometry, bladeMaterials[matIndex], count);
+
+      for (let i = 0; i < count; i += 1) {
+        let x = 0;
+        let z = 0;
+        for (let attempts = 0; attempts < 8; attempts += 1) {
+          x = -15.6 + Math.random() * 31.2;
+          z = 7.2 + Math.random() * 14.6;
+          if (!this.isNearLawnFeature(x, z, 0.45)) break;
+        }
+
+        const height = 0.16 + Math.random() * 0.36;
+        dummy.position.set(x, height / 2 - 0.01, z);
+        dummy.rotation.set((Math.random() - 0.5) * 0.26, Math.random() * Math.PI * 2, (Math.random() - 0.5) * 0.26);
+        dummy.scale.set(0.75 + Math.random() * 0.7, height, 0.75 + Math.random() * 0.5);
+        dummy.updateMatrix();
+        mesh.setMatrixAt(i, dummy.matrix);
+      }
+
+      mesh.instanceMatrix.needsUpdate = true;
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+      this.scene.add(mesh);
+    }
+  }
+
+  private isNearLawnFeature(x: number, z: number, margin: number): boolean {
+    if (Math.abs(x) < 0.86 + margin && z > 6.7 && z < 22.3) return true;
+    if (Math.abs(z - 18) < 0.68 + margin && Math.abs(x) > 1.6 && Math.abs(x) < 16.4) return true;
+    if (Math.hypot(x, z - 14.5) < 1.7 + margin) return true;
+
+    for (const [fx, fz] of [[-10, 10], [10, 10], [-10, 19], [10, 19]] as Array<[number, number]>) {
+      if (Math.hypot(x - fx, z - fz) < 1.1 + margin) return true;
+    }
+
+    return false;
   }
 
   private addFlowerBed(x: number, z: number, colors: number[]): void {

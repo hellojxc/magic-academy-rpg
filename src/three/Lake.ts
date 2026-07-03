@@ -22,14 +22,9 @@ export class Lake {
       opacity: 0.82,
     });
 
-    // 主水面 — 不规则形状用多个 plane 拼合
-    const lakeCenter = new THREE.Vector3(-15, 0, 19);
-    addFlatPlane(this.scene, lakeCenter, new THREE.Vector2(22, 18), waterMat);
-    this.waterMeshes.push(this.getLastMesh()!);
-
-    // 深水区延伸
-    addFlatPlane(this.scene, new THREE.Vector3(-20, -0.02, 24), new THREE.Vector2(12, 8), waterMat.clone());
-    addFlatPlane(this.scene, new THREE.Vector3(-8, -0.02, 14), new THREE.Vector2(8, 10), waterMat.clone());
+    // 主水面 — 用不规则几何做岸线，避免像几块矩形贴图拼起来。
+    this.addWaterBody(waterMat);
+    this.addShallowWaterShelf();
 
     // 湖底
     const lakeBedMat = new THREE.MeshStandardMaterial({ color: 0x2a3a4a, roughness: 0.9, metalness: 0.0 });
@@ -55,6 +50,7 @@ export class Lake {
       patch.receiveShadow = true;
       this.scene.add(patch);
     }
+    this.addShoreDetails();
 
     // 码头 — 从东岸伸入湖中
     this.addDock(-6, 16, barkMat());
@@ -127,21 +123,130 @@ export class Lake {
     }
   }
 
-  private getLastMesh(): THREE.Mesh | null {
-    const children = this.scene.children;
-    for (let i = children.length - 1; i >= 0; i--) {
-      if (children[i] instanceof THREE.Mesh) return children[i] as THREE.Mesh;
+  private addWaterBody(waterMat: THREE.MeshStandardMaterial): void {
+    const points = this.makeLakeOutline(12.0, 8.6, 44);
+    const shape = new THREE.Shape(points);
+    const water = new THREE.Mesh(new THREE.ShapeGeometry(shape), waterMat);
+    water.rotation.x = -Math.PI / 2;
+    water.position.set(-15, 0, 19);
+    water.receiveShadow = true;
+    this.scene.add(water);
+    this.waterMeshes.push(water);
+
+    const deepMat = waterMat.clone();
+    deepMat.color = new THREE.Color(0x235d86);
+    deepMat.opacity = 0.55;
+    const deepShape = new THREE.Shape(this.makeLakeOutline(8.4, 5.6, 36));
+    const deep = new THREE.Mesh(new THREE.ShapeGeometry(deepShape), deepMat);
+    deep.rotation.x = -Math.PI / 2;
+    deep.position.set(-15, -0.022, 19);
+    deep.receiveShadow = true;
+    this.scene.add(deep);
+    this.waterMeshes.push(deep);
+  }
+
+  private addShallowWaterShelf(): void {
+    const shelfMat = new THREE.MeshStandardMaterial({
+      color: 0x68b6bd,
+      transparent: true,
+      opacity: 0.32,
+      roughness: 0.24,
+      metalness: 0.08,
+      depthWrite: false,
+    });
+
+    for (let i = 0; i < 30; i += 1) {
+      const angle = (i / 30) * Math.PI * 2 + Math.sin(i * 1.7) * 0.08;
+      const radiusX = 10.2 + Math.sin(i * 1.31) * 1.2;
+      const radiusZ = 7.1 + Math.cos(i * 1.63) * 0.8;
+      const patch = new THREE.Mesh(new THREE.CircleGeometry(0.45 + Math.random() * 0.55, 12), shelfMat);
+      patch.rotation.x = -Math.PI / 2;
+      patch.rotation.z = Math.random() * Math.PI;
+      patch.scale.set(1.8 + Math.random() * 1.4, 0.26 + Math.random() * 0.24, 1);
+      patch.position.set(-15 + Math.cos(angle) * radiusX, 0.012, 19 + Math.sin(angle) * radiusZ,);
+      this.scene.add(patch);
     }
-    return null;
+  }
+
+  private addShoreDetails(): void {
+    const pebbleMats = [
+      new THREE.MeshStandardMaterial({ color: 0x726b61, roughness: 0.78 }),
+      new THREE.MeshStandardMaterial({ color: 0x9b907b, roughness: 0.75 }),
+      new THREE.MeshStandardMaterial({ color: 0x554d48, roughness: 0.82 }),
+    ];
+    const driftwoodMat = new THREE.MeshStandardMaterial({ color: 0x6d4a2d, roughness: 0.82, metalness: 0.02 });
+
+    for (let i = 0; i < 90; i += 1) {
+      const angle = Math.random() * Math.PI * 2;
+      const x = -15 + Math.cos(angle) * (11.1 + Math.random() * 1.7);
+      const z = 19 + Math.sin(angle) * (8.0 + Math.random() * 1.1);
+      const pebble = new THREE.Mesh(
+        new THREE.DodecahedronGeometry(0.05 + Math.random() * 0.08, 0),
+        pebbleMats[i % pebbleMats.length]
+      );
+      pebble.scale.set(1.25 + Math.random(), 0.42 + Math.random() * 0.35, 0.75 + Math.random() * 0.7);
+      pebble.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
+      pebble.position.set(x, 0.035, z);
+      pebble.castShadow = true;
+      pebble.receiveShadow = true;
+      this.scene.add(pebble);
+    }
+
+    for (const [x, z, rot] of [[-9.8, 11.8, -0.5], [-22.8, 18.2, 0.7], [-17.6, 27.0, 0.15]] as Array<[number, number, number]>) {
+      const log = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.11, 1.2, 8), driftwoodMat);
+      log.position.set(x, 0.12, z);
+      log.rotation.set(Math.PI / 2, 0, rot);
+      log.castShadow = true;
+      log.receiveShadow = true;
+      this.scene.add(log);
+    }
+
+    const rippleMat = new THREE.MeshBasicMaterial({ color: 0xc7ecff, transparent: true, opacity: 0.26, depthWrite: false });
+    for (const [x, z, sx, sz] of [
+      [-11.5, 15.4, 1.4, 0.45],
+      [-17.8, 20.5, 1.9, 0.56],
+      [-21.0, 25.2, 1.2, 0.38],
+      [-8.6, 20.8, 1.6, 0.42],
+      [-15.1, 13.1, 1.1, 0.35],
+    ] as Array<[number, number, number, number]>) {
+      const ripple = new THREE.Mesh(new THREE.RingGeometry(0.42, 0.45, 42), rippleMat);
+      ripple.rotation.x = -Math.PI / 2;
+      ripple.scale.set(sx, sz, 1);
+      ripple.position.set(x, 0.035, z);
+      this.scene.add(ripple);
+      this.animatedObjects.push({ obj: ripple, baseY: 0.035, amp: 0.006, speed: 1.2 + Math.random(), phase: Math.random() * Math.PI * 2 });
+    }
+  }
+
+  private makeLakeOutline(radiusX: number, radiusZ: number, segments: number): THREE.Vector2[] {
+    const points: THREE.Vector2[] = [];
+    for (let i = 0; i < segments; i += 1) {
+      const angle = (i / segments) * Math.PI * 2;
+      const wobble =
+        1 +
+        Math.sin(angle * 2.1 + 0.35) * 0.08 +
+        Math.cos(angle * 3.4 - 0.7) * 0.055 +
+        Math.sin(angle * 5.2) * 0.035;
+      const notch = angle > Math.PI * 1.76 || angle < Math.PI * 0.08 ? 0.82 : 1;
+      points.push(new THREE.Vector2(Math.cos(angle) * radiusX * wobble * notch, Math.sin(angle) * radiusZ * wobble));
+    }
+    return points;
   }
 
   private addDock(x: number, z: number, mat: THREE.Material): void {
     // 木栈道
     for (let i = 0; i < 5; i++) {
-      const plank = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.08, 0.8), mat);
-      plank.position.set(x + i * 0.82, 0.15, z);
+      const plank = new THREE.Mesh(new THREE.BoxGeometry(1.3 + Math.random() * 0.22, 0.08, 0.72 + Math.random() * 0.16), mat);
+      plank.position.set(x + i * 0.82, 0.15 + (i % 2) * 0.012, z + (Math.random() - 0.5) * 0.08);
+      plank.rotation.y = (Math.random() - 0.5) * 0.05;
       plank.castShadow = true; plank.receiveShadow = true;
       this.scene.add(plank);
+
+      const seam = new THREE.Mesh(new THREE.BoxGeometry(1.18, 0.012, 0.035), new THREE.MeshStandardMaterial({ color: 0x3a2619, roughness: 0.85 }));
+      seam.position.set(x + i * 0.82, 0.198, z + 0.18);
+      seam.rotation.y = plank.rotation.y;
+      seam.receiveShadow = true;
+      this.scene.add(seam);
     }
 
     // 桩
