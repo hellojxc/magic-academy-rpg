@@ -6,14 +6,14 @@ export class ThreeGameView {
   readonly camera: THREE.PerspectiveCamera;
 
   constructor(private readonly container: HTMLElement) {
-    this.camera = new THREE.PerspectiveCamera(42, 16 / 9, 0.1, 80);
-    this.camera.position.set(0, 6.8, 8.8);
-    this.camera.lookAt(0, 0.6, -0.4);
+    this.camera = new THREE.PerspectiveCamera(55, 16 / 9, 0.1, 80);
+    this.camera.position.set(3.6, 4.4, 6.4);
+    this.camera.lookAt(0, 1.1, 0);
 
     this.renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     this.renderer.shadowMap.enabled = true;
-    this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    this.renderer.shadowMap.type = THREE.PCFShadowMap;
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
     this.renderer.toneMappingExposure = 1.05;

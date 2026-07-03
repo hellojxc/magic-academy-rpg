@@ -1,4 +1,3 @@
-import * as THREE from 'three';
 import { DomDialogueBox } from '../ui/DomDialogueBox';
 import { DialogueSystem } from '../systems/DialogueSystem';
 import { SaveSystem } from '../systems/SaveSystem';
@@ -14,7 +13,6 @@ import type { DialogueTree, SaveData } from '../types';
 export class ThreeAcademyGame {
   private readonly view: ThreeGameView;
   private readonly world: AcademyWorld;
-  private readonly clock = new THREE.Clock();
   private readonly keys = new Set<string>();
   private readonly saveSystem = SaveSystem;
   private readonly dialogueSystem: DialogueSystem;
@@ -25,6 +23,8 @@ export class ThreeAcademyGame {
   private readonly interactionController: InteractionController3D;
   private save: SaveData;
   private animationId = 0;
+  private elapsedTime = 0;
+  private lastFrameTime = performance.now();
 
   constructor(private readonly container: HTMLElement) {
     this.container.classList.add('three-game');
@@ -49,7 +49,11 @@ export class ThreeAcademyGame {
       this.keys,
       worldObjects.obstacles
     );
-    this.cameraController = new CameraController3D(this.view.camera, worldObjects.player);
+    this.cameraController = new CameraController3D(
+      this.view.camera,
+      worldObjects.player,
+      this.view.renderer.domElement
+    );
     this.interactionController = new InteractionController3D(
       this.container,
       this.view.renderer,
@@ -76,6 +80,7 @@ export class ThreeAcademyGame {
     window.removeEventListener('keydown', this.onKeyDown);
     window.removeEventListener('keyup', this.onKeyUp);
     this.interactionController.destroy();
+    this.cameraController.destroy();
     this.hud.destroy();
     this.view.destroy();
   }
@@ -87,7 +92,10 @@ export class ThreeAcademyGame {
   }
 
   private readonly animate = (): void => {
-    const delta = Math.min(this.clock.getDelta(), 0.033);
+    const now = performance.now();
+    const delta = Math.min((now - this.lastFrameTime) / 1000, 0.033);
+    this.lastFrameTime = now;
+    this.elapsedTime += delta;
     this.update(delta);
     this.view.render();
     this.animationId = window.requestAnimationFrame(this.animate);
@@ -96,12 +104,11 @@ export class ThreeAcademyGame {
   private update(delta: number): void {
     const dialogueVisible = this.dialogueBox.isVisible();
     if (!dialogueVisible) {
-      this.playerController.updateMovement(delta);
+      this.playerController.updateMovement(delta, this.cameraController.getYaw());
     }
 
-    const elapsedTime = this.clock.elapsedTime;
-    this.playerController.updateIdle(elapsedTime);
-    this.world.update(elapsedTime);
+    this.playerController.updateIdle(this.elapsedTime);
+    this.world.update(this.elapsedTime);
     this.cameraController.update(delta);
     this.interactionController.update(dialogueVisible);
   }

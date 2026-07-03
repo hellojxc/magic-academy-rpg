@@ -8,7 +8,7 @@ export interface Obstacle {
 }
 
 export interface AcademyWorldObjects {
-  player: THREE.Sprite;
-  lyra: THREE.Sprite;
+  player: THREE.Object3D;
+  lyra: THREE.Object3D;
   obstacles: readonly Obstacle[];
 }

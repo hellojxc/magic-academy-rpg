@@ -1,18 +1,84 @@
 import * as THREE from 'three';
 
 export class CameraController3D {
+  private readonly targetOffset = new THREE.Vector3(0, 1.12, 0);
+  private readonly desiredPosition = new THREE.Vector3();
+  private readonly lookTarget = new THREE.Vector3();
+  private yaw = Math.PI * 0.18;
+  private pitch = 0.48;
+  private distance = 7.1;
+  private dragging = false;
+  private lastPointerX = 0;
+  private lastPointerY = 0;
+
   constructor(
     private readonly camera: THREE.PerspectiveCamera,
-    private readonly target: THREE.Object3D
-  ) {}
+    private readonly target: THREE.Object3D,
+    private readonly domElement: HTMLElement
+  ) {
+    this.domElement.addEventListener('pointerdown', this.onPointerDown);
+    this.domElement.addEventListener('wheel', this.onWheel, { passive: false });
+    this.domElement.addEventListener('contextmenu', this.onContextMenu);
+    window.addEventListener('pointermove', this.onPointerMove);
+    window.addEventListener('pointerup', this.onPointerUp);
+    this.update(1);
+  }
+
+  getYaw(): number {
+    return this.yaw;
+  }
 
   update(delta: number): void {
-    const targetPosition = new THREE.Vector3(
-      this.target.position.x * 0.18,
-      6.8,
-      8.8 + this.target.position.z * 0.16
+    this.lookTarget.copy(this.target.position).add(this.targetOffset);
+    const horizontalDistance = Math.cos(this.pitch) * this.distance;
+    this.desiredPosition.set(
+      this.lookTarget.x + Math.sin(this.yaw) * horizontalDistance,
+      this.lookTarget.y + Math.sin(this.pitch) * this.distance,
+      this.lookTarget.z + Math.cos(this.yaw) * horizontalDistance
     );
-    this.camera.position.lerp(targetPosition, Math.min(1, delta * 2.2));
-    this.camera.lookAt(this.target.position.x * 0.16, 0.66, this.target.position.z - 0.7);
+
+    this.camera.position.lerp(this.desiredPosition, Math.min(1, delta * 8));
+    this.camera.lookAt(this.lookTarget);
   }
+
+  destroy(): void {
+    this.domElement.removeEventListener('pointerdown', this.onPointerDown);
+    this.domElement.removeEventListener('wheel', this.onWheel);
+    this.domElement.removeEventListener('contextmenu', this.onContextMenu);
+    window.removeEventListener('pointermove', this.onPointerMove);
+    window.removeEventListener('pointerup', this.onPointerUp);
+  }
+
+  private readonly onPointerDown = (event: PointerEvent): void => {
+    if (event.button !== 0 && event.button !== 2) return;
+    this.dragging = true;
+    this.lastPointerX = event.clientX;
+    this.lastPointerY = event.clientY;
+    this.domElement.setPointerCapture?.(event.pointerId);
+  };
+
+  private readonly onPointerMove = (event: PointerEvent): void => {
+    if (!this.dragging) return;
+
+    const deltaX = event.clientX - this.lastPointerX;
+    const deltaY = event.clientY - this.lastPointerY;
+    this.lastPointerX = event.clientX;
+    this.lastPointerY = event.clientY;
+
+    this.yaw -= deltaX * 0.006;
+    this.pitch = THREE.MathUtils.clamp(this.pitch + deltaY * 0.0045, 0.22, 1.05);
+  };
+
+  private readonly onPointerUp = (): void => {
+    this.dragging = false;
+  };
+
+  private readonly onWheel = (event: WheelEvent): void => {
+    event.preventDefault();
+    this.distance = THREE.MathUtils.clamp(this.distance + event.deltaY * 0.006, 4.2, 10.5);
+  };
+
+  private readonly onContextMenu = (event: MouseEvent): void => {
+    event.preventDefault();
+  };
 }

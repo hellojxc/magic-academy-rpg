@@ -6,17 +6,22 @@ export class PlayerController3D {
   private readonly playerRadius = 0.32;
 
   constructor(
-    private readonly player: THREE.Sprite,
+    private readonly player: THREE.Object3D,
     private readonly keys: ReadonlySet<string>,
     private readonly obstacles: readonly Obstacle[]
   ) {}
 
-  updateMovement(delta: number): void {
-    const direction = new THREE.Vector3();
-    if (this.keys.has('KeyW') || this.keys.has('ArrowUp')) direction.z -= 1;
-    if (this.keys.has('KeyS') || this.keys.has('ArrowDown')) direction.z += 1;
-    if (this.keys.has('KeyA') || this.keys.has('ArrowLeft')) direction.x -= 1;
-    if (this.keys.has('KeyD') || this.keys.has('ArrowRight')) direction.x += 1;
+  updateMovement(delta: number, cameraYaw: number): void {
+    const rightInput = (this.keys.has('KeyD') || this.keys.has('ArrowRight') ? 1 : 0)
+      - (this.keys.has('KeyA') || this.keys.has('ArrowLeft') ? 1 : 0);
+    const forwardInput = (this.keys.has('KeyW') || this.keys.has('ArrowUp') ? 1 : 0)
+      - (this.keys.has('KeyS') || this.keys.has('ArrowDown') ? 1 : 0);
+
+    const forward = new THREE.Vector3(-Math.sin(cameraYaw), 0, -Math.cos(cameraYaw));
+    const right = new THREE.Vector3(Math.cos(cameraYaw), 0, -Math.sin(cameraYaw));
+    const direction = new THREE.Vector3()
+      .addScaledVector(forward, forwardInput)
+      .addScaledVector(right, rightInput);
 
     if (direction.lengthSq() === 0) return;
     direction.normalize();
@@ -28,12 +33,11 @@ export class PlayerController3D {
       this.player.position.z = nextZ;
     }
 
-    if (direction.x < -0.05) this.player.scale.x = -Math.abs(this.player.scale.x);
-    if (direction.x > 0.05) this.player.scale.x = Math.abs(this.player.scale.x);
+    this.player.rotation.y = Math.atan2(direction.x, direction.z);
   }
 
   updateIdle(elapsedTime: number): void {
-    this.player.scale.y = 1.5 + Math.sin(elapsedTime * 3.1) * 0.025;
+    this.player.position.y = Math.sin(elapsedTime * 3.1) * 0.018;
   }
 
   private collides(x: number, z: number): boolean {
