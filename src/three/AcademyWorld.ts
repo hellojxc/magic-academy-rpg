@@ -78,34 +78,67 @@ export class AcademyWorld {
     return this.player;
   }
 
-  /** 移除区域间通道的障碍 — 让玩家可以自由通行 */
+  /**
+   * 在障碍物列表中开辟通道。
+   * 不是删除与通道重叠的整个障碍，而是把障碍裁剪成保留墙体的片段。
+   * 只在通道宽度方向裁剪（北/南通道沿 x 轴切，东通道沿 z 轴切）。
+   */
   private clearPassages(): void {
-    // 中庭→大厅 (北面，z≈-7 附近，中庭北墙和大厅南墙之间)
-    // 中庭→食堂 (东面，x≈9 附近，中庭东墙和食堂西墙之间)
-    // 中庭→草坪 (南面，z≈7 附近，中庭南墙开放)
-    // 原中庭障碍清单中阻挡通行的条目需要被过滤
-    const passageZones = [
-      // 北通道 (中庭→大厅) — x:[-2,2], z:[-7.5,-6.5]
-      { minX: -2.5, maxX: 2.5, minZ: -7.8, maxZ: -6.0 },
-      // 东通道 (中庭→食堂) — x:[8.8,10.2], z:[-1,2]
-      { minX: 8.5, maxX: 10.5, minZ: -2, maxZ: 3 },
-      // 南通道 (中庭→草坪) — x:[-2,2], z:[6.5,7.5]
-      { minX: -2.5, maxX: 2.5, minZ: 6.0, maxZ: 7.8 },
+    // 通道定义 — 门洞区域，障碍物在这些范围内被裁掉
+    const passages = [
+      // 北通道 (中庭→大厅) — 沿 x 轴在北墙上开门，x:[-1.2,1.2]
+      { axis: 'x' as const, minX: -1.4, maxX: 1.4, minZ: -8, maxZ: -5.5 },
+      // 东通道 (中庭→食堂) — 沿 z 轴在东墙上开门，z:[-1.5,1.5]
+      { axis: 'z' as const, minX: 8, maxX: 10.5, minZ: -1.7, maxZ: 1.7 },
+      // 南通道 (中庭→草坪) — 沿 x 轴在南墙开门（南墙是装饰边框，低矮可跨越所以不需要裁）
+      // 南面本来就是开放的，没有整面墙障碍
     ];
 
-    const filtered = this.obstacles.filter((obs) => {
-      for (const zone of passageZones) {
-        // 如果障碍与通道区域重叠，移除它
-        if (obs.minX < zone.maxX && obs.maxX > zone.minX &&
-            obs.minZ < zone.maxZ && obs.maxZ > zone.minZ) {
-          return false;
+    const result: Obstacle[] = [];
+
+    for (const obs of this.obstacles) {
+      let pieces: Obstacle[] = [{ ...obs }];
+
+      for (const passage of passages) {
+        const next: Obstacle[] = [];
+        for (const piece of pieces) {
+          // 检查 piece 是否与通道重叠
+          const overlaps =
+            piece.minX < passage.maxX && piece.maxX > passage.minX &&
+            piece.minZ < passage.maxZ && piece.maxZ > passage.minZ;
+
+          if (!overlaps) {
+            next.push(piece);
+            continue;
+          }
+
+          // 有重叠 — 根据 axis 裁剪
+          if (passage.axis === 'x') {
+            // 沿 x 轴切：保留 x 在门洞左右两侧的部分
+            if (piece.minX < passage.minX) {
+              next.push({ ...piece, maxX: passage.minX });
+            }
+            if (piece.maxX > passage.maxX) {
+              next.push({ ...piece, minX: passage.maxX });
+            }
+          } else {
+            // 沿 z 轴切：保留 z 在门洞前后两侧的部分
+            if (piece.minZ < passage.minZ) {
+              next.push({ ...piece, maxZ: passage.minZ });
+            }
+            if (piece.maxZ > passage.maxZ) {
+              next.push({ ...piece, minZ: passage.maxZ });
+            }
+          }
         }
+        pieces = next;
       }
-      return true;
-    });
+
+      result.push(...pieces);
+    }
 
     this.obstacles.length = 0;
-    this.obstacles.push(...filtered);
+    this.obstacles.push(...result);
   }
 
   private addLights(): void {
