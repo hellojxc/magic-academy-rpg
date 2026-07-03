@@ -136,11 +136,82 @@ export const lyraSpec: CharacterSpec = {
   },
 };
 
-export const characterSpecs = {
+export const miraVossSpec: CharacterSpec = {
+  id: 'mira_voss',
+  displayName: 'Mira Voss',
+  designIntent:
+    'A mirror astrologer heroine for the academy story roster, with silver-blue hair, cool aqua eyes, reflective uniform details, and a reserved but expressive conversation pose.',
+  body: {
+    heightMeters: 1.62,
+    headToBodyRatio: 0.2,
+    silhouette: 'petite-heroine',
+    shoulderWidth: 0.34,
+    torsoLength: 0.49,
+    waistWidth: 0.25,
+    hipWidth: 0.34,
+    armLength: 0.56,
+    handScale: 0.9,
+    legLength: 0.77,
+    footScale: 0.9,
+  },
+  face: {
+    eyeShape: 'large reflective aqua anime eyes',
+    eyeColor: '#7dd9f4',
+    eyeScale: 1.13,
+    browShape: 'calm worried arc',
+    browColor: '#6f96bd',
+    noseBridge: 'stylized-minimal',
+    mouthShape: 'small reserved smile',
+    cheekTint: '#d7a9be',
+    expressionSet: ['neutral', 'blink', 'smile', 'concerned', 'surprised'],
+  },
+  hair: {
+    color: '#9fc8df',
+    highlightColor: '#e5f8ff',
+    style: 'long silver-blue astrologer hair',
+    bangs: 'side-swept fringe with glossy face locks',
+    length: 'long',
+    volume: 0.9,
+    secondaryMotion: 'full',
+    accessories: ['mirror shard hairpin'],
+  },
+  outfit: {
+    style: 'blue-white mirror astrologer academy uniform',
+    primaryColor: '#eef9ff',
+    secondaryColor: '#3f74b8',
+    accentColor: '#6fc8f1',
+    torso: 'white fitted blouse with blue astrologer panels',
+    sleeves: 'soft academy sleeves with reflective cuff trim',
+    lowerBody: 'layered blue academy skirt with star chart sash',
+    outerwear: 'short reflective capelet with mirror shard accents',
+    shoes: 'white ankle boots with silver-blue trim',
+    accessories: ['academy crest brooch', 'mirror shard hairpin', 'star chart sash'],
+    heldItems: ['mirror star compass'],
+  },
+  animation: {
+    locomotionSet: 'academy-female-locomotion',
+    idleSet: 'reserved-astrologer-idles',
+    interactionSet: 'conversation-female-thoughtful',
+    facialSet: 'anime-heroine-reflective',
+    secondaryMotion: ['long-hair-sway', 'capelet-sway', 'sash-sway'],
+  },
+  runtime: {
+    role: 'supporting',
+    preferredAssetId: 'mira-voss-supporting-v1',
+    fallbackRigId: 'mira-voss-procedural-rig',
+    lodProfile: 'supporting-mid',
+    maxVisibleDistanceMeters: 36,
+  },
+};
+
+export const characterSpecs: Record<string, CharacterSpec> = {
   player: playerSpec,
   lyra: lyraSpec,
-} as const satisfies Record<CharacterId, CharacterSpec>;
+  mira_voss: miraVossSpec,
+};
 
 export function getCharacterSpec(id: CharacterId): CharacterSpec {
-  return characterSpecs[id];
+  const spec = characterSpecs[id];
+  if (!spec) throw new Error(`Unknown character spec: ${id}`);
+  return spec;
 }

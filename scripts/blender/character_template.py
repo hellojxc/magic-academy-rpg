@@ -23,7 +23,7 @@ from pathlib import Path
 from typing import Any, Iterable
 
 import bpy
-from mathutils import Euler, Matrix, Vector
+from mathutils import Euler, Vector
 
 
 SCRIPT_DIR = Path(__file__).resolve().parent
@@ -170,16 +170,51 @@ def parent_keep_world(obj: bpy.types.Object, parent: bpy.types.Object) -> None:
     obj.matrix_world = world
 
 
+def bind_object_to_bone(obj: bpy.types.Object, armature: bpy.types.Object, bone_name: str) -> None:
+    mesh = getattr(obj, "data", None)
+    if not mesh or not hasattr(mesh, "vertices"):
+        parent_keep_world(obj, armature)
+        return
+
+    group = obj.vertex_groups.new(name=bone_name)
+    indices = [vertex.index for vertex in mesh.vertices]
+    if indices:
+        group.add(indices, 1.0, "ADD")
+
+    modifier = obj.modifiers.new(name="CharacterArmature", type="ARMATURE")
+    modifier.object = armature
+
+    world = obj.matrix_world.copy()
+    obj.parent = armature
+    obj.matrix_world = world
+
+
 def parent_to_bone(obj: bpy.types.Object, armature: Any, bone_name: str) -> None:
     if isinstance(armature, dict):
         parent_keep_world(obj, armature["controls"][bone_name])
         return
 
-    world = obj.matrix_world.copy()
-    obj.parent = armature
-    obj.parent_type = "BONE"
-    obj.parent_bone = bone_name
-    obj.matrix_world = world
+    bind_object_to_bone(obj, armature, bone_name)
+
+
+def add_shape_key_transform(
+    obj: bpy.types.Object,
+    name: str,
+    scale: tuple[float, float, float] = (1.0, 1.0, 1.0),
+    offset: tuple[float, float, float] = (0.0, 0.0, 0.0),
+) -> None:
+    mesh = getattr(obj, "data", None)
+    if not mesh or not hasattr(mesh, "vertices"):
+        return
+
+    if not obj.data.shape_keys:
+        obj.shape_key_add(name="Basis")
+    key = obj.shape_key_add(name=name)
+    basis = obj.data.shape_keys.key_blocks["Basis"]
+    delta = Vector(offset)
+    for index, point in enumerate(key.data):
+        base = basis.data[index].co
+        point.co = Vector((base.x * scale[0], base.y * scale[1], base.z * scale[2])) + delta
 
 
 def add_uv_sphere(
@@ -303,56 +338,52 @@ def add_hair_panel(
     return obj
 
 
-def make_armature(character_id: str, collection: bpy.types.Collection, root: bpy.types.Object) -> dict[str, Any]:
-    """Create a transform-node humanoid rig.
+def make_armature(character_id: str, collection: bpy.types.Collection, root: bpy.types.Object) -> bpy.types.Object:
+    bpy.ops.object.armature_add(enter_editmode=True, location=(0, 0, 0))
+    armature = bpy.context.object
+    armature.name = f"{character_id}_HumanoidArmature"
+    armature.data.name = f"{character_id}_HumanoidSkeleton"
+    armature.show_in_front = False
+    link_to_collection(armature, collection)
 
-    This first Blender template intentionally uses animated control nodes rather
-    than skinned mesh weights. The GLB remains simple, stable in web runtimes,
-    and still exposes humanoid node names for later replacement by a true
-    Armature + skinning pass.
-    """
+    bones = armature.data.edit_bones
+    for bone in list(bones):
+        bones.remove(bone)
 
-    controls: dict[str, bpy.types.Object] = {}
-    rest: dict[str, Vector] = {}
-
-    def add_control(
+    def add_bone(
         name: str,
-        location: tuple[float, float, float],
-        parent_name: str | None,
-        size: float = 0.08,
-    ) -> bpy.types.Object:
-        control = bpy.data.objects.new(name, None)
-        control.empty_display_type = "PLAIN_AXES"
-        control.empty_display_size = size
-        control.location = location
-        collection.objects.link(control)
-        parent_keep_world(control, controls[parent_name] if parent_name else root)
-        controls[name] = control
-        rest[name] = control.location.copy()
-        return control
+        head: tuple[float, float, float],
+        tail: tuple[float, float, float],
+        parent_name: str | None = None,
+    ) -> None:
+        bone = bones.new(name)
+        bone.head = head
+        bone.tail = tail
+        bone.roll = 0
+        if parent_name:
+            bone.parent = bones[parent_name]
+            bone.use_connect = False
 
-    add_control("Hips", (0, 0, 0.82), None, 0.12)
-    add_control("Spine", (0, 0, 0.98), "Hips")
-    add_control("Chest", (0, 0, 1.18), "Spine")
-    add_control("Neck", (0, 0, 1.36), "Chest")
-    add_control("Head", (0, 0, 1.45), "Neck", 0.1)
+    add_bone("Hips", (0, 0, 0.78), (0, 0, 0.98))
+    add_bone("Spine", (0, 0, 0.96), (0, 0, 1.16), "Hips")
+    add_bone("Chest", (0, 0, 1.14), (0, 0, 1.34), "Spine")
+    add_bone("Neck", (0, 0, 1.32), (0, 0, 1.43), "Chest")
+    add_bone("Head", (0, 0, 1.40), (0, 0, 1.70), "Neck")
 
     for side in ("Left", "Right"):
-        sign = -1 if side == "Left" else 1
-        add_control(f"{side}UpperArm", (sign * 0.22, 0, 1.28), "Chest")
-        add_control(f"{side}LowerArm", (sign * 0.24, 0, -0.2), f"{side}UpperArm")
-        add_control(f"{side}Hand", (sign * 0.09, -0.01, -0.25), f"{side}LowerArm")
-        add_control(f"{side}UpperLeg", (sign * 0.12, 0, -0.02), "Hips")
-        add_control(f"{side}LowerLeg", (sign * 0.02, 0, -0.37), f"{side}UpperLeg")
-        add_control(f"{side}Foot", (0, -0.12, -0.31), f"{side}LowerLeg")
+        sx = -1 if side == "Left" else 1
+        add_bone(f"{side}UpperArm", (sx * 0.19, 0, 1.27), (sx * 0.34, 0, 1.02), "Chest")
+        add_bone(f"{side}LowerArm", (sx * 0.34, 0, 1.02), (sx * 0.42, 0, 0.74), f"{side}UpperArm")
+        add_bone(f"{side}Hand", (sx * 0.42, 0, 0.74), (sx * 0.45, -0.02, 0.62), f"{side}LowerArm")
+        add_bone(f"{side}UpperLeg", (sx * 0.10, 0, 0.78), (sx * 0.10, 0, 0.43), "Hips")
+        add_bone(f"{side}LowerLeg", (sx * 0.10, 0, 0.43), (sx * 0.09, 0, 0.12), f"{side}UpperLeg")
+        add_bone(f"{side}Foot", (sx * 0.09, 0, 0.12), (sx * 0.09, -0.16, 0.04), f"{side}LowerLeg")
 
-    return {
-        "scene_root": root,
-        "root": controls["Hips"],
-        "controls": controls,
-        "rest": rest,
-        "id": f"{character_id}_TemplateRig",
-    }
+    bpy.ops.object.mode_set(mode="OBJECT")
+    parent_keep_world(armature, root)
+    for pose_bone in armature.pose.bones:
+        pose_bone.rotation_mode = "XYZ"
+    return armature
 
 
 def build_character(spec: dict[str, Any], out_dir: Path, save_blend: bool) -> Path:
@@ -701,6 +732,9 @@ def add_head(
     parent_to_bone(nose, armature, "Head")
 
     mouth = add_cube("Mouth", mats["pupil"], (0.004 * scale, -0.205 * scale, 1.448 * scale), (0.026 * scale, 0.0025 * scale, 0.004 * scale), collection, rotation=(0, 0, 0.03), bevel=0.0015 * scale)
+    add_shape_key_transform(mouth, "smile", scale=(1.28, 1.0, 1.12), offset=(0, -0.001 * scale, 0.006 * scale))
+    add_shape_key_transform(mouth, "concerned", scale=(0.92, 1.0, 0.82), offset=(0, -0.001 * scale, -0.004 * scale))
+    add_shape_key_transform(mouth, "surprised", scale=(0.64, 1.0, 2.2), offset=(0, -0.002 * scale, 0))
     parent_to_bone(mouth, armature, "Head")
 
     eye_scale = float(spec["face"]["eyeScale"])
@@ -715,6 +749,7 @@ def add_head(
             segments=28,
             rings=12,
         )
+        add_shape_key_transform(eye_white, "blink", scale=(1.0, 1.0, 0.16), offset=(0, 0, -0.002 * scale))
         parent_to_bone(eye_white, armature, "Head")
 
         iris = add_uv_sphere(
@@ -726,6 +761,7 @@ def add_head(
             segments=24,
             rings=10,
         )
+        add_shape_key_transform(iris, "blink", scale=(1.0, 1.0, 0.12), offset=(0, 0, -0.002 * scale))
         parent_to_bone(iris, armature, "Head")
 
         pupil = add_uv_sphere(
@@ -737,6 +773,7 @@ def add_head(
             segments=16,
             rings=8,
         )
+        add_shape_key_transform(pupil, "blink", scale=(1.0, 1.0, 0.1), offset=(0, 0, -0.002 * scale))
         parent_to_bone(pupil, armature, "Head")
 
         highlight = add_uv_sphere(
@@ -748,6 +785,7 @@ def add_head(
             segments=12,
             rings=6,
         )
+        add_shape_key_transform(highlight, "blink", scale=(1.0, 1.0, 0.1), offset=(0, 0, -0.001 * scale))
         parent_to_bone(highlight, armature, "Head")
 
         lash = add_cube(
@@ -933,6 +971,8 @@ def add_outfit(
         parent_to_bone(buckle, armature, "Hips")
     else:
         add_skirt(m, mats, armature, collection)
+        if spec["outfit"].get("style") == "astrologer-uniform":
+            add_astrologer_details(m, mats, armature, collection)
         bow_center = add_uv_sphere("RibbonCenter", mats["trim"], (0, -0.235 * scale, 1.29 * scale), (0.035 * scale, 0.012 * scale, 0.035 * scale), collection, 16, 8)
         parent_to_bone(bow_center, armature, "Chest")
         for side, sx in (("Left", -1), ("Right", 1)):
@@ -952,6 +992,62 @@ def add_outfit(
 
     cape = add_cape(spec, m, mats, collection)
     parent_to_bone(cape, armature, "Chest")
+
+
+def add_astrologer_details(
+    m: dict[str, float],
+    mats: dict[str, bpy.types.Material],
+    armature: bpy.types.Object,
+    collection: bpy.types.Collection,
+) -> None:
+    scale = m["scale"]
+    sash = add_cube(
+        "StarChartSash",
+        mats["outfit_primary"],
+        (-0.055 * scale, -0.246 * scale, 1.02 * scale),
+        (0.032 * scale, 0.006 * scale, 0.31 * scale),
+        collection,
+        rotation=(0, 0, -0.52),
+        bevel=0.0025 * scale,
+    )
+    parent_to_bone(sash, armature, "Chest")
+
+    for index, z in enumerate((1.18, 1.06, 0.94)):
+        star = add_cone(
+            f"SashStar_{index}",
+            mats["trim"],
+            (-0.08 * scale + index * 0.03 * scale, -0.253 * scale, z * scale),
+            0.018 * scale,
+            0.018 * scale,
+            0.006 * scale,
+            collection,
+            vertices=5,
+            rotation=(math.pi / 2, 0, math.pi / 5 + index * 0.18),
+        )
+        parent_to_bone(star, armature, "Chest")
+
+    mirror_plate = add_uv_sphere(
+        "MirrorCompassChestGem",
+        mats["eye"],
+        (0.065 * scale, -0.253 * scale, 1.34 * scale),
+        (0.028 * scale, 0.006 * scale, 0.028 * scale),
+        collection,
+        segments=20,
+        rings=8,
+    )
+    parent_to_bone(mirror_plate, armature, "Chest")
+
+    for side, sx in (("Left", -1), ("Right", 1)):
+        shard = add_cube(
+            f"{side}CapeletMirrorShard",
+            mats["trim"],
+            (sx * 0.19 * scale, -0.218 * scale, 1.245 * scale),
+            (0.025 * scale, 0.005 * scale, 0.048 * scale),
+            collection,
+            rotation=(0, 0, sx * 0.36),
+            bevel=0.002 * scale,
+        )
+        parent_to_bone(shard, armature, "Chest")
 
 
 def add_skirt(
@@ -1026,6 +1122,41 @@ def add_accessories(
         parent_to_bone(book, armature, "LeftHand")
         pages = add_cube("SpellbookPages", mats["paper"], (-0.38 * scale, -0.147 * scale, 0.86 * scale), (0.076 * scale, 0.011 * scale, 0.106 * scale), collection, rotation=(0.2, 0.1, -0.08), bevel=0.004 * scale)
         parent_to_bone(pages, armature, "LeftHand")
+    elif held == "mirror-compass":
+        compass = add_cylinder(
+            "MirrorStarCompass",
+            mats["trim"],
+            (-0.37 * scale, -0.118 * scale, 0.87 * scale),
+            0.066 * scale,
+            0.012 * scale,
+            collection,
+            vertices=32,
+            rotation=(math.pi / 2 + 0.18, 0.05, -0.18),
+            scale=(1.0, 1.0, 0.32),
+        )
+        parent_to_bone(compass, armature, "LeftHand")
+        glass = add_cylinder(
+            "MirrorCompassGlass",
+            mats["eye"],
+            (-0.37 * scale, -0.126 * scale, 0.87 * scale),
+            0.052 * scale,
+            0.006 * scale,
+            collection,
+            vertices=32,
+            rotation=(math.pi / 2 + 0.18, 0.05, -0.18),
+            scale=(1.0, 1.0, 0.2),
+        )
+        parent_to_bone(glass, armature, "LeftHand")
+        needle = add_cube(
+            "MirrorCompassNeedle",
+            mats["outfit_dark"],
+            (-0.37 * scale, -0.134 * scale, 0.87 * scale),
+            (0.006 * scale, 0.005 * scale, 0.052 * scale),
+            collection,
+            rotation=(0.24, 0.04, 0.58),
+            bevel=0.001 * scale,
+        )
+        parent_to_bone(needle, armature, "LeftHand")
 
     brooch = add_uv_sphere("AcademyCrest", mats["trim"], (0.07 * scale, -0.246 * scale, 1.33 * scale), (0.026 * scale, 0.008 * scale, 0.026 * scale), collection, 16, 8)
     parent_to_bone(brooch, armature, "Chest")
@@ -1272,6 +1403,8 @@ def export_glb(output: Path) -> None:
     kwargs = {
         "filepath": str(output),
         "export_format": "GLB",
+        "export_skins": True,
+        "export_morph": True,
         "export_animations": True,
         "export_nla_strips": True,
         "export_force_sampling": True,

@@ -6,6 +6,7 @@ const scriptPath = resolve('scripts/blender/render_character_preview.py');
 const defaultInputs = [
   resolve('public/assets/models/player.blender-template.glb'),
   resolve('public/assets/models/lyra.blender-template.glb'),
+  resolve('public/assets/models/mira_voss.blender-template.glb'),
 ];
 
 const candidates = [

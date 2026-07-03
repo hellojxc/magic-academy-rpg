@@ -72,6 +72,21 @@ export const defaultCharacterAssetManifest: CharacterAssetManifest = {
       triangleBudget: 66000,
       textureBudgetKb: 4096,
     },
+    {
+      id: 'mira-voss-supporting-v1',
+      characterId: 'mira_voss',
+      enabled: true,
+      format: 'glb',
+      quality: 'mid',
+      url: '/assets/models/mira_voss.glb',
+      thumbnailUrl: '/assets/models/mira_voss.blender-template.png',
+      animationClips: ['idle', 'walk', 'talk'],
+      materialProfile: 'toon',
+      supportsFacialMorphs: true,
+      supportsSpringBones: false,
+      triangleBudget: 32000,
+      textureBudgetKb: 2048,
+    },
   ],
 };
 
@@ -143,7 +158,7 @@ function normalizeLoadStrategy(value: unknown): CharacterLoadStrategy {
 
 function normalizeAssetEntry(value: unknown): CharacterAssetEntry | undefined {
   if (!isRecord(value)) return undefined;
-  if (value.characterId !== 'player' && value.characterId !== 'lyra') return undefined;
+  if (typeof value.characterId !== 'string' || value.characterId.length === 0) return undefined;
   if (value.format !== 'glb' && value.format !== 'vrm') return undefined;
   if (value.quality !== 'hero' && value.quality !== 'mid' && value.quality !== 'low') return undefined;
   if (typeof value.id !== 'string' || typeof value.url !== 'string') return undefined;

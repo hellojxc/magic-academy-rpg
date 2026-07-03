@@ -1,4 +1,4 @@
-export type CharacterId = 'player' | 'lyra';
+export type CharacterId = string;
 
 export type CharacterAssetRole = 'hero' | 'supporting' | 'background';
 

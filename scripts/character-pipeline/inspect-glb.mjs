@@ -4,8 +4,10 @@ import { basename, resolve } from 'node:path';
 const DEFAULT_FILES = [
   'public/assets/models/player.glb',
   'public/assets/models/lyra.glb',
+  'public/assets/models/mira_voss.glb',
   'public/assets/models/player.blender-template.glb',
   'public/assets/models/lyra.blender-template.glb',
+  'public/assets/models/mira_voss.blender-template.glb',
 ];
 
 function readGlbJson(filePath) {
