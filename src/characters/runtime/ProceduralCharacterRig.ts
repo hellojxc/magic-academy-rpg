@@ -1,6 +1,5 @@
 import * as THREE from 'three';
-
-export type CharacterKind = 'player' | 'lyra';
+import type { CharacterId } from '../CharacterSpec';
 
 interface RigParts {
   body: THREE.Group;
@@ -50,7 +49,7 @@ interface CharacterPalette {
 
 type Vec3 = [number, number, number];
 
-export class CharacterRig3D {
+export class ProceduralCharacterRig {
   readonly root = new THREE.Group();
   private readonly parts: RigParts;
   private moving = false;
@@ -58,7 +57,7 @@ export class CharacterRig3D {
 
   private static toonGradient: THREE.DataTexture | undefined;
 
-  constructor(private readonly kind: CharacterKind) {
+  constructor(private readonly kind: CharacterId) {
     const palette = this.createPalette(kind);
     this.parts = this.buildRig(palette);
     this.root.userData.characterKind = kind;
@@ -837,7 +836,7 @@ export class CharacterRig3D {
     group.userData.baseRotation = group.rotation.clone();
   }
 
-  private createPalette(kind: CharacterKind): CharacterPalette {
+  private createPalette(kind: CharacterId): CharacterPalette {
     const outline = new THREE.MeshBasicMaterial({ color: kind === 'player' ? 0x15131b : 0x21152e, side: THREE.BackSide });
     const withOutline = (material: THREE.MeshToonMaterial) => {
       material.userData.outlineMaterial = outline;
@@ -888,7 +887,7 @@ export class CharacterRig3D {
     void metalness;
     return new THREE.MeshToonMaterial({
       color,
-      gradientMap: CharacterRig3D.getToonGradient(),
+      gradientMap: ProceduralCharacterRig.getToonGradient(),
       transparent: opacity < 1,
       opacity,
       side: THREE.FrontSide,
@@ -896,7 +895,7 @@ export class CharacterRig3D {
   }
 
   private static getToonGradient(): THREE.DataTexture {
-    if (!CharacterRig3D.toonGradient) {
+    if (!ProceduralCharacterRig.toonGradient) {
       const data = new Uint8Array([
         54, 54, 54, 255,
         112, 112, 112, 255,
@@ -909,8 +908,8 @@ export class CharacterRig3D {
       texture.magFilter = THREE.NearestFilter;
       texture.colorSpace = THREE.SRGBColorSpace;
       texture.needsUpdate = true;
-      CharacterRig3D.toonGradient = texture;
+      ProceduralCharacterRig.toonGradient = texture;
     }
-    return CharacterRig3D.toonGradient;
+    return ProceduralCharacterRig.toonGradient;
   }
 }

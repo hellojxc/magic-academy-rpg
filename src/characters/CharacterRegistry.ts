@@ -1,0 +1,146 @@
+import type { CharacterId, CharacterSpec } from './CharacterSpec';
+
+export const playerSpec: CharacterSpec = {
+  id: 'player',
+  displayName: 'Academy Protagonist',
+  designIntent:
+    'A young male magic academy student with a clean Japanese RPG hero silhouette, readable from the third-person camera and detailed enough for dialogue close-ups.',
+  body: {
+    heightMeters: 1.68,
+    headToBodyRatio: 0.18,
+    silhouette: 'slim-male-academy',
+    shoulderWidth: 0.43,
+    torsoLength: 0.54,
+    waistWidth: 0.31,
+    hipWidth: 0.34,
+    armLength: 0.61,
+    handScale: 0.96,
+    legLength: 0.83,
+    footScale: 1,
+  },
+  face: {
+    eyeShape: 'large almond anime eyes',
+    eyeColor: '#355c9a',
+    eyeScale: 1.08,
+    browShape: 'soft confident arc',
+    browColor: '#2d1f18',
+    noseBridge: 'stylized-minimal',
+    mouthShape: 'small neutral heroic',
+    cheekTint: '#f0b8aa',
+    expressionSet: ['neutral', 'smile', 'surprised', 'focused', 'embarrassed'],
+  },
+  hair: {
+    color: '#2a1d17',
+    highlightColor: '#6d4a32',
+    style: 'layered short academy cut',
+    bangs: 'asymmetric side-swept bangs',
+    length: 'short',
+    volume: 0.74,
+    secondaryMotion: 'tips',
+    accessories: [],
+  },
+  outfit: {
+    style: 'formal magic academy uniform',
+    primaryColor: '#132b68',
+    secondaryColor: '#f6f0dc',
+    accentColor: '#d7b45f',
+    torso: 'tailored navy jacket with fitted cream shirt',
+    sleeves: 'structured sleeves with gold cuff trim',
+    lowerBody: 'slim dark academy trousers',
+    outerwear: 'short navy mage cape with gold border',
+    shoes: 'polished dark ankle boots',
+    accessories: ['academy crest brooch', 'belt pouch'],
+    heldItems: ['practice wand'],
+  },
+  animation: {
+    locomotionSet: 'academy-male-locomotion',
+    idleSet: 'reserved-student-idles',
+    interactionSet: 'conversation-male-calm',
+    facialSet: 'anime-hero-basic',
+    secondaryMotion: ['cape-sway', 'hair-tip-sway'],
+  },
+  runtime: {
+    role: 'hero',
+    preferredAssetId: 'player-hero-v1',
+    fallbackRigId: 'player-procedural-rig',
+    lodProfile: 'hero-near',
+    maxVisibleDistanceMeters: 48,
+  },
+};
+
+export const lyraSpec: CharacterSpec = {
+  id: 'lyra',
+  displayName: 'Lyra',
+  designIntent:
+    'A charming magic academy heroine with a soft Japanese RPG visual-novel portrait match, petite proportions, expressive face, and natural idle motion.',
+  body: {
+    heightMeters: 1.55,
+    headToBodyRatio: 0.22,
+    silhouette: 'petite-heroine',
+    shoulderWidth: 0.33,
+    torsoLength: 0.47,
+    waistWidth: 0.24,
+    hipWidth: 0.35,
+    armLength: 0.54,
+    handScale: 0.9,
+    legLength: 0.74,
+    footScale: 0.88,
+  },
+  face: {
+    eyeShape: 'large rounded sparkling anime eyes',
+    eyeColor: '#7b66ff',
+    eyeScale: 1.18,
+    browShape: 'gentle curved brow',
+    browColor: '#8a6cff',
+    noseBridge: 'stylized-minimal',
+    mouthShape: 'small soft smile',
+    cheekTint: '#f4a8c4',
+    expressionSet: ['neutral', 'warm-smile', 'curious', 'shy', 'delighted', 'thinking'],
+  },
+  hair: {
+    color: '#b69cff',
+    highlightColor: '#f0dcff',
+    style: 'long layered lavender hair',
+    bangs: 'soft center bangs with side locks',
+    length: 'long',
+    volume: 0.88,
+    secondaryMotion: 'full',
+    accessories: ['small star hair clip', 'ribbon tie'],
+  },
+  outfit: {
+    style: 'romantic magic academy uniform',
+    primaryColor: '#f8f2ff',
+    secondaryColor: '#7d56d9',
+    accentColor: '#f0c86e',
+    torso: 'fitted white blouse with purple ribbon',
+    sleeves: 'soft short sleeves with pale trim',
+    lowerBody: 'layered purple academy skirt',
+    outerwear: 'short pale capelet with star lining',
+    shoes: 'cream ankle boots with purple details',
+    accessories: ['star pendant', 'spellbook satchel'],
+    heldItems: ['small spellbook'],
+  },
+  animation: {
+    locomotionSet: 'academy-female-locomotion',
+    idleSet: 'gentle-heroine-idles',
+    interactionSet: 'conversation-female-warm',
+    facialSet: 'anime-heroine-basic',
+    secondaryMotion: ['long-hair-sway', 'skirt-sway', 'capelet-sway', 'ribbon-sway'],
+  },
+  runtime: {
+    role: 'hero',
+    preferredAssetId: 'lyra-hero-v1',
+    fallbackRigId: 'lyra-procedural-rig',
+    lodProfile: 'hero-near',
+    maxVisibleDistanceMeters: 42,
+  },
+};
+
+export const characterSpecs = {
+  player: playerSpec,
+  lyra: lyraSpec,
+} as const satisfies Record<CharacterId, CharacterSpec>;
+
+export function getCharacterSpec(id: CharacterId): CharacterSpec {
+  return characterSpecs[id];
+}

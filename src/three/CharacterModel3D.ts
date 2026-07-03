@@ -1,7 +1,15 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import type { VRM } from '@pixiv/three-vrm';
-import { CharacterRig3D, type CharacterKind } from './CharacterRig3D';
+import {
+  createCharacterBuildPlan,
+  loadCharacterAssetManifest,
+  ProceduralCharacterRig,
+  type CharacterAssetEntry,
+  type CharacterAssetState,
+  type CharacterBuildPlan,
+  type CharacterSpec,
+} from '../characters';
 
 interface BoneSet {
   hips?: THREE.Object3D;
@@ -20,32 +28,29 @@ interface BoneSet {
   rightFoot?: THREE.Object3D;
 }
 
-interface CharacterModelManifestEntry {
-  enabled?: boolean;
-  url?: string;
-}
-
-type CharacterModelManifest = Partial<Record<CharacterKind, CharacterModelManifestEntry>>;
-type CharacterAssetState = 'loading' | 'vrm' | 'gltf' | 'rig' | 'failed';
 type ThreeVRMModule = typeof import('@pixiv/three-vrm');
 
 export class CharacterModel3D {
   readonly root = new THREE.Group();
-  private readonly fallback: CharacterRig3D;
+  private readonly fallback: ProceduralCharacterRig;
   private readonly lookTarget = new THREE.Object3D();
   private vrmModule?: ThreeVRMModule;
   private vrm?: VRM;
   private bones: BoneSet = {};
+  private buildPlan: CharacterBuildPlan;
   private moving = false;
   private movementBlend = 0;
   private blinkTimer = 0;
   private blinkDuration = 0;
   private assetState: CharacterAssetState = 'loading';
 
-  constructor(private readonly kind: CharacterKind) {
-    this.root.userData.characterKind = kind;
+  constructor(private readonly spec: CharacterSpec) {
+    this.buildPlan = createCharacterBuildPlan(spec);
+    this.root.userData.characterId = spec.id;
+    this.root.userData.characterDisplayName = spec.displayName;
+    this.root.userData.characterBuildPlan = this.buildPlan;
     this.root.userData.characterAssetState = this.assetState;
-    this.fallback = new CharacterRig3D(kind);
+    this.fallback = new ProceduralCharacterRig(spec.id);
     this.root.add(this.fallback.root);
     void this.loadModel();
   }
@@ -73,26 +78,41 @@ export class CharacterModel3D {
   }
 
   private async loadModel(): Promise<void> {
-    const url = await this.findModelUrl();
+    const buildPlan = await this.resolveBuildPlan();
+    const asset = buildPlan.asset;
+    if (!asset) {
+      this.setAssetState('fallback');
+      return;
+    }
+
+    const url = await this.findModelUrl(asset);
     if (!url) {
-      this.setAssetState('rig');
+      this.setAssetState('fallback');
       return;
     }
 
     try {
-      const vrmModule = await this.loadVRMModule();
-      const loader = CharacterModel3D.createLoader(vrmModule);
+      const vrmModule = asset.format === 'vrm' ? await this.loadVRMModule() : undefined;
+      const loader = vrmModule ? CharacterModel3D.createVRMLoader(vrmModule) : new GLTFLoader();
       const gltf = await loader.loadAsync(url);
       const vrm = gltf.userData.vrm as VRM | undefined;
-      if (vrm) {
+      if (vrm && vrmModule) {
         this.installVRM(vrm, vrmModule);
       } else {
         this.installGLTF(gltf.scene);
       }
     } catch (error) {
       this.setAssetState('failed');
-      console.warn(`Failed to load ${this.kind} character asset`, error);
+      this.fallback.root.visible = true;
+      console.warn(`Failed to load ${this.spec.id} character asset`, error);
     }
+  }
+
+  private async resolveBuildPlan(): Promise<CharacterBuildPlan> {
+    const manifest = await loadCharacterAssetManifest();
+    this.buildPlan = createCharacterBuildPlan(this.spec, { manifest });
+    this.root.userData.characterBuildPlan = this.buildPlan;
+    return this.buildPlan;
   }
 
   private async loadVRMModule(): Promise<ThreeVRMModule> {
@@ -100,14 +120,10 @@ export class CharacterModel3D {
     return this.vrmModule;
   }
 
-  private async findModelUrl(): Promise<string | undefined> {
-    const manifest = await this.loadManifest();
-    const entry = manifest?.[this.kind];
-    if (!entry?.enabled || !entry.url) return undefined;
-
-    const url = entry.url.startsWith('/') ? entry.url : `/assets/models/${entry.url}`;
+  private async findModelUrl(asset: CharacterAssetEntry): Promise<string | undefined> {
+    const url = asset.url.startsWith('/') ? asset.url : `/assets/models/${asset.url}`;
     if (!/\.(vrm|glb|gltf)$/i.test(url)) {
-      console.warn(`Ignoring unsupported ${this.kind} character asset: ${url}`);
+      console.warn(`Ignoring unsupported ${this.spec.id} character asset: ${url}`);
       return undefined;
     }
 
@@ -121,17 +137,6 @@ export class CharacterModel3D {
     return undefined;
   }
 
-  private async loadManifest(): Promise<CharacterModelManifest | undefined> {
-    try {
-      const response = await fetch('/assets/models/character-models.json', { cache: 'no-cache' });
-      const contentType = response.headers.get('content-type') ?? '';
-      if (!response.ok || contentType.includes('text/html')) return undefined;
-      return await response.json() as CharacterModelManifest;
-    } catch {
-      return undefined;
-    }
-  }
-
   private installVRM(vrm: VRM, vrmModule: ThreeVRMModule): void {
     this.vrm = vrm;
     this.setAssetState('vrm');
@@ -140,7 +145,7 @@ export class CharacterModel3D {
     vrmModule.VRMUtils.combineMorphs(vrm);
 
     this.fallback.root.visible = false;
-    this.prepareModelRoot(vrm.scene, this.kind === 'lyra' ? 1.92 : 1.98);
+    this.prepareModelRoot(vrm.scene, this.spec.body.heightMeters);
     vrm.scene.rotation.y = Math.PI;
     this.root.add(vrm.scene);
     this.bones = this.collectBones(vrm, vrmModule);
@@ -154,7 +159,7 @@ export class CharacterModel3D {
   private installGLTF(scene: THREE.Group): void {
     this.setAssetState('gltf');
     this.fallback.root.visible = false;
-    this.prepareModelRoot(scene, this.kind === 'lyra' ? 1.92 : 1.98);
+    this.prepareModelRoot(scene, this.spec.body.heightMeters);
     scene.rotation.y = Math.PI;
     this.root.add(scene);
     this.setVRMShadows(scene);
@@ -236,7 +241,7 @@ export class CharacterModel3D {
       this.bones.head.rotation.z = -walk * 0.012 * blend;
     }
 
-    if (this.kind === 'player') {
+    if (this.spec.id === 'player') {
       this.poseWalk(walk, opposite, blend);
     } else {
       this.poseLyraIdle(breathe, soft);
@@ -282,7 +287,7 @@ export class CharacterModel3D {
       manager.setValue('blink', 0);
     }
 
-    const mood = this.kind === 'lyra' ? 0.28 + Math.sin(elapsedTime * 1.1) * 0.04 : 0.12;
+    const mood = this.spec.id === 'lyra' ? 0.28 + Math.sin(elapsedTime * 1.1) * 0.04 : 0.12;
     manager.setValue('happy', mood);
   }
 
@@ -299,9 +304,10 @@ export class CharacterModel3D {
   private setAssetState(state: CharacterAssetState): void {
     this.assetState = state;
     this.root.userData.characterAssetState = state;
+    this.root.userData.characterBuildSource = this.buildPlan.source;
   }
 
-  private static createLoader(vrmModule: ThreeVRMModule): GLTFLoader {
+  private static createVRMLoader(vrmModule: ThreeVRMModule): GLTFLoader {
     const loader = new GLTFLoader();
     loader.register((parser) => new vrmModule.VRMLoaderPlugin(parser));
     return loader;
