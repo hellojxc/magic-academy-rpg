@@ -200,18 +200,35 @@ export class AcademyWorld {
     const lowerMat = new THREE.MeshStandardMaterial({ color: 0x7b6680, roughness: 0.5, metalness: 0.08 });
     const trimMat = new THREE.MeshStandardMaterial({ color: 0xbf985d, roughness: 0.25, metalness: 0.45 });
 
-    this.addBox(new THREE.Vector3(0, 2.25, -6.62), new THREE.Vector3(18.3, 4.5, 0.45), wallMat, false, true);
-    this.addBox(new THREE.Vector3(-9.12, 2.15, 0), new THREE.Vector3(0.45, 4.3, 13.2), wallMat, false, true);
-    this.addBox(new THREE.Vector3(9.12, 2.15, 0), new THREE.Vector3(0.45, 4.3, 13.2), wallMat, false, true);
+    // 北墙 — 分成左右两段，中间留门洞 (x:[-1.2, 1.2] 开放)
+    this.addBox(new THREE.Vector3(-4.8, 2.25, -6.62), new THREE.Vector3(7.8, 4.5, 0.45), wallMat, false, true);
+    this.addBox(new THREE.Vector3(4.8, 2.25, -6.62), new THREE.Vector3(7.8, 4.5, 0.45), wallMat, false, true);
+    // 门洞上方过梁
+    this.addBox(new THREE.Vector3(0, 3.8, -6.62), new THREE.Vector3(2.4, 1.4, 0.45), wallMat, false, true);
 
-    this.addBox(new THREE.Vector3(0, 0.58, -6.35), new THREE.Vector3(18, 0.88, 0.28), lowerMat, true, true);
-    this.addBox(new THREE.Vector3(-8.86, 0.58, 0), new THREE.Vector3(0.28, 0.88, 12.9), lowerMat, true, true);
-    this.addBox(new THREE.Vector3(8.86, 0.58, 0), new THREE.Vector3(0.28, 0.88, 12.9), lowerMat, true, true);
+    // 东墙 — 分成南北两段，中间留通道 (z:[-1.5, 1.5] 开放)
+    this.addBox(new THREE.Vector3(9.12, 2.15, -4.0), new THREE.Vector3(0.45, 4.3, 5), wallMat, false, true);
+    this.addBox(new THREE.Vector3(9.12, 2.15, 3.5), new THREE.Vector3(0.45, 4.3, 5), wallMat, false, true);
+    // 通道上方过梁
+    this.addBox(new THREE.Vector3(9.12, 3.8, 0), new THREE.Vector3(0.45, 1.4, 3.5), wallMat, false, true);
 
-    this.addBox(new THREE.Vector3(0, 1.08, -6.08), new THREE.Vector3(17.8, 0.12, 0.12), trimMat, true, true);
-    this.addBox(new THREE.Vector3(0, 4.38, -6.08), new THREE.Vector3(17.6, 0.18, 0.14), trimMat, true, true);
-    this.addBox(new THREE.Vector3(-8.58, 1.08, 0), new THREE.Vector3(0.12, 0.12, 12.6), trimMat, true, true);
-    this.addBox(new THREE.Vector3(8.58, 1.08, 0), new THREE.Vector3(0.12, 0.12, 12.6), trimMat, true, true);
+    // 北墙踢脚线 — 分段
+    this.addBox(new THREE.Vector3(-4.8, 0.58, -6.35), new THREE.Vector3(7.6, 0.88, 0.28), lowerMat, true, true);
+    this.addBox(new THREE.Vector3(4.8, 0.58, -6.35), new THREE.Vector3(7.6, 0.88, 0.28), lowerMat, true, true);
+
+    // 东墙踢脚线 — 分段
+    this.addBox(new THREE.Vector3(8.86, 0.58, -4.0), new THREE.Vector3(0.28, 0.88, 5), lowerMat, true, true);
+    this.addBox(new THREE.Vector3(8.86, 0.58, 3.5), new THREE.Vector3(0.28, 0.88, 5), lowerMat, true, true);
+
+    // 北墙装饰条 — 分段
+    this.addBox(new THREE.Vector3(-4.8, 1.08, -6.08), new THREE.Vector3(7.4, 0.12, 0.12), trimMat, true, true);
+    this.addBox(new THREE.Vector3(4.8, 1.08, -6.08), new THREE.Vector3(7.4, 0.12, 0.12), trimMat, true, true);
+    this.addBox(new THREE.Vector3(-4.8, 4.38, -6.08), new THREE.Vector3(7.2, 0.18, 0.14), trimMat, true, true);
+    this.addBox(new THREE.Vector3(4.8, 4.38, -6.08), new THREE.Vector3(7.2, 0.18, 0.14), trimMat, true, true);
+
+    // 东墙装饰条 — 分段
+    this.addBox(new THREE.Vector3(8.58, 1.08, -4.0), new THREE.Vector3(0.12, 0.12, 5), trimMat, true, true);
+    this.addBox(new THREE.Vector3(8.58, 1.08, 3.5), new THREE.Vector3(0.12, 0.12, 5), trimMat, true, true);
   }
 
   private addWallPanels(): void {
@@ -222,7 +239,8 @@ export class AcademyWorld {
     for (const x of [-7.1, -4.7, -2.35, 2.35, 4.7, 7.1]) {
       this.addFramedPanel(new THREE.Vector3(x, 2.65, -6.35), 1.28, 2.05, 'back', panelMat, insetMat, trimMat);
     }
-    for (const z of [-4.85, -2.45, 0, 2.45, 4.85]) {
+    // 东墙面板 — 跳过 z=0 附近，留通道
+    for (const z of [-4.85, -2.45, 2.45, 4.85]) {
       this.addFramedPanel(new THREE.Vector3(-8.68, 2.54, z), 1.22, 1.9, 'left', panelMat, insetMat, trimMat);
       this.addFramedPanel(new THREE.Vector3(8.68, 2.54, z), 1.22, 1.9, 'right', panelMat, insetMat, trimMat);
     }
@@ -254,10 +272,9 @@ export class AcademyWorld {
   }
 
   private addArchedDoor(): void {
-    const doorMat = new THREE.MeshStandardMaterial({ color: 0x5d3a59, roughness: 0.45, metalness: 0.12 });
     const trimMat = new THREE.MeshStandardMaterial({ color: 0xc7a060, roughness: 0.24, metalness: 0.48 });
 
-    this.addBox(new THREE.Vector3(0, 1.65, -5.93), new THREE.Vector3(1.55, 3.08, 0.12), doorMat, true, true);
+    // 门框 — 左右立柱 + 顶部横梁 + 拱形 (门洞开放，无门板)
     this.addBox(new THREE.Vector3(-0.86, 1.7, -5.84), new THREE.Vector3(0.12, 3.32, 0.18), trimMat, true, true);
     this.addBox(new THREE.Vector3(0.86, 1.7, -5.84), new THREE.Vector3(0.12, 3.32, 0.18), trimMat, true, true);
     this.addBox(new THREE.Vector3(0, 3.36, -5.84), new THREE.Vector3(1.85, 0.12, 0.18), trimMat, true, true);
