@@ -130,6 +130,18 @@ Lyra. The generated briefs preserve role, area, arc, world position, dialogue
 coverage, target silhouette, face priorities, hair priorities, outfit
 priorities, runtime budgets, and AI candidate gates.
 
+Generate a Blender-template config from those story NPC briefs:
+
+```sh
+npm run assets:characters:npc:template-specs
+npm run assets:characters:npc:template-specs -- --limit 6
+```
+
+This writes `scripts/blender/story_npc_template_specs.json`. It is a fast batch
+entry for preview-quality placeholders and source-model planning: height,
+presentation, hair, eyes, outfit palette, held item, and animation personality
+are inferred from each `character-model-brief.json`.
+
 Export a production source `.blend`:
 
 ```sh
@@ -186,14 +198,23 @@ A model is not accepted just because it loads in Three.js. It must pass:
 ## Current Status
 
 The current `player.glb` and `lyra.glb` are runtime prototypes. The
-`*.blender-template.glb` files are technical pipeline probes. Mira Voss now has
-the first NPC runtime candidate at `public/assets/models/mira_voss.glb`. It is a
-Blender-generated skinned GLB with 25,164 triangles, 17 bones, 9 morph-target
-primitives, and `idle`, `walk`, and `talk` animation clips, so it passes the
-current runtime audit. The latest pass improves the Mira-specific silhouette,
-visible eyes, white capelet, deep-blue bodice, layered skirt, and side-framed
-silver hair from the model sheet. It is still a template-quality candidate, not
-the final mainstream Japanese RPG character target.
+`*.blender-template.glb` files are technical pipeline probes. The latest player
+source pass is generated from
+`assets/characters/player/source/player.blend` and exports to
+`public/assets/models/player.glb` with 24,026 runtime triangles, 17 bones, 9
+morph-target primitives, and `idle`, `walk`, and `talk` clips. The runtime audit
+accepts it as a web-ready prototype, and the manifest now marks player facial
+morph support as enabled. It is still template-quality compared with a
+commercial Japanese RPG character.
+
+Mira Voss has the first NPC runtime candidate at
+`public/assets/models/mira_voss.glb`. It is a Blender-generated skinned GLB with
+25,164 triangles, 17 bones, 9 morph-target primitives, and `idle`, `walk`, and
+`talk` animation clips, so it passes the current runtime audit. The latest pass
+improves the Mira-specific silhouette, visible eyes, white capelet, deep-blue
+bodice, layered skirt, and side-framed silver hair from the model sheet. It is
+still a template-quality candidate, not the final mainstream Japanese RPG
+character target.
 
 The model-sheet references for both player and Lyra are now registered in
 `assets/characters/<id>/references` and mirrored to

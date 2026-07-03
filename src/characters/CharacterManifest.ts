@@ -52,7 +52,7 @@ export const defaultCharacterAssetManifest: CharacterAssetManifest = {
       thumbnailUrl: '/assets/portraits/player-3d.png',
       animationClips: ['idle', 'walk', 'talk'],
       materialProfile: 'toon',
-      supportsFacialMorphs: false,
+      supportsFacialMorphs: true,
       supportsSpringBones: false,
       triangleBudget: 48000,
       textureBudgetKb: 4096,

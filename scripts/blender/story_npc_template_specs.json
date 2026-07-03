@@ -1,0 +1,307 @@
+{
+  "version": "story-npc-blender-template-specs-v1",
+  "generatedFrom": "assets/characters/*/character-model-brief.json",
+  "outputDir": "public/assets/models",
+  "characters": [
+    {
+      "id": "arden_quill",
+      "displayName": "Arden Quill",
+      "heightMeters": 1.72,
+      "body": {
+        "presentation": "male",
+        "headScale": [
+          0.9,
+          1.03,
+          0.78
+        ],
+        "shoulderWidth": 0.42,
+        "torsoLength": 0.54,
+        "waistWidth": 0.31,
+        "hipWidth": 0.34,
+        "armLength": 0.61,
+        "legLength": 0.83,
+        "handScale": 0.96,
+        "footScale": 1
+      },
+      "face": {
+        "eyeScale": 1.06,
+        "eyeColor": "#d99b4d",
+        "browColor": "#7a4a32",
+        "cheekTint": "#e4aa98"
+      },
+      "hair": {
+        "style": "short chestnut hair",
+        "length": "short",
+        "color": "#7a4a32",
+        "highlightColor": "#d99b4d",
+        "volume": 0.78
+      },
+      "outfit": {
+        "style": "academy-uniform-male",
+        "primaryColor": "#132b68",
+        "secondaryColor": "#d99b4d",
+        "darkColor": "#18204c",
+        "accentColor": "#d99b4d",
+        "trimColor": "#d9c47a",
+        "shoeColor": "#16131c",
+        "cape": "short-mage-cape",
+        "heldItem": "practice-wand"
+      },
+      "animation": {
+        "idlePersonality": "reserved",
+        "walkPersonality": "calm",
+        "talkPersonality": "confident"
+      }
+    },
+    {
+      "id": "aria_frost",
+      "displayName": "Aria Frost",
+      "heightMeters": 1.605,
+      "body": {
+        "presentation": "female",
+        "headScale": [
+          0.92,
+          1.06,
+          0.79
+        ],
+        "shoulderWidth": 0.34,
+        "torsoLength": 0.49,
+        "waistWidth": 0.25,
+        "hipWidth": 0.34,
+        "armLength": 0.56,
+        "legLength": 0.77,
+        "handScale": 0.9,
+        "footScale": 0.9
+      },
+      "face": {
+        "eyeScale": 1.13,
+        "eyeColor": "#7b66ff",
+        "browColor": "#7d6f95",
+        "cheekTint": "#d7a9be"
+      },
+      "hair": {
+        "style": "distinct silhouette hair matching the role",
+        "length": "short",
+        "color": "#7d6f95",
+        "highlightColor": "#7d56d9",
+        "volume": 0.9
+      },
+      "outfit": {
+        "style": "academy-uniform-heroine",
+        "primaryColor": "#eef9ff",
+        "secondaryColor": "#7d56d9",
+        "darkColor": "#24436f",
+        "accentColor": "#7d56d9",
+        "trimColor": "#d9c47a",
+        "shoeColor": "#e8eff7",
+        "cape": "short-capelet",
+        "heldItem": "spellbook"
+      },
+      "animation": {
+        "idlePersonality": "gentle",
+        "walkPersonality": "light",
+        "talkPersonality": "warm"
+      }
+    },
+    {
+      "id": "bram_iron",
+      "displayName": "Bram Iron",
+      "heightMeters": 1.605,
+      "body": {
+        "presentation": "male",
+        "headScale": [
+          0.9,
+          1.03,
+          0.78
+        ],
+        "shoulderWidth": 0.42,
+        "torsoLength": 0.54,
+        "waistWidth": 0.31,
+        "hipWidth": 0.34,
+        "armLength": 0.61,
+        "legLength": 0.83,
+        "handScale": 0.96,
+        "footScale": 1
+      },
+      "face": {
+        "eyeScale": 1.06,
+        "eyeColor": "#7b66ff",
+        "browColor": "#2a1d17",
+        "cheekTint": "#e4aa98"
+      },
+      "hair": {
+        "style": "distinct silhouette hair matching the role",
+        "length": "short",
+        "color": "#2a1d17",
+        "highlightColor": "#7d56d9",
+        "volume": 0.78
+      },
+      "outfit": {
+        "style": "academy-uniform-male",
+        "primaryColor": "#132b68",
+        "secondaryColor": "#7d56d9",
+        "darkColor": "#18204c",
+        "accentColor": "#7d56d9",
+        "trimColor": "#d9c47a",
+        "shoeColor": "#16131c",
+        "cape": "short-mage-cape",
+        "heldItem": "practice-wand"
+      },
+      "animation": {
+        "idlePersonality": "reserved",
+        "walkPersonality": "calm",
+        "talkPersonality": "confident"
+      }
+    },
+    {
+      "id": "cassia_rune",
+      "displayName": "Cassia Rune",
+      "heightMeters": 1.63,
+      "body": {
+        "presentation": "female",
+        "headScale": [
+          0.92,
+          1.06,
+          0.79
+        ],
+        "shoulderWidth": 0.34,
+        "torsoLength": 0.49,
+        "waistWidth": 0.25,
+        "hipWidth": 0.34,
+        "armLength": 0.56,
+        "legLength": 0.77,
+        "handScale": 0.9,
+        "footScale": 0.9
+      },
+      "face": {
+        "eyeScale": 1.13,
+        "eyeColor": "#8d72ff",
+        "browColor": "#4b2d78",
+        "cheekTint": "#d7a9be"
+      },
+      "hair": {
+        "style": "straight dark violet hair",
+        "length": "short",
+        "color": "#4b2d78",
+        "highlightColor": "#8d72ff",
+        "volume": 0.9
+      },
+      "outfit": {
+        "style": "academy-uniform-heroine",
+        "primaryColor": "#eef9ff",
+        "secondaryColor": "#8d72ff",
+        "darkColor": "#24436f",
+        "accentColor": "#8d72ff",
+        "trimColor": "#d9c47a",
+        "shoeColor": "#e8eff7",
+        "cape": "short-capelet",
+        "heldItem": "spellbook"
+      },
+      "animation": {
+        "idlePersonality": "gentle",
+        "walkPersonality": "light",
+        "talkPersonality": "warm"
+      }
+    },
+    {
+      "id": "celine_wisp",
+      "displayName": "Celine Wisp",
+      "heightMeters": 1.655,
+      "body": {
+        "presentation": "female",
+        "headScale": [
+          0.92,
+          1.06,
+          0.79
+        ],
+        "shoulderWidth": 0.34,
+        "torsoLength": 0.49,
+        "waistWidth": 0.25,
+        "hipWidth": 0.34,
+        "armLength": 0.56,
+        "legLength": 0.77,
+        "handScale": 0.9,
+        "footScale": 0.9
+      },
+      "face": {
+        "eyeScale": 1.13,
+        "eyeColor": "#7b66ff",
+        "browColor": "#7d6f95",
+        "cheekTint": "#d7a9be"
+      },
+      "hair": {
+        "style": "distinct silhouette hair matching the role",
+        "length": "short",
+        "color": "#7d6f95",
+        "highlightColor": "#b8a6e8",
+        "volume": 0.9
+      },
+      "outfit": {
+        "style": "academy-uniform-heroine",
+        "primaryColor": "#eef9ff",
+        "secondaryColor": "#b8a6e8",
+        "darkColor": "#24436f",
+        "accentColor": "#b8a6e8",
+        "trimColor": "#d9c47a",
+        "shoeColor": "#e8eff7",
+        "cape": "short-capelet",
+        "heldItem": "spellbook"
+      },
+      "animation": {
+        "idlePersonality": "gentle",
+        "walkPersonality": "light",
+        "talkPersonality": "warm"
+      }
+    },
+    {
+      "id": "corin_ash",
+      "displayName": "Corin Ash",
+      "heightMeters": 1.705,
+      "body": {
+        "presentation": "male",
+        "headScale": [
+          0.9,
+          1.03,
+          0.78
+        ],
+        "shoulderWidth": 0.42,
+        "torsoLength": 0.54,
+        "waistWidth": 0.31,
+        "hipWidth": 0.34,
+        "armLength": 0.61,
+        "legLength": 0.83,
+        "handScale": 0.96,
+        "footScale": 1
+      },
+      "face": {
+        "eyeScale": 1.06,
+        "eyeColor": "#7b66ff",
+        "browColor": "#2a1d17",
+        "cheekTint": "#e4aa98"
+      },
+      "hair": {
+        "style": "distinct silhouette hair matching the role",
+        "length": "short",
+        "color": "#2a1d17",
+        "highlightColor": "#c66742",
+        "volume": 0.78
+      },
+      "outfit": {
+        "style": "academy-uniform-male",
+        "primaryColor": "#132b68",
+        "secondaryColor": "#c66742",
+        "darkColor": "#18204c",
+        "accentColor": "#c66742",
+        "trimColor": "#d9c47a",
+        "shoeColor": "#16131c",
+        "cape": "short-mage-cape",
+        "heldItem": "practice-wand"
+      },
+      "animation": {
+        "idlePersonality": "reserved",
+        "walkPersonality": "calm",
+        "talkPersonality": "confident"
+      }
+    }
+  ]
+}

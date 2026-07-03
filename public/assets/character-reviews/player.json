@@ -4,7 +4,7 @@
   "displayName": "Academy Protagonist",
   "portraitUrl": "/assets/portraits/player-3d.png",
   "currentRuntimeModelUrl": "/assets/models/player.glb",
-  "currentPreviewUrl": "/assets/models/player.blender-template.png",
+  "currentPreviewUrl": "/assets/character-reviews/player-source-preview.png",
   "runtimeAuditUrl": "/assets/character-reviews/player-runtime-audit.json",
   "sourceModelPath": "assets/characters/player/source/player.blend",
   "targetRuntimeFile": "public/assets/models/player.glb",

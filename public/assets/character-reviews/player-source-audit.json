@@ -1,0 +1,27 @@
+{
+  "characterId": "player",
+  "meshes": 89,
+  "materials": 18,
+  "armatures": 1,
+  "maxBones": 17,
+  "actions": [
+    "idle",
+    "talk",
+    "walk"
+  ],
+  "morphMeshes": [
+    "Mouth",
+    "LeftEyeWhite",
+    "LeftIris",
+    "LeftPupil",
+    "LeftEyeHighlight",
+    "RightEyeWhite",
+    "RightIris",
+    "RightPupil",
+    "RightEyeHighlight"
+  ],
+  "estimatedTriangles": 29612,
+  "source": "/home/dennisj/apps/magic-academy-rpg-preview/assets/characters/player/source/player.blend",
+  "output": "/home/dennisj/apps/magic-academy-rpg-preview/public/assets/models/player.glb",
+  "preview": "/home/dennisj/apps/magic-academy-rpg-preview/public/assets/character-reviews/player-source-preview.png"
+}

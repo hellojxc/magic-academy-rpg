@@ -11,6 +11,7 @@ export class PlayerController3D {
   private readonly direction = new THREE.Vector3();
   private moving = false;
   private visualYaw = 0;
+  private movementIntent = false;
 
   constructor(
     private readonly player: THREE.Object3D,
@@ -32,13 +33,16 @@ export class PlayerController3D {
       .addScaledVector(this.forward, forwardInput)
       .addScaledVector(this.right, rightInput);
 
-    const hasInput = this.direction.lengthSq() > 0;
-    if (hasInput) this.direction.normalize();
-    this.targetVelocity.copy(this.direction).multiplyScalar(hasInput ? this.speed : 0);
+    this.movementIntent = this.direction.lengthSq() > 0;
+    if (this.movementIntent) this.direction.normalize();
+    this.targetVelocity.copy(this.direction).multiplyScalar(this.movementIntent ? this.speed : 0);
     this.velocity.lerp(this.targetVelocity, 1 - Math.exp(-14 * delta));
-    if (!hasInput && this.velocity.lengthSq() < 0.0004) this.velocity.set(0, 0, 0);
+    if (!this.movementIntent && this.velocity.lengthSq() < 0.0004) this.velocity.set(0, 0, 0);
 
-    this.moving = this.velocity.lengthSq() > 0.0025;
+    const speedSq = this.velocity.lengthSq();
+    this.moving = this.movementIntent
+      ? speedSq > 0.0009
+      : this.moving && speedSq > 0.0004;
     if (!this.moving) return;
 
     const nextX = THREE.MathUtils.clamp(this.player.position.x + this.velocity.x * delta, -25, 23);
@@ -62,6 +66,9 @@ export class PlayerController3D {
 
   stop(): void {
     this.moving = false;
+    this.movementIntent = false;
+    this.velocity.set(0, 0, 0);
+    this.targetVelocity.set(0, 0, 0);
   }
 
   isMoving(): boolean {

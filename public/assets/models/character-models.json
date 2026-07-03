@@ -17,7 +17,7 @@
       "thumbnailUrl": "/assets/portraits/player-3d.png",
       "animationClips": ["idle", "walk", "talk"],
       "materialProfile": "toon",
-      "supportsFacialMorphs": false,
+      "supportsFacialMorphs": true,
       "supportsSpringBones": false,
       "triangleBudget": 48000,
       "textureBudgetKb": 4096
@@ -62,9 +62,9 @@
       "thumbnailUrl": "/assets/models/player.blender-template.png",
       "animationClips": ["idle", "walk", "talk"],
       "materialProfile": "toon",
-      "supportsFacialMorphs": false,
+      "supportsFacialMorphs": true,
       "supportsSpringBones": false,
-      "triangleBudget": 20000,
+      "triangleBudget": 26000,
       "textureBudgetKb": 1024
     },
     {

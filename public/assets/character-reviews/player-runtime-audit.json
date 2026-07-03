@@ -2,23 +2,23 @@
   "version": "runtime-character-audit-v1",
   "characterId": "player",
   "displayName": "Academy Protagonist",
-  "accepted": false,
+  "accepted": true,
   "summary": {
     "file": "public/assets/models/player.glb",
-    "sizeKb": 556.5,
-    "nodes": 90,
-    "meshes": 72,
-    "primitives": 72,
+    "sizeKb": 1102.1,
+    "nodes": 108,
+    "meshes": 89,
+    "primitives": 89,
     "materials": 17,
-    "skins": 0,
-    "bones": 0,
+    "skins": 1,
+    "bones": 17,
     "animations": [
-      "walk",
       "idle",
-      "talk"
+      "talk",
+      "walk"
     ],
-    "morphTargetPrimitiveCount": 0,
-    "triangleCount": 18867
+    "morphTargetPrimitiveCount": 9,
+    "triangleCount": 24026
   },
   "requirements": {
     "triangleBudgetHero": [
@@ -50,23 +50,23 @@
     },
     {
       "name": "triangle budget",
-      "passed": false,
-      "detail": "18867 triangles, target 24000-42000"
+      "passed": true,
+      "detail": "24026 triangles, target 24000-42000"
     },
     {
       "name": "humanoid skin",
-      "passed": false,
-      "detail": "0 skins, 0 bones"
+      "passed": true,
+      "detail": "1 skins, 17 bones"
     },
     {
       "name": "facial morph targets",
-      "passed": false,
-      "detail": "0 primitives with morph targets"
+      "passed": true,
+      "detail": "9 primitives with morph targets"
     },
     {
       "name": "required animation clips",
       "passed": true,
-      "detail": "has [walk, idle, talk], requires [idle, walk, talk]"
+      "detail": "has [idle, talk, walk], requires [idle, walk, talk]"
     },
     {
       "name": "material count",
@@ -74,6 +74,6 @@
       "detail": "17 materials, target <= 32"
     }
   ],
-  "conclusion": "Runtime asset is not yet a production-quality RPG character model.",
-  "generatedAt": "2026-07-03T21:48:44.361Z"
+  "conclusion": "Runtime asset passes the current production gate.",
+  "generatedAt": "2026-07-03T23:18:14.635Z"
 }

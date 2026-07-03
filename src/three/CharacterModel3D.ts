@@ -180,6 +180,10 @@ export class CharacterModel3D {
       for (const clip of animations) {
         const action = this.gltfMixer.clipAction(clip);
         action.enabled = true;
+        action.loop = THREE.LoopRepeat;
+        action.clampWhenFinished = false;
+        action.zeroSlopeAtStart = true;
+        action.zeroSlopeAtEnd = true;
         this.gltfActions.set(clip.name.toLowerCase(), action);
       }
       this.playGLTFAction('idle', 0);
@@ -195,9 +199,15 @@ export class CharacterModel3D {
     const next = this.gltfActions.get(name) ?? this.gltfActions.get('idle');
     if (!next || next === this.activeGLTFAction) return;
 
-    next.reset().play();
+    next.enabled = true;
+    next.setEffectiveTimeScale(1);
+    next.setEffectiveWeight(1);
+    if (!next.isRunning()) next.play();
     if (this.activeGLTFAction && fadeDuration > 0) {
-      this.activeGLTFAction.crossFadeTo(next, fadeDuration, false);
+      this.activeGLTFAction.fadeOut(fadeDuration);
+      next.reset().fadeIn(fadeDuration).play();
+    } else {
+      next.reset().play();
     }
     this.activeGLTFAction = next;
   }
