@@ -28,8 +28,8 @@ export class PlayerController3D {
     if (!this.moving) return;
     direction.normalize();
 
-    const nextX = THREE.MathUtils.clamp(this.player.position.x + direction.x * this.speed * delta, -7.0, 7.0);
-    const nextZ = THREE.MathUtils.clamp(this.player.position.z + direction.z * this.speed * delta, -4.2, 4.2);
+    const nextX = THREE.MathUtils.clamp(this.player.position.x + direction.x * this.speed * delta, -25, 23);
+    const nextZ = THREE.MathUtils.clamp(this.player.position.z + direction.z * this.speed * delta, -21, 27);
     if (!this.collides(nextX, nextZ)) {
       this.player.position.x = nextX;
       this.player.position.z = nextZ;

@@ -7,6 +7,7 @@ import { CameraController3D } from './CameraController3D';
 import { InteractionController3D } from './InteractionController3D';
 import { PlayerController3D } from './PlayerController3D';
 import { ThreeGameView } from './ThreeGameView';
+import { Minimap } from './Minimap';
 import dialoguesData from '../data/dialogues.json';
 import type { DialogueTree, SaveData } from '../types';
 
@@ -21,6 +22,7 @@ export class ThreeAcademyGame {
   private readonly playerController: PlayerController3D;
   private readonly cameraController: CameraController3D;
   private readonly interactionController: InteractionController3D;
+  private readonly minimap: Minimap;
   private save: SaveData;
   private animationId = 0;
   private elapsedTime = 0;
@@ -65,6 +67,8 @@ export class ThreeAcademyGame {
       }
     );
 
+    this.minimap = new Minimap(this.container);
+
     this.bindEvents();
     this.resize();
     this.updateHud();
@@ -81,6 +85,7 @@ export class ThreeAcademyGame {
     window.removeEventListener('keyup', this.onKeyUp);
     this.interactionController.destroy();
     this.cameraController.destroy();
+    this.minimap.destroy();
     this.hud.destroy();
     this.view.destroy();
   }
@@ -113,6 +118,7 @@ export class ThreeAcademyGame {
     this.world.update(this.elapsedTime, this.playerController.isMoving());
     this.cameraController.update(delta);
     this.interactionController.update(dialogueVisible);
+    this.minimap.update(this.world.getPlayerPosition().position, this.cameraController.getYaw());
   }
 
   private readonly onKeyDown = (event: KeyboardEvent): void => {

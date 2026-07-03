@@ -1,0 +1,217 @@
+import * as THREE from 'three';
+import type { Obstacle } from './WorldTypes';
+import {
+  addBox, addPointLight,
+  makeMarbleTexture, makePlasterTexture,
+} from './WorldHelpers';
+
+/**
+ * 大厅 — 中庭北面 (x:[-13,13], z:[-22,-7])
+ * 高穹顶、巨大拱门、星图地板、魔法灯笼
+ */
+export class GrandHall {
+  private readonly animatedObjects: { obj: THREE.Object3D; baseY: number; amp: number; speed: number; phase: number }[] = [];
+
+  constructor(private readonly scene: THREE.Scene) {}
+
+  build(): Obstacle[] {
+    const obstacles: Obstacle[] = [];
+
+    const marbleTex = makeMarbleTexture({ light: '#e8dcc8', mid: '#c9b896', dark: '#f0e8d8' });
+    const plasterTex = makePlasterTexture({ light: '#d4c9b8', mid: '#b8a898', dark: '#d8cdb8' });
+    const goldMat = new THREE.MeshStandardMaterial({ color: 0xc7a060, roughness: 0.24, metalness: 0.48 });
+    const stoneMat = new THREE.MeshStandardMaterial({ color: 0x80706a, roughness: 0.42, metalness: 0.12 });
+
+    // 地板
+    const floor = new THREE.Mesh(
+      new THREE.BoxGeometry(26, 0.16, 15),
+      new THREE.MeshStandardMaterial({ color: 0xd8ccb8, roughness: 0.3, metalness: 0.05, map: marbleTex })
+    );
+    floor.position.set(0, -0.08, -14.5);
+    floor.receiveShadow = true;
+    this.scene.add(floor);
+
+    // 星图地板纹饰 — 中央魔法阵
+    const circleMat = new THREE.MeshStandardMaterial({ color: 0xc7a060, roughness: 0.3, metalness: 0.5, emissive: 0xc7a060, emissiveIntensity: 0.08 });
+    const ring1 = new THREE.Mesh(new THREE.CylinderGeometry(3.5, 3.5, 0.02, 64), circleMat);
+    ring1.position.set(0, 0.02, -14.5);
+    ring1.receiveShadow = true;
+    this.scene.add(ring1);
+
+    const ring2 = new THREE.Mesh(new THREE.CylinderGeometry(2.2, 2.2, 0.02, 48), circleMat);
+    ring2.position.set(0, 0.02, -14.5);
+    this.scene.add(ring2);
+
+    // 魔法阵内的星形
+    const starShape = new THREE.Shape();
+    const starR = 1.5;
+    for (let i = 0; i < 10; i++) {
+      const angle = (i / 10) * Math.PI * 2 - Math.PI / 2;
+      const r = i % 2 === 0 ? starR : starR * 0.4;
+      if (i === 0) starShape.moveTo(Math.cos(angle) * r, Math.sin(angle) * r);
+      else starShape.lineTo(Math.cos(angle) * r, Math.sin(angle) * r);
+    }
+    const star = new THREE.Mesh(
+      new THREE.ExtrudeGeometry(starShape, { depth: 0.02, bevelEnabled: false }),
+      new THREE.MeshStandardMaterial({ color: 0xd6b45d, roughness: 0.25, metalness: 0.5, emissive: 0xffd700, emissiveIntensity: 0.15 })
+    );
+    star.rotation.x = -Math.PI / 2;
+    star.position.set(0, 0.03, -14.5);
+    star.receiveShadow = true;
+    this.scene.add(star);
+
+    // 墙壁
+    const wallMat = new THREE.MeshStandardMaterial({ color: 0xc4b8a8, roughness: 0.58, metalness: 0.03, map: plasterTex });
+    const lowerMat = new THREE.MeshStandardMaterial({ color: 0x7b6a5e, roughness: 0.5, metalness: 0.08 });
+
+    // 后墙 (北)
+    addBox(this.scene, new THREE.Vector3(0, 2.5, -22.4), new THREE.Vector3(26.5, 5, 0.45), wallMat, false, true);
+    addBox(this.scene, new THREE.Vector3(0, 0.6, -22.1), new THREE.Vector3(26, 0.9, 0.28), lowerMat, true, true);
+    addBox(this.scene, new THREE.Vector3(0, 4.85, -22.1), new THREE.Vector3(26, 0.2, 0.14), goldMat, true, true);
+
+    // 左墙 (西)
+    addBox(this.scene, new THREE.Vector3(-13.2, 2.5, -14.5), new THREE.Vector3(0.45, 5, 15.2), wallMat, false, true);
+    addBox(this.scene, new THREE.Vector3(-12.9, 0.6, -14.5), new THREE.Vector3(0.28, 0.9, 14.8), lowerMat, true, true);
+
+    // 右墙 (东)
+    addBox(this.scene, new THREE.Vector3(13.2, 2.5, -14.5), new THREE.Vector3(0.45, 5, 15.2), wallMat, false, true);
+    addBox(this.scene, new THREE.Vector3(12.9, 0.6, -14.5), new THREE.Vector3(0.28, 0.9, 14.8), lowerMat, true, true);
+
+    // 穹顶 — 高拱形天花板
+    const domeMat = new THREE.MeshStandardMaterial({ color: 0x6a5a6e, roughness: 0.6, metalness: 0.04, side: THREE.DoubleSide });
+    const dome = new THREE.Mesh(
+      new THREE.SphereGeometry(13, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2),
+      domeMat
+    );
+    dome.position.set(0, 5, -14.5);
+    dome.scale.set(1, 0.45, 0.58);
+    this.scene.add(dome);
+
+    // 穹顶顶部水晶
+    const crystal = new THREE.Mesh(
+      new THREE.OctahedronGeometry(0.6, 0),
+      new THREE.MeshStandardMaterial({ color: 0xbfe7ff, emissive: 0x5c8eda, emissiveIntensity: 1.5, transparent: true, opacity: 0.75 })
+    );
+    crystal.position.set(0, 5.8, -14.5);
+    this.scene.add(crystal);
+    this.animatedObjects.push({ obj: crystal, baseY: 5.8, amp: 0.15, speed: 1.2, phase: 0 });
+    addPointLight(this.scene, 0, 5.5, -14.5, 0xbfe7ff, 3.5, 18);
+
+    // 柱子 — 6 根高大石柱
+    for (const [x, z] of [[-10, -19], [10, -19], [-10, -10], [10, -10], [-10, -15.5], [10, -15.5]] as Array<[number, number]>) {
+      this.addColumn(x, z, stoneMat, goldMat);
+    }
+
+    // 墙面装饰板
+    const panelMat = new THREE.MeshStandardMaterial({ color: 0x9f8e7a, roughness: 0.56, metalness: 0.04 });
+    const insetMat = new THREE.MeshStandardMaterial({ color: 0x6f5e4f, roughness: 0.62, metalness: 0.04 });
+    for (const x of [-9, -5, 5, 9]) {
+      this.addFramedPanel(new THREE.Vector3(x, 2.8, -22.1), 2.2, 3.2, 'back', panelMat, insetMat, goldMat);
+    }
+    for (const z of [-19, -15, -11]) {
+      this.addFramedPanel(new THREE.Vector3(-12.9, 2.6, z), 2.0, 2.8, 'left', panelMat, insetMat, goldMat);
+      this.addFramedPanel(new THREE.Vector3(12.9, 2.6, z), 2.0, 2.8, 'right', panelMat, insetMat, goldMat);
+    }
+
+    // 灯笼 — 漂浮魔法灯
+    for (const [x, z] of [[-7, -18], [7, -18], [-7, -11], [7, -11], [0, -14.5]] as Array<[number, number]>) {
+      const lamp = new THREE.Mesh(
+        new THREE.OctahedronGeometry(0.2, 1),
+        new THREE.MeshStandardMaterial({ color: 0xffd674, emissive: 0xffb847, emissiveIntensity: 1.8 })
+      );
+      lamp.position.set(x, 3.2, z);
+      this.scene.add(lamp);
+      addPointLight(this.scene, x, 3.2, z, 0xffc96d, 1.2, 5);
+      this.animatedObjects.push({ obj: lamp, baseY: 3.2, amp: 0.12, speed: 1.5 + Math.random() * 0.5, phase: Math.random() * Math.PI * 2 });
+    }
+
+    // 北面大型彩色玻璃窗
+    this.addStainedGlass(0, 3.2, -22.05, 5, 3.5);
+
+    // 障碍物 — 墙壁和柱子
+    obstacles.push(
+      { minX: -13.2, maxX: -12.6, minZ: -22, maxZ: -7.5 },   // 西墙
+      { minX: 12.6, maxX: 13.2, minZ: -22, maxZ: -7.5 },      // 东墙
+      { minX: -13, maxX: 13, minZ: -22.4, maxZ: -21.8 },      // 北墙
+      // 柱子
+      { minX: -10.4, maxX: -9.6, minZ: -19.4, maxZ: -18.6 },
+      { minX: 9.6, maxX: 10.4, minZ: -19.4, maxZ: -18.6 },
+      { minX: -10.4, maxX: -9.6, minZ: -10.4, maxZ: -9.6 },
+      { minX: 9.6, maxX: 10.4, minZ: -10.4, maxZ: -9.6 },
+      { minX: -10.4, maxX: -9.6, minZ: -15.9, maxZ: -15.1 },
+      { minX: 9.6, maxX: 10.4, minZ: -15.9, maxZ: -15.1 },
+    );
+
+    return obstacles;
+  }
+
+  update(elapsedTime: number): void {
+    for (const item of this.animatedObjects) {
+      item.obj.position.y = item.baseY + Math.sin(elapsedTime * item.speed + item.phase) * item.amp;
+      item.obj.rotation.y += 0.008;
+    }
+  }
+
+  private addColumn(x: number, z: number, stoneMat: THREE.Material, trimMat: THREE.Material): void {
+    const base = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 0.52, 0.2, 28), stoneMat);
+    base.position.set(x, 0.1, z); base.castShadow = true; base.receiveShadow = true;
+    this.scene.add(base);
+
+    const pillar = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.27, 4.5, 28), stoneMat);
+    pillar.position.set(x, 2.35, z); pillar.castShadow = true; pillar.receiveShadow = true;
+    this.scene.add(pillar);
+
+    for (const y of [0.36, 4.3]) {
+      const ring = new THREE.Mesh(new THREE.CylinderGeometry(0.34, 0.36, 0.09, 28), trimMat);
+      ring.position.set(x, y, z); ring.castShadow = true; ring.receiveShadow = true;
+      this.scene.add(ring);
+    }
+  }
+
+  private addFramedPanel(
+    center: THREE.Vector3, width: number, height: number,
+    side: 'back' | 'left' | 'right',
+    panelMat: THREE.Material, insetMat: THREE.Material, trimMat: THREE.Material
+  ): void {
+    if (side === 'back') {
+      addBox(this.scene, center, new THREE.Vector3(width, height, 0.06), panelMat, true, true);
+      addBox(this.scene, center.clone().add(new THREE.Vector3(0, 0, 0.04)), new THREE.Vector3(width - 0.18, height - 0.22, 0.06), insetMat, false, true);
+      // 上下装饰条
+      addBox(this.scene, center.clone().add(new THREE.Vector3(0, height / 2, 0.07)), new THREE.Vector3(width + 0.1, 0.06, 0.08), trimMat, true, true);
+      addBox(this.scene, center.clone().add(new THREE.Vector3(0, -height / 2, 0.07)), new THREE.Vector3(width + 0.1, 0.06, 0.08), trimMat, true, true);
+      return;
+    }
+    const xOffset = side === 'left' ? 0.05 : -0.05;
+    addBox(this.scene, center, new THREE.Vector3(0.06, height, width), panelMat, true, true);
+    addBox(this.scene, center.clone().add(new THREE.Vector3(xOffset, 0, 0)), new THREE.Vector3(0.06, height - 0.22, width - 0.18), insetMat, false, true);
+    addBox(this.scene, center.clone().add(new THREE.Vector3(xOffset, height / 2, 0)), new THREE.Vector3(0.08, 0.06, width + 0.1), trimMat, true, true);
+    addBox(this.scene, center.clone().add(new THREE.Vector3(xOffset, -height / 2, 0)), new THREE.Vector3(0.08, 0.06, width + 0.1), trimMat, true, true);
+  }
+
+  private addStainedGlass(x: number, y: number, z: number, w: number, h: number): void {
+    const colors = [0x7356d9, 0xf1c45f, 0x57b9d8, 0xd85f9e, 0x88bd64];
+    const segW = w / 5;
+    for (let i = 0; i < 5; i++) {
+      const seg = new THREE.Mesh(
+        new THREE.PlaneGeometry(segW * 0.95, h),
+        new THREE.MeshStandardMaterial({
+          color: colors[i],
+          emissive: colors[i],
+          emissiveIntensity: 0.25,
+          transparent: true,
+          opacity: 0.7,
+          roughness: 0.15,
+        })
+      );
+      seg.position.set(x - w / 2 + segW * (i + 0.5), y, z);
+      this.scene.add(seg);
+    }
+    // 窗框
+    const frameMat = new THREE.MeshStandardMaterial({ color: 0x5d3a59, roughness: 0.45, metalness: 0.12 });
+    addBox(this.scene, new THREE.Vector3(x, y - h / 2 - 0.1, z + 0.02), new THREE.Vector3(w + 0.2, 0.15, 0.1), frameMat, true, true);
+    addBox(this.scene, new THREE.Vector3(x, y + h / 2 + 0.1, z + 0.02), new THREE.Vector3(w + 0.2, 0.15, 0.1), frameMat, true, true);
+    for (let i = 0; i <= 5; i++) {
+      addBox(this.scene, new THREE.Vector3(x - w / 2 + segW * i, y, z + 0.02), new THREE.Vector3(0.08, h + 0.2, 0.1), frameMat, true, true);
+    }
+  }
+}

@@ -1,6 +1,10 @@
 import * as THREE from 'three';
 import { CharacterRig3D } from './CharacterRig3D';
 import type { AcademyWorldObjects, Obstacle } from './WorldTypes';
+import { GrandHall } from './GrandHall';
+import { DiningHall } from './DiningHall';
+import { Lawn } from './Lawn';
+import { Lake } from './Lake';
 
 interface AnimatedObject {
   object: THREE.Object3D;
@@ -17,16 +21,34 @@ export class AcademyWorld {
   private lyraRig!: CharacterRig3D;
   private player!: THREE.Object3D;
   private lyra!: THREE.Object3D;
+  private grandHall: GrandHall;
+  private diningHall: DiningHall;
+  private lawn: Lawn;
+  private lake: Lake;
 
-  constructor(private readonly scene: THREE.Scene) {}
+  constructor(private readonly scene: THREE.Scene) {
+    this.grandHall = new GrandHall(this.scene);
+    this.diningHall = new DiningHall(this.scene);
+    this.lawn = new Lawn(this.scene);
+    this.lake = new Lake(this.scene);
+  }
 
   build(): AcademyWorldObjects {
-    this.scene.background = new THREE.Color(0xd6d0dc);
-    this.scene.fog = new THREE.Fog(0xd8d0dc, 18, 34);
+    this.scene.background = new THREE.Color(0xb8c4d8);
+    this.scene.fog = new THREE.Fog(0xb0bcd0, 30, 65);
 
     this.addLights();
     this.addAcademyArchitecture();
     this.addCharacters();
+
+    // 构建新区域
+    this.obstacles.push(...this.grandHall.build());
+    this.obstacles.push(...this.diningHall.build());
+    this.obstacles.push(...this.lawn.build());
+    this.lake.build();
+
+    // 区域间通道 — 移除阻挡通行的障碍
+    this.clearPassages();
 
     return {
       player: this.player,
@@ -45,6 +67,45 @@ export class AcademyWorld {
     this.playerRig.update(elapsedTime);
     this.lyraRig.setMoving(false);
     this.lyraRig.update(elapsedTime);
+
+    this.grandHall.update(elapsedTime);
+    this.diningHall.update(elapsedTime);
+    this.lawn.update(elapsedTime);
+    this.lake.update(elapsedTime);
+  }
+
+  getPlayerPosition(): THREE.Object3D {
+    return this.player;
+  }
+
+  /** 移除区域间通道的障碍 — 让玩家可以自由通行 */
+  private clearPassages(): void {
+    // 中庭→大厅 (北面，z≈-7 附近，中庭北墙和大厅南墙之间)
+    // 中庭→食堂 (东面，x≈9 附近，中庭东墙和食堂西墙之间)
+    // 中庭→草坪 (南面，z≈7 附近，中庭南墙开放)
+    // 原中庭障碍清单中阻挡通行的条目需要被过滤
+    const passageZones = [
+      // 北通道 (中庭→大厅) — x:[-2,2], z:[-7.5,-6.5]
+      { minX: -2.5, maxX: 2.5, minZ: -7.8, maxZ: -6.0 },
+      // 东通道 (中庭→食堂) — x:[8.8,10.2], z:[-1,2]
+      { minX: 8.5, maxX: 10.5, minZ: -2, maxZ: 3 },
+      // 南通道 (中庭→草坪) — x:[-2,2], z:[6.5,7.5]
+      { minX: -2.5, maxX: 2.5, minZ: 6.0, maxZ: 7.8 },
+    ];
+
+    const filtered = this.obstacles.filter((obs) => {
+      for (const zone of passageZones) {
+        // 如果障碍与通道区域重叠，移除它
+        if (obs.minX < zone.maxX && obs.maxX > zone.minX &&
+            obs.minZ < zone.maxZ && obs.maxZ > zone.minZ) {
+          return false;
+        }
+      }
+      return true;
+    });
+
+    this.obstacles.length = 0;
+    this.obstacles.push(...filtered);
   }
 
   private addLights(): void {
