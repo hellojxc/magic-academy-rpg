@@ -27,6 +27,7 @@ export class ThreeAcademyGame {
   private animationId = 0;
   private elapsedTime = 0;
   private lastFrameTime = performance.now();
+  private lastCharacterModelState = '';
 
   constructor(private readonly container: HTMLElement) {
     this.container.classList.add('three-game');
@@ -115,10 +116,11 @@ export class ThreeAcademyGame {
     }
 
     this.playerController.updateIdle(this.elapsedTime);
-    this.world.update(this.elapsedTime, this.playerController.isMoving());
+    this.world.update(this.elapsedTime, delta, this.playerController.isMoving());
     this.cameraController.update(delta);
     this.interactionController.update(dialogueVisible);
     this.minimap.update(this.world.getPlayerPosition().position, this.cameraController.getYaw());
+    this.updateDebugDataset();
   }
 
   private readonly onKeyDown = (event: KeyboardEvent): void => {
@@ -194,4 +196,23 @@ export class ThreeAcademyGame {
   private readonly resize = (): void => {
     this.view.resize();
   };
+
+  private updateDebugDataset(): void {
+    const states = this.world.getCharacterModelStates();
+    const serialized = `player:${states.player},lyra:${states.lyra}`;
+    if (serialized === this.lastCharacterModelState) return;
+    this.lastCharacterModelState = serialized;
+    this.container.dataset.characterModels = serialized;
+  }
+
+  getDebugState(): {
+    characters: Record<'player' | 'lyra', string>;
+    playerPosition: { x: number; y: number; z: number };
+  } {
+    const { x, y, z } = this.world.getPlayerPosition().position;
+    return {
+      characters: this.world.getCharacterModelStates(),
+      playerPosition: { x, y, z },
+    };
+  }
 }

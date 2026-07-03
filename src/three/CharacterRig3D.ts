@@ -845,13 +845,13 @@ export class CharacterRig3D {
   private static getToonGradient(): THREE.DataTexture {
     if (!CharacterRig3D.toonGradient) {
       const data = new Uint8Array([
-        54, 54, 54,
-        112, 112, 112,
-        174, 174, 174,
-        222, 222, 222,
-        255, 255, 255,
+        54, 54, 54, 255,
+        112, 112, 112, 255,
+        174, 174, 174, 255,
+        222, 222, 222, 255,
+        255, 255, 255, 255,
       ]);
-      const texture = new THREE.DataTexture(data, 5, 1, THREE.RGBFormat);
+      const texture = new THREE.DataTexture(data, 5, 1, THREE.RGBAFormat);
       texture.minFilter = THREE.NearestFilter;
       texture.magFilter = THREE.NearestFilter;
       texture.colorSpace = THREE.SRGBColorSpace;

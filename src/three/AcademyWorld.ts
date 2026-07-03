@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { CharacterRig3D } from './CharacterRig3D';
+import { CharacterModel3D } from './CharacterModel3D';
 import type { AcademyWorldObjects, Obstacle } from './WorldTypes';
 import { GrandHall } from './GrandHall';
 import { DiningHall } from './DiningHall';
@@ -17,8 +17,8 @@ interface AnimatedObject {
 export class AcademyWorld {
   private readonly obstacles: Obstacle[] = [];
   private readonly animatedObjects: AnimatedObject[] = [];
-  private playerRig!: CharacterRig3D;
-  private lyraRig!: CharacterRig3D;
+  private playerRig!: CharacterModel3D;
+  private lyraRig!: CharacterModel3D;
   private player!: THREE.Object3D;
   private lyra!: THREE.Object3D;
   private grandHall: GrandHall;
@@ -59,16 +59,16 @@ export class AcademyWorld {
     };
   }
 
-  update(elapsedTime: number, playerMoving: boolean): void {
+  update(elapsedTime: number, delta: number, playerMoving: boolean): void {
     for (const item of this.animatedObjects) {
       item.object.position.y = item.baseY + Math.sin(elapsedTime * item.speed + item.phase) * item.amplitude;
       item.object.rotation.y += 0.006;
     }
 
     this.playerRig.setMoving(playerMoving);
-    this.playerRig.update(elapsedTime);
+    this.playerRig.update(elapsedTime, delta);
     this.lyraRig.setMoving(false);
-    this.lyraRig.update(elapsedTime);
+    this.lyraRig.update(elapsedTime, delta, this.player.position);
 
     this.grandHall.update(elapsedTime);
     this.diningHall.update(elapsedTime);
@@ -78,6 +78,13 @@ export class AcademyWorld {
 
   getPlayerPosition(): THREE.Object3D {
     return this.player;
+  }
+
+  getCharacterModelStates(): Record<'player' | 'lyra', string> {
+    return {
+      player: this.playerRig.getModelState(),
+      lyra: this.lyraRig.getModelState(),
+    };
   }
 
   /**
@@ -465,13 +472,13 @@ export class AcademyWorld {
   }
 
   private addCharacters(): void {
-    this.playerRig = new CharacterRig3D('player');
+    this.playerRig = new CharacterModel3D('player');
     this.player = this.playerRig.root;
     this.player.position.set(-5.1, 0, 2.5);
     this.player.rotation.y = Math.PI * 0.78;
     this.scene.add(this.player);
 
-    this.lyraRig = new CharacterRig3D('lyra');
+    this.lyraRig = new CharacterModel3D('lyra');
     this.lyra = this.lyraRig.root;
     this.lyra.position.set(5.35, 0, -1.35);
     this.lyra.rotation.y = -Math.PI * 0.18;
