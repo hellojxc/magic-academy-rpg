@@ -34,8 +34,10 @@ export class AcademyWorld {
   }
 
   build(): AcademyWorldObjects {
-    this.scene.background = new THREE.Color(0xb8c4d8);
-    this.scene.fog = new THREE.Fog(0xb0bcd0, 30, 65);
+    // 天空渐变 — 暖蓝黄昏色调
+    this.scene.background = this.makeSkyTexture();
+    this.scene.fog = new THREE.FogExp2(0xb6c8d8, 0.018);
+    this.scene.environment = this.makeEnvironmentMap();
 
     this.addLights();
     this.addAcademyArchitecture();
@@ -142,24 +144,69 @@ export class AcademyWorld {
   }
 
   private addLights(): void {
-    this.scene.add(new THREE.HemisphereLight(0xfff4df, 0x78678a, 1.85));
+    // 半球光 — 天空暖色 / 地面冷色，提供基础环境照明
+    const hemi = new THREE.HemisphereLight(0xffe8c8, 0x605068, 1.2);
+    hemi.position.set(0, 20, 0);
+    this.scene.add(hemi);
 
-    const sun = new THREE.DirectionalLight(0xffdfb0, 3.4);
-    sun.position.set(-4.8, 8.5, 5.8);
+    // 太阳 — 黄金时段斜射光
+    const sun = new THREE.DirectionalLight(0xffd49a, 3.0);
+    sun.position.set(-8, 12, 6);
     sun.castShadow = true;
-    sun.shadow.mapSize.set(2048, 2048);
+    sun.shadow.mapSize.set(4096, 4096);
     sun.shadow.camera.near = 0.5;
-    sun.shadow.camera.far = 28;
-    sun.shadow.camera.left = -11;
-    sun.shadow.camera.right = 11;
-    sun.shadow.camera.top = 11;
-    sun.shadow.camera.bottom = -11;
+    sun.shadow.camera.far = 45;
+    sun.shadow.camera.left = -16;
+    sun.shadow.camera.right = 16;
+    sun.shadow.camera.top = 16;
+    sun.shadow.camera.bottom = -16;
+    sun.shadow.bias = -0.0003;
+    sun.shadow.normalBias = 0.04;
+    sun.shadow.radius = 3;
     this.scene.add(sun);
 
-    this.addPointLight(-5.7, 2.8, -4.8, 0xffc877, 2.0, 5.4);
-    this.addPointLight(5.7, 2.8, -4.8, 0xffc877, 2.0, 5.4);
-    this.addPointLight(6.5, 1.8, -0.4, 0x9bc5ff, 1.6, 4.4);
-    this.addPointLight(-4.2, 2.8, 3.2, 0xffd990, 1.25, 4.2);
+    // 补光 — 冷蓝色反向填充
+    const fill = new THREE.DirectionalLight(0x8eb4d8, 0.6);
+    fill.position.set(6, 4, -5);
+    this.scene.add(fill);
+
+    this.addPointLight(-5.7, 2.8, -4.8, 0xffc877, 1.5, 5.4);
+    this.addPointLight(5.7, 2.8, -4.8, 0xffc877, 1.5, 5.4);
+    this.addPointLight(6.5, 1.8, -0.4, 0x9bc5ff, 1.2, 4.4);
+    this.addPointLight(-4.2, 2.8, 3.2, 0xffd990, 1.0, 4.2);
+  }
+
+  /** 天空渐变纹理 — 从地平线暖色到天顶深蓝 */
+  private makeSkyTexture(): THREE.CanvasTexture {
+    const w = 16;
+    const h = 256;
+    const canvas = document.createElement('canvas');
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext('2d')!;
+
+    const grad = ctx.createLinearGradient(0, 0, 0, h);
+    grad.addColorStop(0.0, '#4a6e9a');   // 天顶 — 深蓝
+    grad.addColorStop(0.35, '#7a9ec4');  // 中天 — 蓝白
+    grad.addColorStop(0.62, '#c4d4e8');  // 高空 — 淡蓝白
+    grad.addColorStop(0.80, '#f0d8b8');  // 地平线上 — 暖黄
+    grad.addColorStop(1.0, '#e8c898');   // 地平线 — 金色
+
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, w, h);
+
+    const tex = new THREE.CanvasTexture(canvas);
+    tex.colorSpace = THREE.SRGBColorSpace;
+    tex.mapping = THREE.EquirectangularReflectionMapping;
+    return tex;
+  }
+
+  /** 环境贴图 — 用于 PBR 材质反射 */
+  private makeEnvironmentMap(): THREE.Texture {
+    // 用天空纹理作为环境反射
+    const tex = this.makeSkyTexture();
+    tex.mapping = THREE.EquirectangularReflectionMapping;
+    return tex;
   }
 
   private addAcademyArchitecture(): void {
@@ -617,7 +664,7 @@ export class AcademyWorld {
   }
 
   private makeMarbleTexture(): THREE.CanvasTexture {
-    const size = 512;
+    const size = 1024;
     const canvas = document.createElement('canvas');
     canvas.width = size;
     canvas.height = size;
@@ -658,12 +705,12 @@ export class AcademyWorld {
     texture.wrapS = THREE.RepeatWrapping;
     texture.wrapT = THREE.RepeatWrapping;
     texture.repeat.set(4.4, 3.1);
-    texture.anisotropy = 8;
+    texture.anisotropy = 16;
     return texture;
   }
 
   private makePlasterTexture(): THREE.CanvasTexture {
-    const size = 512;
+    const size = 1024;
     const canvas = document.createElement('canvas');
     canvas.width = size;
     canvas.height = size;
@@ -700,7 +747,7 @@ export class AcademyWorld {
   }
 
   private makeWoodTexture(): THREE.CanvasTexture {
-    const size = 256;
+    const size = 512;
     const canvas = document.createElement('canvas');
     canvas.width = size;
     canvas.height = size;
@@ -728,12 +775,12 @@ export class AcademyWorld {
     texture.wrapS = THREE.RepeatWrapping;
     texture.wrapT = THREE.RepeatWrapping;
     texture.repeat.set(1.4, 2.4);
-    texture.anisotropy = 8;
+    texture.anisotropy = 16;
     return texture;
   }
 
   private makeCarpetTexture(): THREE.CanvasTexture {
-    const size = 256;
+    const size = 512;
     const canvas = document.createElement('canvas');
     canvas.width = size;
     canvas.height = size;
@@ -759,7 +806,7 @@ export class AcademyWorld {
     texture.wrapS = THREE.RepeatWrapping;
     texture.wrapT = THREE.RepeatWrapping;
     texture.repeat.set(1.15, 0.8);
-    texture.anisotropy = 8;
+    texture.anisotropy = 16;
     return texture;
   }
 }

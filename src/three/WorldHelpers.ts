@@ -53,7 +53,7 @@ export function getRegion(x: number, z: number): RegionEntry | null {
 
 /** 创建木质纹理 */
 export function makeWoodTexture(): THREE.CanvasTexture {
-  const size = 256;
+  const size = 512;
   const canvas = document.createElement('canvas');
   canvas.width = size;
   canvas.height = size;
@@ -79,7 +79,7 @@ export function makeWoodTexture(): THREE.CanvasTexture {
   texture.wrapS = THREE.RepeatWrapping;
   texture.wrapT = THREE.RepeatWrapping;
   texture.repeat.set(1.4, 2.4);
-  texture.anisotropy = 8;
+  texture.anisotropy = 16;
   return texture;
 }
 
@@ -119,7 +119,7 @@ export function makeMarbleTexture(baseColor: { light: string; mid: string; dark:
   texture.wrapS = THREE.RepeatWrapping;
   texture.wrapT = THREE.RepeatWrapping;
   texture.repeat.set(4.4, 3.1);
-  texture.anisotropy = 8;
+  texture.anisotropy = 16;
   return texture;
 }
 
@@ -156,7 +156,7 @@ export function makePlasterTexture(baseColor: { light: string; mid: string; dark
   texture.wrapS = THREE.RepeatWrapping;
   texture.wrapT = THREE.RepeatWrapping;
   texture.repeat.set(2.4, 1.2);
-  texture.anisotropy = 8;
+  texture.anisotropy = 16;
   return texture;
 }
 
@@ -200,13 +200,13 @@ export function makeGrassTexture(): THREE.CanvasTexture {
   texture.wrapS = THREE.RepeatWrapping;
   texture.wrapT = THREE.RepeatWrapping;
   texture.repeat.set(8, 8);
-  texture.anisotropy = 8;
+  texture.anisotropy = 16;
   return texture;
 }
 
 /** 创建水面法线扰动纹理 */
 export function makeWaterTexture(): THREE.CanvasTexture {
-  const size = 256;
+  const size = 512;
   const canvas = document.createElement('canvas');
   canvas.width = size;
   canvas.height = size;
@@ -238,7 +238,7 @@ export function makeWaterTexture(): THREE.CanvasTexture {
   texture.wrapS = THREE.RepeatWrapping;
   texture.wrapT = THREE.RepeatWrapping;
   texture.repeat.set(6, 6);
-  texture.anisotropy = 8;
+  texture.anisotropy = 16;
   return texture;
 }
 

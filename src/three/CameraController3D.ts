@@ -4,9 +4,9 @@ export class CameraController3D {
   private readonly targetOffset = new THREE.Vector3(0, 1.12, 0);
   private readonly desiredPosition = new THREE.Vector3();
   private readonly lookTarget = new THREE.Vector3();
-  private yaw = Math.PI * 0.18;
-  private pitch = 0.48;
-  private distance = 7.1;
+  private yaw = Math.PI * 0.15;
+  private pitch = 0.42;
+  private distance = 6.5;
   private dragging = false;
   private lastPointerX = 0;
   private lastPointerY = 0;
@@ -37,8 +37,10 @@ export class CameraController3D {
       this.lookTarget.z + Math.cos(this.yaw) * horizontalDistance
     );
 
-    this.camera.position.lerp(this.desiredPosition, Math.min(1, delta * 8));
+    this.camera.position.lerp(this.desiredPosition, Math.min(1, delta * 6));
     this.camera.lookAt(this.lookTarget);
+    // 微弱呼吸效果 — 增加生命感
+    this.camera.position.y += Math.sin(performance.now() * 0.0008) * 0.015;
   }
 
   destroy(): void {

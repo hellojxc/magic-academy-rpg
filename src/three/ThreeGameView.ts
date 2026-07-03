@@ -1,23 +1,68 @@
 import * as THREE from 'three';
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
+import { SMAAPass } from 'three/examples/jsm/postprocessing/SMAAPass.js';
+import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
+import { SSAOPass } from 'three/examples/jsm/postprocessing/SSAOPass.js';
+import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
 
 export class ThreeGameView {
   readonly renderer: THREE.WebGLRenderer;
   readonly scene = new THREE.Scene();
   readonly camera: THREE.PerspectiveCamera;
+  private readonly composer: EffectComposer;
+  private readonly bloomPass: UnrealBloomPass;
+  private readonly ssaoPass: SSAOPass;
+  private clock = 0;
 
   constructor(private readonly container: HTMLElement) {
-    this.camera = new THREE.PerspectiveCamera(55, 16 / 9, 0.1, 80);
-    this.camera.position.set(3.6, 4.4, 6.4);
-    this.camera.lookAt(0, 1.1, 0);
+    // 相机 — 50mm 等效视野，略偏俯视角
+    this.camera = new THREE.PerspectiveCamera(48, 16 / 9, 0.1, 120);
+    this.camera.position.set(3.6, 4.8, 6.8);
+    this.camera.lookAt(0, 1.0, 0);
 
-    this.renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+    // 渲染器 — 高质量设置
+    this.renderer = new THREE.WebGLRenderer({
+      antialias: true,
+      powerPreference: 'high-performance',
+      stencil: false,
+    });
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     this.renderer.shadowMap.enabled = true;
-    this.renderer.shadowMap.type = THREE.PCFShadowMap;
+    this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    this.renderer.toneMappingExposure = 1.05;
+    this.renderer.toneMappingExposure = 1.08;
+
+    // 色调映射后自动线性→sRGB
     this.container.append(this.renderer.domElement);
+
+    // 后处理管线
+    this.composer = new EffectComposer(this.renderer);
+    this.composer.addPass(new RenderPass(this.scene, this.camera));
+
+    // SSAO — 环境光遮蔽，给角落和缝隙加阴影
+    this.ssaoPass = new SSAOPass(this.scene, this.camera, 0, 0);
+    this.ssaoPass.kernelRadius = 8;
+    this.ssaoPass.minDistance = 0.003;
+    this.ssaoPass.maxDistance = 0.05;
+    this.composer.addPass(this.ssaoPass);
+
+    // Bloom — 发光体辉光
+    this.bloomPass = new UnrealBloomPass(
+      new THREE.Vector2(1, 1),
+      0.45,   // strength — 适度，不过曝
+      0.6,    // radius
+      0.82    // threshold — 只有高亮物体才辉光
+    );
+    this.composer.addPass(this.bloomPass);
+
+    // SMAA — 高质量抗锯齿
+    const smaaPass = new SMAAPass();
+    this.composer.addPass(smaaPass);
+
+    // Output — 色彩空间转换
+    this.composer.addPass(new OutputPass());
   }
 
   resize(): void {
@@ -26,13 +71,22 @@ export class ThreeGameView {
     this.camera.aspect = width / height;
     this.camera.updateProjectionMatrix();
     this.renderer.setSize(width, height, false);
+    this.composer.setSize(width, height);
+
+    // 更新 SSAO 分辨率
+    this.ssaoPass.setSize(width, height);
+
+    // 更新 Bloom 分辨率
+    this.bloomPass.resolution.set(width, height);
   }
 
   render(): void {
-    this.renderer.render(this.scene, this.camera);
+    this.clock += 0.016;
+    this.composer.render();
   }
 
   destroy(): void {
+    this.composer.dispose();
     this.renderer.dispose();
   }
 }
