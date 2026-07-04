@@ -195,12 +195,62 @@ def bind_object_to_bone(obj: bpy.types.Object, armature: bpy.types.Object, bone_
     obj.matrix_world = world
 
 
+def armature_has_bone(armature: bpy.types.Object, bone_name: str) -> bool:
+    data = getattr(armature, "data", None)
+    return bool(data and hasattr(data, "bones") and bone_name in data.bones)
+
+
+def secondary_bone_for_object(obj_name: str, fallback_bone: str) -> str:
+    normalized = "".join(character.lower() for character in obj_name if character.isalnum())
+
+    if fallback_bone == "Head":
+        if normalized in {"haircap"}:
+            return fallback_bone
+        if any(token in normalized for token in ("bang", "fringe", "forehead", "cowlick")):
+            return "SecondaryHairFront"
+        if any(token in normalized for token in ("hair", "lock", "nape", "rear", "temple")):
+            if "left" in normalized:
+                return "SecondaryHairLeft"
+            if "right" in normalized:
+                return "SecondaryHairRight"
+            return "SecondaryHairBack"
+
+    if fallback_bone == "Chest":
+        if "cape" in normalized:
+            if "left" in normalized:
+                return "SecondaryCapeLeft"
+            if "right" in normalized:
+                return "SecondaryCapeRight"
+            return "SecondaryCapeBack"
+        if "ribbon" in normalized:
+            return "SecondaryRibbonLeft" if "left" in normalized else "SecondaryRibbonRight"
+        if any(token in normalized for token in ("necktie", "tie", "sash")):
+            return "SecondaryTie"
+
+    if fallback_bone == "Hips":
+        if any(token in normalized for token in ("skirt", "ruffle", "pleat", "apron")):
+            if "back" in normalized:
+                return "SecondarySkirtBack"
+            if "left" in normalized:
+                return "SecondarySkirtLeft"
+            if "right" in normalized:
+                return "SecondarySkirtRight"
+            return "SecondarySkirtFront"
+        if "jackettail" in normalized:
+            return "SecondarySkirtLeft" if "left" in normalized else "SecondarySkirtRight"
+
+    return fallback_bone
+
+
 def parent_to_bone(obj: bpy.types.Object, armature: Any, bone_name: str) -> None:
     if isinstance(armature, dict):
         parent_keep_world(obj, armature["controls"][bone_name])
         return
 
-    bind_object_to_bone(obj, armature, bone_name)
+    target_bone = secondary_bone_for_object(obj.name, bone_name)
+    if target_bone != bone_name and not armature_has_bone(armature, target_bone):
+        target_bone = bone_name
+    bind_object_to_bone(obj, armature, target_bone)
 
 
 def add_shape_key_transform(
@@ -428,6 +478,20 @@ def make_armature(character_id: str, collection: bpy.types.Collection, root: bpy
     add_bone("Chest", (0, 0, 1.14), (0, 0, 1.34), "Spine")
     add_bone("Neck", (0, 0, 1.32), (0, 0, 1.43), "Chest")
     add_bone("Head", (0, 0, 1.40), (0, 0, 1.70), "Neck")
+    add_bone("SecondaryHairFront", (0, -0.16, 1.64), (0, -0.26, 1.47), "Head")
+    add_bone("SecondaryHairBack", (0, 0.13, 1.56), (0, 0.20, 1.02), "Head")
+    add_bone("SecondaryHairLeft", (-0.16, -0.02, 1.54), (-0.25, -0.01, 1.03), "Head")
+    add_bone("SecondaryHairRight", (0.16, -0.02, 1.54), (0.25, -0.01, 1.03), "Head")
+    add_bone("SecondaryCapeBack", (0, 0.18, 1.25), (0, 0.24, 0.74), "Chest")
+    add_bone("SecondaryCapeLeft", (-0.20, 0.17, 1.18), (-0.28, 0.22, 0.82), "Chest")
+    add_bone("SecondaryCapeRight", (0.20, 0.17, 1.18), (0.28, 0.22, 0.82), "Chest")
+    add_bone("SecondaryRibbonLeft", (-0.05, -0.22, 1.30), (-0.08, -0.25, 1.14), "Chest")
+    add_bone("SecondaryRibbonRight", (0.05, -0.22, 1.30), (0.08, -0.25, 1.14), "Chest")
+    add_bone("SecondaryTie", (0, -0.19, 1.31), (0, -0.22, 1.06), "Chest")
+    add_bone("SecondarySkirtFront", (0, -0.16, 0.88), (0, -0.23, 0.58), "Hips")
+    add_bone("SecondarySkirtBack", (0, 0.10, 0.88), (0, 0.15, 0.56), "Hips")
+    add_bone("SecondarySkirtLeft", (-0.16, -0.02, 0.88), (-0.25, -0.02, 0.58), "Hips")
+    add_bone("SecondarySkirtRight", (0.16, -0.02, 0.88), (0.25, -0.02, 0.58), "Hips")
 
     for side in ("Left", "Right"):
         sx = -1 if side == "Left" else 1

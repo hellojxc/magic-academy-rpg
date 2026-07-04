@@ -414,6 +414,20 @@ export class CharacterModel3D {
   private collectSecondaryMotionObjects(model: THREE.Object3D): GLTFSecondaryMotionBinding[] {
     const bindings: GLTFSecondaryMotionBinding[] = [];
     model.traverse((object) => {
+      if (!this.isSecondaryMotionBone(object)) return;
+      const profile = this.getSecondaryMotionProfile(object.name);
+      if (!profile) return;
+      bindings.push({
+        object,
+        basePosition: object.position.clone(),
+        baseRotation: object.rotation.clone(),
+        phase: bindings.length * 0.73 + object.name.length * 0.11,
+        ...profile,
+      });
+    });
+    if (bindings.length > 0) return bindings;
+
+    model.traverse((object) => {
       const profile = this.getSecondaryMotionProfile(object.name);
       if (!profile) return;
       if (!this.hasCenteredRuntimePivot(object)) return;
@@ -459,6 +473,11 @@ export class CharacterModel3D {
       return { sway: 0.018, bob: 0.004, twist: 0.008 };
     }
     return undefined;
+  }
+
+  private isSecondaryMotionBone(object: THREE.Object3D): boolean {
+    const normalized = object.name.replace(/[^a-z0-9]/gi, '').toLowerCase();
+    return (object instanceof THREE.Bone || object.type === 'Bone') && normalized.includes('secondary');
   }
 
   private hasCenteredRuntimePivot(object: THREE.Object3D): boolean {
