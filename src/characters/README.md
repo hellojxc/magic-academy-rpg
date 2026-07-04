@@ -20,3 +20,14 @@ The production source-model path lives in `assets/characters`. See
 `docs/ai-character-source-model-pipeline.md` for the AI candidate, Blender
 cleanup, GLB/VRM export, and portrait comparison workflow. This is the path that
 should replace the procedural and Blender-template probes for final art.
+
+Commercial-quality model replacement uses the explicit promotion command:
+
+```sh
+npm run assets:characters:commercial:promote -- --character lyra --input /path/to/lyra.glb --promote
+```
+
+That command registers the external model as a candidate, audits it, copies it
+to the runtime model path only when it is ready, and updates
+`public/assets/models/character-models.json`. The procedural rig remains a
+fallback only.

@@ -8,6 +8,11 @@ The next useful step is not more primitive modeling. It is a source-model
 pipeline that can accept AI-generated candidates, Blender cleanup, rigging,
 facial morphs, secondary motion, and runtime export.
 
+The important correction is that the procedural template is no longer treated as
+the main art path. It is a fallback and preview placeholder. The main path is a
+real source model: a VRM/GLB/PMX-converted character, a Blender-authored base
+mesh, or an AI-generated candidate that is rebuilt into clean anime topology.
+
 ## Target Outcome
 
 For each hero character, the project should own:
@@ -51,6 +56,18 @@ exporters. Image-to-3D tools produce candidate meshes. Auto-rigging tools produc
 candidate skeletons and skin weights. The final model still needs Blender cleanup,
 retopology, facial morphs, secondary-motion bones, material work, and runtime
 audit before it can replace a gameplay character.
+
+Current references worth tracking:
+
+- Hunyuan3D: https://github.com/Tencent-Hunyuan/Hunyuan3D-2
+  High-resolution image-to-3D and texture/PBR generation with GLB export
+  support.
+- TRELLIS: https://github.com/microsoft/TRELLIS
+  General 3D generation baseline for candidate meshes.
+- VRM Add-on for Blender: https://github.com/saturday06/VRM-Addon-for-Blender
+  VRM import/export, expressions, MToon materials, and humanoid metadata.
+- UniRig: https://github.com/VAST-AI-Research/UniRig
+  Automatic skeleton and skinning research route for candidate rigs.
 
 ## Production Steps
 
@@ -108,6 +125,32 @@ Register a generated candidate after an external AI tool writes a mesh:
 ```sh
 npm run assets:characters:candidate:register -- --character lyra --tool charactergen --job lyra-charactergen-001 --input /path/to/generated.glb
 ```
+
+Register a high-quality external GLB/VRM, audit it, and promote it only if it is
+runtime-ready:
+
+```sh
+npm run assets:characters:commercial:promote -- --character lyra --input /path/to/lyra.glb --promote
+```
+
+For a VRM file, either let the manifest point at `public/assets/models/lyra.vrm`
+or provide an explicit runtime output:
+
+```sh
+npm run assets:characters:commercial:promote -- --character lyra --input /path/to/lyra.vrm --runtime-output public/assets/models/lyra.vrm --material-profile mtoon --promote
+```
+
+The promotion command writes:
+
+```text
+assets/characters/<id>/candidates/commercial/<label>/candidate.json
+public/assets/models/<id>.glb or public/assets/models/<id>.vrm
+public/assets/models/character-models.json
+public/assets/character-reviews/<id>-runtime-audit.json
+```
+
+Promotion is blocked unless the model passes the candidate runtime gate. Use
+`--allow-runtime-reject` only when deliberately putting a prototype into preview.
 
 Prepare a front/side/back modeling reference-sheet job:
 
@@ -208,6 +251,21 @@ A model is not accepted just because it loads in Three.js. It must pass:
 - Web budget: hero LOD around 25k-45k triangles, limited materials, 4 MB texture
   budget target.
 - Runtime proof: loads through `CharacterManifest` without falling back.
+
+The visual acceptance gate is separate from the automated runtime audit:
+
+- Face likeness: front close-up matches the registered portrait for eye shape,
+  brow line, mouth size, nose treatment, cheek softness, and expression.
+- Body design: height, head-to-body ratio, torso volume, limb length, hand size,
+  and shoe scale match the character brief.
+- Hair construction: bangs, side locks, back volume, accessories, and sway bones
+  are separate readable pieces rather than a single cap or flat strips.
+- Clothing construction: blouse/jacket/skirt/cape/shoes have silhouette depth,
+  seams or panels, and deformation-friendly topology.
+- Motion proof: idle, walk, and talk clips play without foot sliding, shoulder
+  collapse, elbow popping, wrist twisting, skirt clipping, or hair jitter.
+- Web performance: hero characters stay within the declared triangle and
+  texture budgets, and supporting NPCs use lower-budget LODs.
 
 ## Current Status
 
