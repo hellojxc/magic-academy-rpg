@@ -267,7 +267,7 @@ function briefFor(npc, dialogueSummary) {
       preferredFormat: 'glb',
       acceptableFormat: 'vrm',
       triangleBudget: {
-        hero: isHeroLike ? [18000, 32000] : [14000, 26000],
+        hero: isHeroLike ? [18000, 32000] : [14000, 32000],
         mid: [8000, 14000],
         low: [2500, 6000],
       },

@@ -5,20 +5,20 @@
   "accepted": true,
   "summary": {
     "file": "public/assets/models/selene_moon.glb",
-    "sizeKb": 1126.8,
-    "nodes": 111,
-    "meshes": 92,
-    "primitives": 92,
+    "sizeKb": 1337.5,
+    "nodes": 173,
+    "meshes": 126,
+    "primitives": 126,
     "materials": 18,
     "skins": 1,
-    "bones": 17,
+    "bones": 45,
     "animations": [
       "idle",
       "talk",
       "walk"
     ],
-    "morphTargetPrimitiveCount": 9,
-    "triangleCount": 24588
+    "morphTargetPrimitiveCount": 11,
+    "triangleCount": 26244
   },
   "requirements": {
     "triangleBudgetHero": [
@@ -53,17 +53,17 @@
     {
       "name": "triangle budget",
       "passed": true,
-      "detail": "24588 triangles, target 18000-32000"
+      "detail": "26244 triangles, target 18000-32000"
     },
     {
       "name": "humanoid skin",
       "passed": true,
-      "detail": "1 skins, 17 bones"
+      "detail": "1 skins, 45 bones"
     },
     {
       "name": "facial morph targets",
       "passed": true,
-      "detail": "9 primitives with morph targets"
+      "detail": "11 primitives with morph targets"
     },
     {
       "name": "required animation clips",
@@ -77,5 +77,5 @@
     }
   ],
   "conclusion": "Runtime asset passes the current production gate.",
-  "generatedAt": "2026-07-04T01:38:21.364Z"
+  "generatedAt": "2026-07-04T04:27:40.657Z"
 }

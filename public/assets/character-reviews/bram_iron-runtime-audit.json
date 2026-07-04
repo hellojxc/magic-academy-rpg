@@ -5,25 +5,25 @@
   "accepted": true,
   "summary": {
     "file": "public/assets/models/bram_iron.glb",
-    "sizeKb": 1097.7,
-    "nodes": 107,
-    "meshes": 88,
-    "primitives": 88,
+    "sizeKb": 1245.8,
+    "nodes": 142,
+    "meshes": 95,
+    "primitives": 95,
     "materials": 17,
     "skins": 1,
-    "bones": 17,
+    "bones": 45,
     "animations": [
       "idle",
       "talk",
       "walk"
     ],
-    "morphTargetPrimitiveCount": 9,
-    "triangleCount": 24027
+    "morphTargetPrimitiveCount": 11,
+    "triangleCount": 25063
   },
   "requirements": {
     "triangleBudgetHero": [
       14000,
-      26000
+      32000
     ],
     "requiredAnimationClips": [
       "idle",
@@ -52,17 +52,17 @@
     {
       "name": "triangle budget",
       "passed": true,
-      "detail": "24027 triangles, target 14000-26000"
+      "detail": "25063 triangles, target 14000-32000"
     },
     {
       "name": "humanoid skin",
       "passed": true,
-      "detail": "1 skins, 17 bones"
+      "detail": "1 skins, 45 bones"
     },
     {
       "name": "facial morph targets",
       "passed": true,
-      "detail": "9 primitives with morph targets"
+      "detail": "11 primitives with morph targets"
     },
     {
       "name": "required animation clips",
@@ -76,5 +76,5 @@
     }
   ],
   "conclusion": "Runtime asset passes the current production gate.",
-  "generatedAt": "2026-07-04T01:38:21.336Z"
+  "generatedAt": "2026-07-04T04:27:40.608Z"
 }

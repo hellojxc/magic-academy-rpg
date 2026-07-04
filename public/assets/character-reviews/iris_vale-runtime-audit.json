@@ -5,25 +5,25 @@
   "accepted": true,
   "summary": {
     "file": "public/assets/models/iris_vale.glb",
-    "sizeKb": 1117.6,
-    "nodes": 105,
-    "meshes": 86,
-    "primitives": 86,
+    "sizeKb": 1316.1,
+    "nodes": 160,
+    "meshes": 113,
+    "primitives": 113,
     "materials": 18,
     "skins": 1,
-    "bones": 17,
+    "bones": 45,
     "animations": [
       "idle",
       "talk",
       "walk"
     ],
-    "morphTargetPrimitiveCount": 9,
-    "triangleCount": 24559
+    "morphTargetPrimitiveCount": 11,
+    "triangleCount": 26075
   },
   "requirements": {
     "triangleBudgetHero": [
       14000,
-      26000
+      32000
     ],
     "requiredAnimationClips": [
       "idle",
@@ -52,17 +52,17 @@
     {
       "name": "triangle budget",
       "passed": true,
-      "detail": "24559 triangles, target 14000-26000"
+      "detail": "26075 triangles, target 14000-32000"
     },
     {
       "name": "humanoid skin",
       "passed": true,
-      "detail": "1 skins, 17 bones"
+      "detail": "1 skins, 45 bones"
     },
     {
       "name": "facial morph targets",
       "passed": true,
-      "detail": "9 primitives with morph targets"
+      "detail": "11 primitives with morph targets"
     },
     {
       "name": "required animation clips",
@@ -76,5 +76,5 @@
     }
   ],
   "conclusion": "Runtime asset passes the current production gate.",
-  "generatedAt": "2026-07-04T01:38:21.347Z"
+  "generatedAt": "2026-07-04T04:27:40.629Z"
 }
