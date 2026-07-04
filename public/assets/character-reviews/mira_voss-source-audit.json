@@ -1,9 +1,9 @@
 {
   "characterId": "mira_voss",
-  "meshes": 104,
+  "meshes": 138,
   "materials": 18,
   "armatures": 1,
-  "maxBones": 17,
+  "maxBones": 45,
   "actions": [
     "idle",
     "talk",
@@ -15,12 +15,14 @@
     "LeftIris",
     "LeftPupil",
     "LeftEyeHighlight",
+    "LeftEyeLowerCatchlight",
     "RightEyeWhite",
     "RightIris",
     "RightPupil",
-    "RightEyeHighlight"
+    "RightEyeHighlight",
+    "RightEyeLowerCatchlight"
   ],
-  "estimatedTriangles": 31160,
+  "estimatedTriangles": 35032,
   "source": "/home/dennisj/apps/magic-academy-rpg-preview/assets/characters/mira_voss/source/mira_voss.blend",
   "output": "/home/dennisj/apps/magic-academy-rpg-preview/public/assets/models/mira_voss.glb",
   "preview": "/home/dennisj/apps/magic-academy-rpg-preview/public/assets/character-reviews/mira_voss-source-preview.png"
