@@ -31,6 +31,7 @@ export class ThreeAcademyGame {
   private elapsedTime = 0;
   private lastFrameTime = performance.now();
   private lastCharacterModelState = '';
+  private lastDebugDatasetAt = 0;
   private currentNpc: InteractiveNPC | null = null;
 
   constructor(private readonly container: HTMLElement) {
@@ -278,6 +279,9 @@ export class ThreeAcademyGame {
   };
 
   private updateDebugDataset(): void {
+    const now = performance.now();
+    if (now - this.lastDebugDatasetAt < 250) return;
+    this.lastDebugDatasetAt = now;
     const serialized = this.world.getCharacterModelStatesString();
     if (serialized === this.lastCharacterModelState) return;
     this.lastCharacterModelState = serialized;

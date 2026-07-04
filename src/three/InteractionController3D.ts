@@ -5,6 +5,7 @@ export class InteractionController3D {
   private static readonly pointerRaycastIntervalMs = 50;
   private readonly raycaster = new THREE.Raycaster();
   private readonly pointer = new THREE.Vector2();
+  private readonly promptWorldPosition = new THREE.Vector3();
   private readonly prompt: HTMLDivElement;
   private readonly targetObjects: THREE.Object3D[];
   private readonly targetById = new Map<string, InteractiveNPC>();
@@ -41,7 +42,9 @@ export class InteractionController3D {
     this.prompt.hidden = !this.currentTarget;
     if (this.currentTarget) {
       this.prompt.textContent = `E 交谈 · ${this.currentTarget.name}`;
-      const screen = this.worldToScreen(this.currentTarget.object.position.clone().add(new THREE.Vector3(0, 1.15, 0)));
+      this.promptWorldPosition.copy(this.currentTarget.object.position);
+      this.promptWorldPosition.y += 1.15;
+      const screen = this.worldToScreen(this.promptWorldPosition);
       this.prompt.style.left = `${screen.x}px`;
       this.prompt.style.top = `${screen.y}px`;
     }
