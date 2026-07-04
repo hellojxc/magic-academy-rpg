@@ -455,13 +455,13 @@ def make_materials(spec: dict[str, Any]) -> dict[str, bpy.types.Material]:
         "brow": material("Brow", face["browColor"], 0.6, backface_culling=False),
         "hair": material("Hair", hair_color, 0.56, backface_culling=False, emission_strength=hair_emission),
         "hair_highlight": material("HairHighlight", hair_highlight_color, 0.54, backface_culling=False, emission_strength=hair_highlight_emission),
-        "outfit_primary": material("OutfitPrimary", outfit["primaryColor"], 0.64),
-        "outfit_secondary": material("OutfitSecondary", outfit["secondaryColor"], 0.7),
-        "outfit_dark": material("OutfitDark", outfit["darkColor"], 0.68),
+        "outfit_primary": material("OutfitPrimary", outfit["primaryColor"], 0.64, backface_culling=False),
+        "outfit_secondary": material("OutfitSecondary", outfit["secondaryColor"], 0.7, backface_culling=False),
+        "outfit_dark": material("OutfitDark", outfit["darkColor"], 0.68, backface_culling=False),
         "accent": material("Accent", outfit["accentColor"], 0.62),
         "trim": material("GoldTrim", outfit["trimColor"], 0.34, metallic=0.25),
-        "shoe": material("Shoe", outfit["shoeColor"], 0.58),
-        "sole": material("Sole", "#18141d", 0.64),
+        "shoe": material("Shoe", outfit["shoeColor"], 0.58, backface_culling=False),
+        "sole": material("Sole", "#18141d", 0.64, backface_culling=False),
         "outline": material("SoftInk", "#17131f", 0.8, backface_culling=False),
         "paper": material("BookPaper", "#f7efd7", 0.76),
     }
@@ -749,7 +749,7 @@ def add_limbs(
     is_masculine = is_masculine_uniform(spec)
     sleeve_mat = mats["outfit_primary"]
     glove_mat = mats["shoe"] if is_masculine else mats["skin"]
-    leg_mat = mats["shoe"] if is_player else mats["outfit_dark"] if is_masculine else mats["skin"]
+    leg_mat = mats["outfit_dark"] if is_player else mats["outfit_dark"] if is_masculine else mats["skin"]
     upper_arm_radius = 0.044 if is_player else 0.039 if is_masculine else 0.032
     lower_arm_radius = 0.037 if is_player else 0.033 if is_masculine else 0.028
     upper_leg_radius = 0.049 if is_player else 0.045 if is_masculine else 0.037
@@ -758,28 +758,58 @@ def add_limbs(
     forearm_reach = 0.76 if is_player else 0.71 if is_masculine else 0.66
 
     for side, sx in (("Left", -1), ("Right", 1)):
-        upper_arm = add_uv_sphere(
-            f"{side}UpperArm",
-            sleeve_mat,
-            (sx * (shoulder * arm_reach), -0.006 * scale, 1.105 * scale),
-            (upper_arm_radius * scale, upper_arm_radius * scale, 0.19 * scale),
-            collection,
-            segments=24,
-            rings=12,
-        )
-        upper_arm.rotation_euler[1] = sx * 0.2
+        if is_player:
+            upper_arm = add_cone(
+                f"{side}UpperArm",
+                sleeve_mat,
+                (sx * (shoulder * arm_reach), -0.006 * scale, 1.105 * scale),
+                upper_arm_radius * 0.78 * scale,
+                upper_arm_radius * 1.08 * scale,
+                0.39 * scale,
+                collection,
+                vertices=34,
+                rotation=(0, sx * 0.20, 0),
+                scale=(1.08, 0.84, 1),
+            )
+            add_modifier_if_possible(upper_arm, "smooth limb surface", "SUBSURF", levels=1, render_levels=1)
+        else:
+            upper_arm = add_uv_sphere(
+                f"{side}UpperArm",
+                sleeve_mat,
+                (sx * (shoulder * arm_reach), -0.006 * scale, 1.105 * scale),
+                (upper_arm_radius * scale, upper_arm_radius * scale, 0.19 * scale),
+                collection,
+                segments=24,
+                rings=12,
+            )
+            upper_arm.rotation_euler[1] = sx * 0.2
         parent_to_bone(upper_arm, armature, f"{side}UpperArm")
 
-        lower_arm = add_uv_sphere(
-            f"{side}LowerArm",
-            sleeve_mat,
-            (sx * (shoulder * forearm_reach), -0.006 * scale, 0.87 * scale),
-            (lower_arm_radius * scale, lower_arm_radius * scale, 0.178 * scale),
-            collection,
-            segments=24,
-            rings=12,
-        )
-        lower_arm.rotation_euler[1] = sx * 0.12
+        if is_player:
+            lower_arm = add_cone(
+                f"{side}LowerArm",
+                sleeve_mat,
+                (sx * (shoulder * forearm_reach), -0.006 * scale, 0.87 * scale),
+                lower_arm_radius * 0.62 * scale,
+                lower_arm_radius * 1.0 * scale,
+                0.36 * scale,
+                collection,
+                vertices=34,
+                rotation=(0, sx * 0.12, 0),
+                scale=(1.08, 0.82, 1),
+            )
+            add_modifier_if_possible(lower_arm, "smooth limb surface", "SUBSURF", levels=1, render_levels=1)
+        else:
+            lower_arm = add_uv_sphere(
+                f"{side}LowerArm",
+                sleeve_mat,
+                (sx * (shoulder * forearm_reach), -0.006 * scale, 0.87 * scale),
+                (lower_arm_radius * scale, lower_arm_radius * scale, 0.178 * scale),
+                collection,
+                segments=24,
+                rings=12,
+            )
+            lower_arm.rotation_euler[1] = sx * 0.12
         parent_to_bone(lower_arm, armature, f"{side}LowerArm")
 
         cuff = add_cylinder(
@@ -808,26 +838,54 @@ def add_limbs(
         if is_player:
             add_player_hand_details(side, sx, m, mats, armature, collection)
 
-        thigh = add_uv_sphere(
-            f"{side}UpperLeg",
-            leg_mat,
-            (sx * 0.095 * scale, 0, 0.55 * scale),
-            (upper_leg_radius * scale, (upper_leg_radius * 0.94) * scale, 0.25 * scale),
-            collection,
-            segments=24,
-            rings=12,
-        )
+        if is_player:
+            thigh = add_cone(
+                f"{side}UpperLeg",
+                leg_mat,
+                (sx * 0.095 * scale, 0, 0.55 * scale),
+                upper_leg_radius * 0.78 * scale,
+                upper_leg_radius * 1.05 * scale,
+                0.50 * scale,
+                collection,
+                vertices=36,
+                scale=(1.14, 0.88, 1),
+            )
+            add_modifier_if_possible(thigh, "smooth limb surface", "SUBSURF", levels=1, render_levels=1)
+        else:
+            thigh = add_uv_sphere(
+                f"{side}UpperLeg",
+                leg_mat,
+                (sx * 0.095 * scale, 0, 0.55 * scale),
+                (upper_leg_radius * scale, (upper_leg_radius * 0.94) * scale, 0.25 * scale),
+                collection,
+                segments=24,
+                rings=12,
+            )
         parent_to_bone(thigh, armature, f"{side}UpperLeg")
 
-        lower_leg = add_uv_sphere(
-            f"{side}LowerLeg",
-            leg_mat,
-            (sx * 0.09 * scale, 0, 0.28 * scale),
-            (lower_leg_radius * scale, (lower_leg_radius * 0.94) * scale, 0.225 * scale),
-            collection,
-            segments=24,
-            rings=12,
-        )
+        if is_player:
+            lower_leg = add_cone(
+                f"{side}LowerLeg",
+                leg_mat,
+                (sx * 0.09 * scale, 0, 0.28 * scale),
+                lower_leg_radius * 0.70 * scale,
+                lower_leg_radius * 1.0 * scale,
+                0.45 * scale,
+                collection,
+                vertices=36,
+                scale=(1.10, 0.86, 1),
+            )
+            add_modifier_if_possible(lower_leg, "smooth limb surface", "SUBSURF", levels=1, render_levels=1)
+        else:
+            lower_leg = add_uv_sphere(
+                f"{side}LowerLeg",
+                leg_mat,
+                (sx * 0.09 * scale, 0, 0.28 * scale),
+                (lower_leg_radius * scale, (lower_leg_radius * 0.94) * scale, 0.225 * scale),
+                collection,
+                segments=24,
+                rings=12,
+            )
         parent_to_bone(lower_leg, armature, f"{side}LowerLeg")
 
         if is_masculine:
@@ -876,6 +934,8 @@ def add_limbs(
             bevel=0.006 * scale,
         )
         parent_to_bone(sole, armature, f"{side}Foot")
+        if is_player:
+            add_player_limb_folds(side, sx, m, mats, armature, collection)
 
 
 def add_player_hand_details(
@@ -930,6 +990,38 @@ def add_player_hand_details(
         scale=(0.76, 1.0, 1.0),
     )
     parent_to_bone(thumb, armature, f"{side}Hand")
+
+
+def add_player_limb_folds(
+    side: str,
+    sx: int,
+    m: dict[str, float],
+    mats: dict[str, bpy.types.Material],
+    armature: bpy.types.Object,
+    collection: bpy.types.Collection,
+) -> None:
+    scale = m["scale"]
+    shoulder = m["shoulder_width"]
+    fold_specs = [
+        (f"{side}UpperSleeveFoldA", "UpperArm", mats["outfit_dark"], sx * shoulder * 0.63, -0.008, 1.205, 0.052, 0.010, (1.02, 0.72, 1)),
+        (f"{side}UpperSleeveFoldB", "UpperArm", mats["outfit_dark"], sx * shoulder * 0.63, -0.008, 1.035, 0.043, 0.008, (1.00, 0.70, 1)),
+        (f"{side}ForearmSleeveFoldA", "LowerArm", mats["outfit_dark"], sx * shoulder * 0.76, -0.008, 0.935, 0.041, 0.008, (1.00, 0.70, 1)),
+        (f"{side}ForearmSleeveFoldB", "LowerArm", mats["outfit_dark"], sx * shoulder * 0.76, -0.008, 0.795, 0.034, 0.007, (0.98, 0.68, 1)),
+        (f"{side}TrouserKneeFold", "LowerLeg", mats["sole"], sx * 0.09, -0.004, 0.405, 0.043, 0.010, (1.04, 0.74, 1)),
+        (f"{side}TrouserCalfFold", "LowerLeg", mats["sole"], sx * 0.09, -0.004, 0.245, 0.037, 0.008, (1.00, 0.70, 1)),
+    ]
+    for name, bone, mat, x, y, z, radius, depth, band_scale in fold_specs:
+        fold = add_cylinder(
+            name,
+            mat,
+            (x * scale, y * scale, z * scale),
+            radius * scale,
+            depth * scale,
+            collection,
+            vertices=48,
+            scale=band_scale,
+        )
+        parent_to_bone(fold, armature, f"{side}{bone}")
 
 
 def sculpt_player_head_mesh(head: bpy.types.Object) -> None:

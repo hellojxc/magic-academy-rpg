@@ -80,7 +80,9 @@ The current pass exports a Blender Armature, weighted meshes, facial morph
 targets, animation clips, and a player-specific deformed anime head mesh with a
 front face plane instead of only an ellipsoid head. The player torso now uses a
 closed tapered jacket mesh instead of separate pelvis, torso, and chest spheres.
-It is still a template generator, not a final commercial model. The final quality
-pass should replace the remaining primitive hair, limbs, and clothing sections
-with sculpted topology, UV textures, polished skin weights, richer facial shape
-keys, and spring-bone style secondary motion for hair, skirt, cape, and ribbons.
+The player limbs now use tapered cone sections plus cloth-fold rings instead of
+stretched sphere segments. It is still a template generator, not a final
+commercial model. The final quality pass should replace the remaining primitive
+hair and clothing sections with sculpted topology, UV textures, polished skin
+weights, richer facial shape keys, and spring-bone style secondary motion for
+hair, skirt, cape, and ribbons.
