@@ -615,7 +615,7 @@ export class CharacterModel3D {
         damping: isTip ? 5.8 : 7.2,
       };
     }
-    if (/(sleeve|tie|strap)/.test(normalized)) {
+    if (/(sleeve|tie|strap|pendant|choker)/.test(normalized)) {
       const tipScale = isTip ? 1.25 : 1;
       return {
         sway: 0.018 * tipScale,
@@ -870,12 +870,19 @@ export class CharacterModel3D {
 
     const baseSmile = this.spec.id === 'player' ? 0.035 : this.spec.id === 'lyra' ? 0.18 : 0.08;
     const smile = baseSmile + Math.sin(elapsedTime * 1.15) * (this.spec.id === 'lyra' ? 0.035 : 0.018);
+    const isMatureSenpai = this.spec.id === 'mature_senpai';
+    const teasing = isMatureSenpai ? 0.018 + Math.max(0, Math.sin(elapsedTime * 0.48)) * 0.018 : 0;
+    const thoughtful = isMatureSenpai ? 0.012 + Math.max(0, Math.sin(elapsedTime * 0.31 + 1.4)) * 0.012 : 0;
 
     for (const binding of this.gltfMorphBindings) {
       for (const [name, index] of Object.entries(binding.dictionary)) {
         const normalized = name.toLowerCase();
         if (normalized.includes('blink')) {
           binding.influences[index] = blink;
+        } else if (normalized.includes('teasing')) {
+          binding.influences[index] = teasing;
+        } else if (normalized.includes('thoughtful')) {
+          binding.influences[index] = thoughtful;
         } else if (normalized.includes('smile') || normalized.includes('warm')) {
           binding.influences[index] = Math.max(0, smile);
         } else if (normalized.includes('concerned') || normalized.includes('surprised')) {

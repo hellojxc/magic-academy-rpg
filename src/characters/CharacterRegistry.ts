@@ -209,7 +209,7 @@ export const matureSenpaiSpec: CharacterSpec = {
   id: 'mature_senpai',
   displayName: 'Elena',
   designIntent:
-    'A mature big-sister academy NPC based on the v7 Hunyuan/illustration reference: burgundy long hair, elegant ivory camisole top, lavender double side-slit skirt, and Roman-style strappy high heels. Runtime uses the retopo v3 asset because it preserves the Hunyuan-generated likeness while adding named skinned submeshes, facial morph targets, refreshed rule-painted weights, and secondary hair/skirt bones; the v2 BlenderMCP polish remains available as the visual fallback.',
+    'A mature big-sister academy NPC based on the v7 Hunyuan/illustration reference: burgundy long hair, elegant ivory camisole top, lavender double side-slit skirt, and Roman-style strappy high heels. Runtime uses the commercial v4 asset because it preserves the Hunyuan-generated likeness while adding named skinned submeshes, six facial morph targets, refreshed rule-painted weights, source-normal seam cleanup, visible strap/pendant details, and secondary hair/skirt/strap/pendant bones; the retopo v3 asset remains available as fallback.',
   body: {
     heightMeters: 1.72,
     headToBodyRatio: 0.18,
@@ -266,7 +266,7 @@ export const matureSenpaiSpec: CharacterSpec = {
   },
   runtime: {
     role: 'supporting',
-    preferredAssetId: 'mature-senpai-retopo-v3',
+    preferredAssetId: 'mature-senpai-commercial-v4',
     fallbackRigId: 'mature-senpai-procedural-rig',
     lodProfile: 'supporting-mid',
     maxVisibleDistanceMeters: 30,
