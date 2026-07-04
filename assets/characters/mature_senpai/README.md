@@ -8,25 +8,33 @@ Current target: v7 mature senpai concept, used as an adult academy NPC.
 - `references/hunyuan-multiview-v7/`: Hunyuan3D multi-view upload images.
 - `character-model-brief.json`: source-of-truth model brief.
 - `tools/rig_hunyuan_preview.py`: Blender batch rigging script for the current preview asset.
+- `tools/build_final_v6.py`: BlenderMCP commercial-candidate script replacing the noisy source arm/hand region with clean skinned arm/hand meshes while preserving v5 face, morph, and secondary-motion hooks.
+- `tools/build_final_v5.py`: BlenderMCP commercial-candidate script adding dialogue-distance face overlays on top of the v4 structured asset.
 - `tools/build_final_v4.py`: BlenderMCP commercial-candidate script adding source-normal seam cleanup, six expression morphs, strap/pendant secondary bones, and visible strap/pendant detail meshes.
 - `tools/build_retopo_v3.py`: BlenderMCP production-structure script that rebuilds the Hunyuan mesh into named skinned submeshes, rule-painted weights, facial morph targets, and secondary-motion hooks.
 - `mature_senpai_rigged_v1.report.json`: generated rig and animation audit.
 - `mature_senpai_production_v1.report.json`: disabled procedural template audit and decision record.
-- `mature_senpai_commercial_v4.report.json`: active commercial-candidate audit.
-- `mature_senpai_retopo_v3.report.json`: active automated retopo/parts/morph/weights/secondary-bone audit.
+- `mature_senpai_commercial_v6.report.json`: active commercial-candidate audit.
+- `mature_senpai_commercial_v5.report.json`: previous dialogue-distance face overlay audit and fallback.
+- `mature_senpai_commercial_v4.report.json`: previous commercial-candidate audit.
+- `mature_senpai_retopo_v3.report.json`: previous automated retopo/parts/morph/weights/secondary-bone audit.
 - `mature_senpai_mcp_polish_v2.report.json`: previous BlenderMCP polish audit and visual fallback.
 - `mature_senpai_mcp_retouch_v1.report.json`: previous BlenderMCP retouch audit and runtime fallback.
 - `source/mature_senpai.blend`: procedural Blender reference template for rigging and modular cleanup experiments.
-- `source/mature_senpai_commercial_v4.blend`: active commercial-candidate source scene.
-- `source/mature_senpai_retopo_v3.blend`: active automated production-structure source scene.
-- `source/mature_senpai_mcp_polish_v2.blend`: active BlenderMCP-polished Hunyuan source scene.
+- `source/mature_senpai_commercial_v6.blend`: active commercial-candidate source scene.
+- `source/mature_senpai_commercial_v5.blend`: previous commercial-candidate source scene.
+- `source/mature_senpai_commercial_v4.blend`: previous commercial-candidate source scene.
+- `source/mature_senpai_retopo_v3.blend`: previous automated production-structure source scene.
+- `source/mature_senpai_mcp_polish_v2.blend`: previous BlenderMCP-polished Hunyuan source scene.
 - `source/mature_senpai_mcp_retouch_v1.blend`: BlenderMCP-retouched Hunyuan source scene.
 - `candidates/registered/mature-senpai-hunyuan-v7-textured-preview/`: local 179k triangle Hunyuan audit candidate.
 - `candidates/registered/mature-senpai-hunyuan-v7-web/`: local 60k triangle Hunyuan audit candidate.
 
 Runtime export registered for preview:
 
-- `mature_senpai_commercial_v4.glb`: active commercial-candidate asset with 14 named skinned meshes, 6 face morph targets, 25 bones, secondary hair/skirt/strap/pendant hooks, source-normal seam cleanup, and visible strap/pendant details.
+- `mature_senpai_commercial_v6.glb`: active commercial-candidate asset with 16 named skinned meshes, 6 face morph targets, 25 bones, secondary hair/skirt/strap/pendant hooks, source-normal seam cleanup, dialogue-distance face overlays, and clean skinned arm/hand replacement meshes for the noisy source arm region.
+- `mature_senpai_commercial_v5.glb`: previous commercial-candidate asset with 15 named skinned meshes, dialogue-distance face overlays, and v5 fallback status.
+- `mature_senpai_commercial_v4.glb`: previous commercial-candidate asset with 14 named skinned meshes, 6 face morph targets, 25 bones, secondary hair/skirt/strap/pendant hooks, source-normal seam cleanup, and visible strap/pendant details.
 - `mature_senpai_retopo_v3.glb`: previous automated production-structure asset with 11 named skinned submeshes, `Blink`, `WarmSmile`, and `Surprised` morph targets on the face mesh, refreshed rule-painted weights, and secondary hair/skirt bones.
 - `mature_senpai_mcp_polish_v2.glb`: previous Hunyuan-based BlenderMCP polish, retained as visual fallback.
 - `mature_senpai_mcp_retouch_v1.glb`: previous Hunyuan-based BlenderMCP retouch, retained as runtime fallback.
@@ -41,12 +49,14 @@ Local inspection exports not intended for the runtime commit:
 
 ## Current Gate
 
-The commercial v4 Hunyuan output is the active runtime preview because it keeps
+The commercial v6 Hunyuan output is the active runtime preview because it keeps
 the more lively AI-generated likeness while adding named skinned submeshes, six
 facial morph targets, refreshed rule-painted weights, source-normal seam
-cleanup, visible strap/pendant details, and secondary hair/skirt/strap/pendant
-bone hooks. The procedural Blender template has cleaner authored separation and
-morph hooks, but it is too schematic to become the default visual model.
+cleanup, dialogue-distance face overlays, visible strap/pendant details,
+secondary hair/skirt/strap/pendant bone hooks, and clean skinned arm/hand
+replacement meshes that remove the dark v5 source artifacts. The procedural
+Blender template has cleaner authored separation and morph hooks, but it is too
+schematic to become the default visual model.
 
 Remaining production blockers:
 
@@ -56,12 +66,14 @@ Remaining production blockers:
   weights.
 - Facial morphs are subtle generated shape keys, not sculpted expression
   blendshapes.
+- The clean arm/hand meshes remove v5 source artifacts but are still simplified
+  generated anatomy, not final hand-authored arms, fingers, and nails.
 - Hair and skirt secondary motion is bone-driven and approximate.
 - The character still needs artist retopology, texture cleanup, and final
   expression sculpting before it should be treated as final mainstream
   JRPG-quality runtime art.
 
-The `mature_senpai_commercial_v4.glb` file is the current in-game animated
+The `mature_senpai_commercial_v6.glb` file is the current in-game animated
 preview NPC. It moves the model closer to a commercial structure, but it should
 not be considered final until artist retopology, hand-painted weights, sculpted
 expression blendshapes, and final material polish are complete. The next

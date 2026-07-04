@@ -64,18 +64,21 @@ The web runtime should stay stable while source models improve.
 
 ## Current Mature Senpai Runtime Layer
 
-`mature_senpai` currently uses `mature-senpai-commercial-v5` as the active
+`mature_senpai` currently uses `mature-senpai-commercial-v6` as the active
 runtime asset. The generated source and audit files are:
 
-- `assets/characters/mature_senpai/tools/build_final_v5.py`
-- `assets/characters/mature_senpai/source/mature_senpai_commercial_v5.blend`
-- `assets/characters/mature_senpai/mature_senpai_commercial_v5.report.json`
-- `public/assets/models/mature_senpai_commercial_v5.glb`
-- `public/assets/models/mature_senpai_commercial_v5.png`
+- `assets/characters/mature_senpai/tools/build_final_v6.py`
+- `assets/characters/mature_senpai/source/mature_senpai_commercial_v6.blend`
+- `assets/characters/mature_senpai/mature_senpai_commercial_v6.report.json`
+- `public/assets/models/mature_senpai_commercial_v6.glb`
+- `public/assets/models/mature_senpai_commercial_v6.png`
 
 This layer completes the current automated Blender pass: helper mesh removal,
 named skinned submesh splitting, rule-painted runtime weights, six expression
 morph targets, hair/skirt/strap/pendant secondary bones, and dialogue-distance
-face detail overlays. It deliberately remains marked as a commercial candidate
-because the topology and expression shapes are generated cleanup work rather
-than a final artist-sculpted quad retopology and hand-painted weight pass.
+face detail overlays. v6 also replaces the noisy source arm/hand region with
+clean skinned arm/hand meshes so full-body and dialogue-distance views no
+longer show the dark AI geometry artifacts from v5. It deliberately remains
+marked as a commercial candidate because the topology, hands, and expression
+shapes are generated cleanup work rather than a final artist-sculpted quad
+retopology and hand-painted weight pass.

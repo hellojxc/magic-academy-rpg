@@ -84,6 +84,25 @@
       "textureBudgetKb": 2048
     },
     {
+      "id": "mature-senpai-commercial-v6",
+      "characterId": "mature_senpai",
+      "enabled": true,
+      "format": "glb",
+      "quality": "hero",
+      "url": "/assets/models/mature_senpai_commercial_v6.glb",
+      "thumbnailUrl": "/assets/models/mature_senpai_commercial_v6.png",
+      "animationClips": [
+        "idle",
+        "walk",
+        "talk"
+      ],
+      "materialProfile": "toon",
+      "supportsFacialMorphs": true,
+      "supportsSpringBones": true,
+      "triangleBudget": 60000,
+      "textureBudgetKb": 36000
+    },
+    {
       "id": "mature-senpai-commercial-v5",
       "characterId": "mature_senpai",
       "enabled": true,
