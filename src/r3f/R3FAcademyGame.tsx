@@ -1935,14 +1935,13 @@ function LibraryHeroLayer({ activeIds }: { readonly activeIds: ReadonlySet<World
   const bookmarks = useMemo(() => createLibraryBookmarks(), []);
   const lightShafts = useMemo(() => createLibraryLightShafts(), []);
   const bookMaterial = useMemo(() => {
-    return new THREE.MeshStandardMaterial({
+    const material = new THREE.MeshBasicMaterial({
       name: 'runtime-library-readable-book-spines',
-      color: 0x5f4638,
-      roughness: 0.88,
-      metalness: 0.02,
-      envMapIntensity: 0.12,
+      color: 0x6a5142,
       vertexColors: true,
     });
+    material.toneMapped = true;
+    return material;
   }, []);
   const pageMaterial = useMemo(() => {
     const material = createPbrMaterial(
@@ -2080,16 +2079,6 @@ function LibraryHeroLayer({ activeIds }: { readonly activeIds: ReadonlySet<World
           ))}
         </Instances>
       ) : null}
-      <Sparkles
-        name="library-floating-dust-motes"
-        count={58}
-        scale={[7.2, 2.4, 5.8]}
-        position={[6.2, 1.65, -3.25]}
-        color="#f3d6a3"
-        size={0.18}
-        speed={0.08}
-        opacity={0.12}
-      />
     </group>
   );
 }
@@ -2165,14 +2154,6 @@ function LibraryProceduralFurniture(): React.ReactElement {
     metalness: 0,
     envMapIntensity: 0.04,
   }), []);
-  const brassMaterial = useMemo(() => new THREE.MeshStandardMaterial({
-    name: 'runtime-library-procedural-aged-dim-brass-fittings',
-    color: 0x6f4a26,
-    roughness: 0.82,
-    metalness: 0.28,
-    envMapIntensity: 0.1,
-  }), []);
-
   return (
     <group name="library-procedural-furniture-foundation">
       <LibraryProceduralShelfUnit
@@ -2184,7 +2165,6 @@ function LibraryProceduralFurniture(): React.ReactElement {
         depth={0.34}
         darkWoodMaterial={shelfDarkWoodMaterial}
         edgeWoodMaterial={edgeWoodMaterial}
-        brassMaterial={brassMaterial}
       />
       <LibraryProceduralShelfUnit
         name="library-procedural-north-center-shelf"
@@ -2195,7 +2175,6 @@ function LibraryProceduralFurniture(): React.ReactElement {
         depth={0.36}
         darkWoodMaterial={shelfDarkWoodMaterial}
         edgeWoodMaterial={edgeWoodMaterial}
-        brassMaterial={brassMaterial}
       />
       <LibraryProceduralShelfUnit
         name="library-procedural-north-east-shelf"
@@ -2206,7 +2185,6 @@ function LibraryProceduralFurniture(): React.ReactElement {
         depth={0.34}
         darkWoodMaterial={shelfDarkWoodMaterial}
         edgeWoodMaterial={edgeWoodMaterial}
-        brassMaterial={brassMaterial}
       />
       <LibraryProceduralShelfUnit
         name="library-procedural-east-wall-shelf"
@@ -2217,7 +2195,6 @@ function LibraryProceduralFurniture(): React.ReactElement {
         depth={0.32}
         darkWoodMaterial={shelfDarkWoodMaterial}
         edgeWoodMaterial={edgeWoodMaterial}
-        brassMaterial={brassMaterial}
       />
       <group name="library-procedural-reading-table" position={[5.25, 0.18, -1.35]} rotation={[0, 0.05, 0]}>
         <mesh name="library-reading-table-worn-top" position={[0, 0.74, 0]} castShadow receiveShadow material={tableWoodMaterial}>
@@ -2315,7 +2292,6 @@ function LibraryProceduralShelfUnit({
   depth,
   darkWoodMaterial,
   edgeWoodMaterial,
-  brassMaterial,
 }: {
   readonly name: string;
   readonly position: ThreeVec3Tuple;
@@ -2325,7 +2301,6 @@ function LibraryProceduralShelfUnit({
   readonly depth: number;
   readonly darkWoodMaterial: THREE.Material;
   readonly edgeWoodMaterial: THREE.Material;
-  readonly brassMaterial: THREE.Material;
 }): React.ReactElement {
   const shelfYs = [-0.64, -0.22, 0.2, 0.62];
 
@@ -2351,21 +2326,18 @@ function LibraryProceduralShelfUnit({
           <boxGeometry args={[width + 0.08, 0.055, depth + 0.06]} />
         </mesh>
       ))}
-      {[-0.36, 0.36].map((x) => (
-        <mesh key={x} name={`${name}:small-brass-pull`} position={[x * width, -height * 0.42, -depth * 0.56]} castShadow material={brassMaterial}>
-          <boxGeometry args={[0.16, 0.035, 0.025]} />
-        </mesh>
-      ))}
     </group>
   );
 }
 
 function LibraryLadderAndRails(): React.ReactElement {
-  const woodMaterial = useMemo(() => createPbrMaterial(
-    'runtime-library-rolling-ladder-oiled-wood-pbr',
-    createFilePbrSet('wood'),
-    { color: 0x7a4b2a, roughness: 0.68, metalness: 0.02, envMapIntensity: 0.36, normalScale: 0.2 },
-  ), []);
+  const woodMaterial = useMemo(() => new THREE.MeshStandardMaterial({
+    name: 'runtime-library-rolling-ladder-aged-oak',
+    color: 0x3d2317,
+    roughness: 0.9,
+    metalness: 0,
+    envMapIntensity: 0.08,
+  }), []);
   const brassMaterial = useMemo(() => new THREE.MeshStandardMaterial({
     name: 'runtime-library-ladder-aged-dim-brass-rails',
     color: 0x765127,
@@ -2517,6 +2489,7 @@ function BiomeHeroLayer({ activeIds }: { readonly activeIds: ReadonlySet<WorldCh
 
 function MoonlitLawnBiome(): React.ReactElement {
   const footpathPatches = useMemo(() => createMoonlitFootpathPatches(), []);
+  const mudScuffs = useMemo(() => createMoonlitMudScuffs(), []);
   const turfPatches = useMemo(() => createMoonlitTurfPatches(), []);
   const grass = useMemo(() => createMoonlitGrassBlades(), []);
   const flowers = useMemo(() => createMoonlitFlowers(), []);
@@ -2576,6 +2549,23 @@ function MoonlitLawnBiome(): React.ReactElement {
     material.polygonOffsetFactor = -9;
     return material;
   }, []);
+  const mudScuffMaterial = useMemo(() => {
+    const material = createPbrMaterial(
+      'runtime-moonlit-lawn-damp-mud-scuff-pbr',
+      createFilePbrSet('ground'),
+      { color: 0xffffff, roughness: 0.98, metalness: 0, envMapIntensity: 0.1, normalScale: 0.16 },
+    );
+    material.transparent = true;
+    material.opacity = 0.58;
+    material.alphaMap = getBiomeSoftAlphaMap('moonlit-lawn-damp-mud-alpha');
+    material.alphaTest = 0.02;
+    material.depthWrite = false;
+    material.side = THREE.DoubleSide;
+    material.vertexColors = true;
+    material.polygonOffset = true;
+    material.polygonOffsetFactor = -10;
+    return material;
+  }, []);
   const grassMaterial = useMemo(() => {
     const material = createPbrMaterial(
       'runtime-moonlit-lawn-grass-pbr',
@@ -2630,8 +2620,9 @@ function MoonlitLawnBiome(): React.ReactElement {
     window.__r3fChunkRenderState = {
       ...(window.__r3fChunkRenderState ?? {}),
       lawnFootpathPatches: String(footpathPatches.length),
+      lawnMudScuffs: String(mudScuffs.length),
     };
-  }, [footpathPatches.length]);
+  }, [footpathPatches.length, mudScuffs.length]);
 
   return (
     <group name="biome-hero:moonlit-lawn">
@@ -2655,6 +2646,12 @@ function MoonlitLawnBiome(): React.ReactElement {
       <Instances name="instanced-biome-moonlit-worn-footpath" limit={footpathPatches.length} range={footpathPatches.length} material={footpathMaterial} receiveShadow renderOrder={6}>
         <planeGeometry args={[1, 1, 1, 1]} />
         {footpathPatches.map((patch) => (
+          <Instance key={patch.key} position={patch.position} rotation={patch.rotation} scale={patch.scale} color={patch.color} />
+        ))}
+      </Instances>
+      <Instances name="instanced-biome-moonlit-damp-mud-scuffs" limit={mudScuffs.length} range={mudScuffs.length} material={mudScuffMaterial} receiveShadow renderOrder={7}>
+        <planeGeometry args={[1, 1, 1, 1]} />
+        {mudScuffs.map((patch) => (
           <Instance key={patch.key} position={patch.position} rotation={patch.rotation} scale={patch.scale} color={patch.color} />
         ))}
       </Instances>
@@ -2702,6 +2699,7 @@ function LakeGrottoBiome(): React.ReactElement {
   const lilyPads = useMemo(() => createLakeLilyPads(), []);
   const lilyFlowers = useMemo(() => createLakeLilyFlowers(), []);
   const stones = useMemo(() => createLakeShoreStones(), []);
+  const pebbles = useMemo(() => createLakePebbleClusters(), []);
   const rippleStreaks = useMemo(() => createLakeRippleStreaks(), []);
   const glints = useMemo(() => createLakeSurfaceGlints(), []);
   const wetlandMaterial = useMemo(() => new THREE.MeshStandardMaterial({
@@ -2801,6 +2799,14 @@ function LakeGrottoBiome(): React.ReactElement {
     }
   });
 
+  useEffect(() => {
+    window.__r3fChunkRenderState = {
+      ...(window.__r3fChunkRenderState ?? {}),
+      lakeShorePebbles: String(pebbles.length),
+      lakeWetlandMats: String(wetlandMats.length),
+    };
+  }, [pebbles.length, wetlandMats.length]);
+
   return (
     <group name="biome-hero:lake-grotto">
       <Instances name="instanced-biome-lake-wetland-mats" limit={wetlandMats.length} range={wetlandMats.length} material={wetlandMaterial} receiveShadow renderOrder={3}>
@@ -2832,6 +2838,12 @@ function LakeGrottoBiome(): React.ReactElement {
         <dodecahedronGeometry args={[0.24, 0]} />
         {stones.map((stone) => (
           <Instance key={stone.key} position={stone.position} rotation={stone.rotation} scale={stone.scale} color={stone.color} />
+        ))}
+      </Instances>
+      <Instances name="instanced-biome-lake-shore-pebble-beds" limit={pebbles.length} range={pebbles.length} material={stoneMaterial} castShadow receiveShadow>
+        <dodecahedronGeometry args={[0.08, 0]} />
+        {pebbles.map((pebble) => (
+          <Instance key={pebble.key} position={pebble.position} rotation={pebble.rotation} scale={pebble.scale} color={pebble.color} />
         ))}
       </Instances>
       <Instances name="instanced-biome-lake-ripple-streaks" limit={rippleStreaks.length} range={rippleStreaks.length} material={rippleMaterial} renderOrder={7}>
@@ -3018,6 +3030,44 @@ function createMoonlitFootpathPatches(): BiomeHeroInstance[] {
   return patches;
 }
 
+function createMoonlitMudScuffs(): BiomeHeroInstance[] {
+  const seed = 'biome:moonlit-lawn:mud-scuffs';
+  const scuffs: BiomeHeroInstance[] = [];
+  const clusters = [
+    [-10.8, 17.1, -0.34],
+    [-8.6, 18.2, -0.24],
+    [-6.1, 19.2, -0.18],
+    [6.8, 21.3, 0.42],
+    [9.1, 22.8, 0.55],
+  ] as const;
+
+  clusters.forEach(([baseX, baseZ, baseYaw], cluster) => {
+    for (let i = 0; i < 5; i += 1) {
+      const index = cluster * 5 + i;
+      scuffs.push({
+        key: `moonlit-mud-scuff:${index}`,
+        position: [
+          baseX + seededSigned(seed, index + 11) * 1.15,
+          0.186 + index * 0.00018,
+          baseZ + seededSigned(seed, index + 31) * 0.72,
+        ],
+        rotation: [-Math.PI / 2, 0, baseYaw + seededSigned(seed, index + 51) * 0.26],
+        scale: [
+          0.46 + seededNoise(seed, index + 71) * 0.58,
+          0.16 + seededNoise(seed, index + 91) * 0.22,
+          1,
+        ],
+        color: new THREE.Color(0x242c24)
+          .lerp(new THREE.Color(0x5d5b45), 0.18 + seededNoise(seed, index + 111) * 0.24)
+          .getHex(),
+        phase: seededNoise(seed, index + 131),
+      });
+    }
+  });
+
+  return scuffs;
+}
+
 function createMoonlitGrassBlades(): BiomeHeroInstance[] {
   const blades: BiomeHeroInstance[] = [];
   const seed = 'biome:moonlit-lawn:grass';
@@ -3186,6 +3236,37 @@ function createLakeShoreStones(): BiomeHeroInstance[] {
     });
   }
   return stones;
+}
+
+function createLakePebbleClusters(): BiomeHeroInstance[] {
+  const pebbles: BiomeHeroInstance[] = [];
+  const seed = 'biome:lake-grotto:shore-pebbles';
+  for (let i = 0; i < 138; i += 1) {
+    const angle = seededNoise(seed, i) * Math.PI * 2;
+    const shore = 0.94 + seededSigned(seed, i + 300) * 0.12;
+    const scatter = seededSigned(seed, i + 600) * 0.34;
+    const radiusX = 9.45 * shore + scatter;
+    const radiusZ = 6.88 * shore + scatter * 0.55;
+    pebbles.push({
+      key: `lake-shore-pebble:${i}`,
+      position: [-16 + Math.cos(angle) * radiusX, 0.158 + i * 0.00004, 21 + Math.sin(angle) * radiusZ],
+      rotation: [
+        seededNoise(seed, i + 900) * Math.PI,
+        seededNoise(seed, i + 1200) * Math.PI,
+        seededNoise(seed, i + 1500) * Math.PI,
+      ],
+      scale: [
+        0.55 + seededNoise(seed, i + 1800) * 0.9,
+        0.18 + seededNoise(seed, i + 2100) * 0.32,
+        0.42 + seededNoise(seed, i + 2400) * 0.78,
+      ],
+      color: new THREE.Color(0x36494b)
+        .lerp(new THREE.Color(0x8ca49c), seededNoise(seed, i + 2700) * 0.34)
+        .getHex(),
+      phase: seededNoise(seed, i + 3000),
+    });
+  }
+  return pebbles;
 }
 
 function createLakeRippleStreaks(): BiomeHeroInstance[] {
@@ -5908,6 +5989,8 @@ function getVerticalSurfaceDetailRenderOrder(kind: VerticalSurfaceDetailKind): n
 }
 
 function createVerticalSurfaceDetails(chunk: WorldChunkDefinition): VerticalSurfaceDetailInstance[] {
+  if (chunk.id === 'arcane-library') return [];
+
   const details: VerticalSurfaceDetailInstance[] = [];
   const b = chunk.bounds;
   const width = b.maxX - b.minX;
@@ -5976,12 +6059,6 @@ function createVerticalSurfaceDetails(chunk: WorldChunkDefinition): VerticalSurf
     add(10 + i, kind, pos, rotationY, 0.48 + seededNoise(seed, i + 80) * 0.92, 0.58 + seededNoise(seed, i + 90) * 1.18);
   }
 
-  if (chunk.id === 'arcane-library') {
-    for (let i = 0; i < 4; i += 1) {
-      add(30 + i, 'book-dust', [b.maxX + edgeInset, 1.1 + i * 0.24, b.minZ + depth * (0.18 + i * 0.18)], -Math.PI / 2, 0.48, 0.92);
-    }
-  }
-
   if (chunk.id === 'dining-hall' || chunk.id === 'grand-hall' || chunk.id === 'training-yard') {
     for (let i = 0; i < 3; i += 1) {
       add(40 + i, 'fabric-wear', [b.minX + width * (0.28 + i * 0.2), 1.35, b.minZ - edgeInset], 0, 0.55, 1.18);
@@ -6004,7 +6081,7 @@ function createVerticalSurfaceDetails(chunk: WorldChunkDefinition): VerticalSurf
 }
 
 function getVerticalSurfaceDetailKind(chunk: WorldChunkDefinition, index: number): VerticalSurfaceDetailKind {
-  if (chunk.id === 'arcane-library') return index % 2 === 0 ? 'book-dust' : 'wall-grime';
+  if (chunk.id === 'arcane-library') return 'wall-grime';
   if (chunk.region === 'cavern') return index % 2 === 0 ? 'mineral-runoff' : 'moss-creep';
   if (chunk.region === 'exterior') return index % 2 === 0 ? 'moss-creep' : 'mineral-runoff';
   if (chunk.region === 'combat') return index % 2 === 0 ? 'arcane-afterimage' : 'wall-grime';
@@ -6852,9 +6929,8 @@ function ChunkStoryProps({
   if (chunk.id === 'arcane-library') {
     return (
       <group name="story-props:arcane-library">
-        <FloatingParchmentSwarm chunk={chunk} count={9} origin={[centerX + 0.4, 2.05, centerZ - 0.35]} radius={[2.5, 2.0]} />
-        <CandleCluster chunk={chunk} count={5} origin={[chunk.bounds.maxX - 1.5, 0.23, centerZ - 1.8]} spread={[1.4, 2.3]} />
-        <BookStackCluster chunk={chunk} count={4} origin={[chunk.bounds.minX + 1.35, 0.2, centerZ + 2.8]} spread={[2.2, 1.1]} />
+        <CandleCluster chunk={chunk} count={6} origin={[chunk.bounds.maxX - 1.5, 0.23, centerZ - 1.8]} spread={[1.4, 2.3]} />
+        <BookStackCluster chunk={chunk} count={7} origin={[chunk.bounds.minX + 1.35, 0.2, centerZ + 2.8]} spread={[2.4, 1.2]} />
       </group>
     );
   }
