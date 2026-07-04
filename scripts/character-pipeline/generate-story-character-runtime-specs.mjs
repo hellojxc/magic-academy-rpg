@@ -267,7 +267,7 @@ function updateManifest(briefs) {
     animationClips: ['idle', 'walk', 'talk'],
     materialProfile: 'toon',
     supportsFacialMorphs: true,
-    supportsSpringBones: false,
+    supportsSpringBones: true,
     triangleBudget: 32000,
     textureBudgetKb: 2048,
   }));

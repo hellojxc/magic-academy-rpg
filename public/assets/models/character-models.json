@@ -22,7 +22,7 @@
       ],
       "materialProfile": "toon",
       "supportsFacialMorphs": true,
-      "supportsSpringBones": false,
+      "supportsSpringBones": true,
       "triangleBudget": 48000,
       "textureBudgetKb": 4096
     },
@@ -40,8 +40,8 @@
         "talk"
       ],
       "materialProfile": "toon",
-      "supportsFacialMorphs": false,
-      "supportsSpringBones": false,
+      "supportsFacialMorphs": true,
+      "supportsSpringBones": true,
       "triangleBudget": 66000,
       "textureBudgetKb": 4096
     },
@@ -60,7 +60,7 @@
       ],
       "materialProfile": "toon",
       "supportsFacialMorphs": true,
-      "supportsSpringBones": false,
+      "supportsSpringBones": true,
       "triangleBudget": 32000,
       "textureBudgetKb": 2048
     },
@@ -79,7 +79,7 @@
       ],
       "materialProfile": "toon",
       "supportsFacialMorphs": true,
-      "supportsSpringBones": false,
+      "supportsSpringBones": true,
       "triangleBudget": 32000,
       "textureBudgetKb": 2048
     },
@@ -98,7 +98,7 @@
       ],
       "materialProfile": "toon",
       "supportsFacialMorphs": true,
-      "supportsSpringBones": false,
+      "supportsSpringBones": true,
       "triangleBudget": 32000,
       "textureBudgetKb": 2048
     },
@@ -117,7 +117,7 @@
       ],
       "materialProfile": "toon",
       "supportsFacialMorphs": true,
-      "supportsSpringBones": false,
+      "supportsSpringBones": true,
       "triangleBudget": 32000,
       "textureBudgetKb": 2048
     },
@@ -136,7 +136,7 @@
       ],
       "materialProfile": "toon",
       "supportsFacialMorphs": true,
-      "supportsSpringBones": false,
+      "supportsSpringBones": true,
       "triangleBudget": 32000,
       "textureBudgetKb": 2048
     },
@@ -155,7 +155,7 @@
       ],
       "materialProfile": "toon",
       "supportsFacialMorphs": true,
-      "supportsSpringBones": false,
+      "supportsSpringBones": true,
       "triangleBudget": 32000,
       "textureBudgetKb": 2048
     },
@@ -174,7 +174,7 @@
       ],
       "materialProfile": "toon",
       "supportsFacialMorphs": true,
-      "supportsSpringBones": false,
+      "supportsSpringBones": true,
       "triangleBudget": 32000,
       "textureBudgetKb": 2048
     },
@@ -193,7 +193,7 @@
       ],
       "materialProfile": "toon",
       "supportsFacialMorphs": true,
-      "supportsSpringBones": false,
+      "supportsSpringBones": true,
       "triangleBudget": 32000,
       "textureBudgetKb": 2048
     },
@@ -212,7 +212,7 @@
       ],
       "materialProfile": "toon",
       "supportsFacialMorphs": true,
-      "supportsSpringBones": false,
+      "supportsSpringBones": true,
       "triangleBudget": 32000,
       "textureBudgetKb": 2048
     },
@@ -231,7 +231,7 @@
       ],
       "materialProfile": "toon",
       "supportsFacialMorphs": true,
-      "supportsSpringBones": false,
+      "supportsSpringBones": true,
       "triangleBudget": 32000,
       "textureBudgetKb": 2048
     },
@@ -250,7 +250,7 @@
       ],
       "materialProfile": "toon",
       "supportsFacialMorphs": true,
-      "supportsSpringBones": false,
+      "supportsSpringBones": true,
       "triangleBudget": 32000,
       "textureBudgetKb": 2048
     },
@@ -269,7 +269,7 @@
       ],
       "materialProfile": "toon",
       "supportsFacialMorphs": true,
-      "supportsSpringBones": false,
+      "supportsSpringBones": true,
       "triangleBudget": 32000,
       "textureBudgetKb": 2048
     },
@@ -288,7 +288,7 @@
       ],
       "materialProfile": "toon",
       "supportsFacialMorphs": true,
-      "supportsSpringBones": false,
+      "supportsSpringBones": true,
       "triangleBudget": 32000,
       "textureBudgetKb": 2048
     },
@@ -307,7 +307,7 @@
       ],
       "materialProfile": "toon",
       "supportsFacialMorphs": true,
-      "supportsSpringBones": false,
+      "supportsSpringBones": true,
       "triangleBudget": 32000,
       "textureBudgetKb": 2048
     },
@@ -326,7 +326,7 @@
       ],
       "materialProfile": "toon",
       "supportsFacialMorphs": true,
-      "supportsSpringBones": false,
+      "supportsSpringBones": true,
       "triangleBudget": 32000,
       "textureBudgetKb": 2048
     },
@@ -345,7 +345,7 @@
       ],
       "materialProfile": "toon",
       "supportsFacialMorphs": true,
-      "supportsSpringBones": false,
+      "supportsSpringBones": true,
       "triangleBudget": 32000,
       "textureBudgetKb": 2048
     },
@@ -364,7 +364,7 @@
       ],
       "materialProfile": "toon",
       "supportsFacialMorphs": true,
-      "supportsSpringBones": false,
+      "supportsSpringBones": true,
       "triangleBudget": 32000,
       "textureBudgetKb": 2048
     },
@@ -383,7 +383,7 @@
       ],
       "materialProfile": "toon",
       "supportsFacialMorphs": true,
-      "supportsSpringBones": false,
+      "supportsSpringBones": true,
       "triangleBudget": 32000,
       "textureBudgetKb": 2048
     },
@@ -402,7 +402,7 @@
       ],
       "materialProfile": "toon",
       "supportsFacialMorphs": true,
-      "supportsSpringBones": false,
+      "supportsSpringBones": true,
       "triangleBudget": 32000,
       "textureBudgetKb": 2048
     },
@@ -421,7 +421,7 @@
       ],
       "materialProfile": "toon",
       "supportsFacialMorphs": true,
-      "supportsSpringBones": false,
+      "supportsSpringBones": true,
       "triangleBudget": 32000,
       "textureBudgetKb": 2048
     },
@@ -440,7 +440,7 @@
       ],
       "materialProfile": "toon",
       "supportsFacialMorphs": true,
-      "supportsSpringBones": false,
+      "supportsSpringBones": true,
       "triangleBudget": 32000,
       "textureBudgetKb": 2048
     },
@@ -459,7 +459,7 @@
       ],
       "materialProfile": "toon",
       "supportsFacialMorphs": true,
-      "supportsSpringBones": false,
+      "supportsSpringBones": true,
       "triangleBudget": 32000,
       "textureBudgetKb": 2048
     },
@@ -478,7 +478,7 @@
       ],
       "materialProfile": "toon",
       "supportsFacialMorphs": true,
-      "supportsSpringBones": false,
+      "supportsSpringBones": true,
       "triangleBudget": 32000,
       "textureBudgetKb": 2048
     },
@@ -497,7 +497,7 @@
       ],
       "materialProfile": "toon",
       "supportsFacialMorphs": true,
-      "supportsSpringBones": false,
+      "supportsSpringBones": true,
       "triangleBudget": 32000,
       "textureBudgetKb": 2048
     },
@@ -516,7 +516,7 @@
       ],
       "materialProfile": "toon",
       "supportsFacialMorphs": true,
-      "supportsSpringBones": false,
+      "supportsSpringBones": true,
       "triangleBudget": 32000,
       "textureBudgetKb": 2048
     },
@@ -535,7 +535,7 @@
       ],
       "materialProfile": "toon",
       "supportsFacialMorphs": true,
-      "supportsSpringBones": false,
+      "supportsSpringBones": true,
       "triangleBudget": 32000,
       "textureBudgetKb": 2048
     },
@@ -554,7 +554,7 @@
       ],
       "materialProfile": "toon",
       "supportsFacialMorphs": true,
-      "supportsSpringBones": false,
+      "supportsSpringBones": true,
       "triangleBudget": 32000,
       "textureBudgetKb": 2048
     },
@@ -573,7 +573,7 @@
       ],
       "materialProfile": "toon",
       "supportsFacialMorphs": true,
-      "supportsSpringBones": false,
+      "supportsSpringBones": true,
       "triangleBudget": 32000,
       "textureBudgetKb": 2048
     },
@@ -592,7 +592,7 @@
       ],
       "materialProfile": "toon",
       "supportsFacialMorphs": true,
-      "supportsSpringBones": false,
+      "supportsSpringBones": true,
       "triangleBudget": 32000,
       "textureBudgetKb": 2048
     },
@@ -611,7 +611,7 @@
       ],
       "materialProfile": "toon",
       "supportsFacialMorphs": true,
-      "supportsSpringBones": false,
+      "supportsSpringBones": true,
       "triangleBudget": 32000,
       "textureBudgetKb": 2048
     },
@@ -630,7 +630,7 @@
       ],
       "materialProfile": "toon",
       "supportsFacialMorphs": true,
-      "supportsSpringBones": false,
+      "supportsSpringBones": true,
       "triangleBudget": 30000,
       "textureBudgetKb": 1024
     },
@@ -648,8 +648,8 @@
         "talk"
       ],
       "materialProfile": "toon",
-      "supportsFacialMorphs": false,
-      "supportsSpringBones": false,
+      "supportsFacialMorphs": true,
+      "supportsSpringBones": true,
       "triangleBudget": 20000,
       "textureBudgetKb": 1024
     }

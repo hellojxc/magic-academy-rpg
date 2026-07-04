@@ -5,11 +5,11 @@
   "accepted": true,
   "summary": {
     "file": "public/assets/models/lyra.glb",
-    "sizeKb": 1332.8,
-    "nodes": 173,
-    "meshes": 126,
-    "primitives": 126,
-    "materials": 18,
+    "sizeKb": 1454.8,
+    "nodes": 196,
+    "meshes": 149,
+    "primitives": 149,
+    "materials": 22,
     "skins": 1,
     "bones": 45,
     "animations": [
@@ -17,8 +17,8 @@
       "talk",
       "walk"
     ],
-    "morphTargetPrimitiveCount": 11,
-    "triangleCount": 26244
+    "morphTargetPrimitiveCount": 15,
+    "triangleCount": 28322
   },
   "requirements": {
     "triangleBudgetHero": [
@@ -54,7 +54,7 @@
     {
       "name": "triangle budget",
       "passed": true,
-      "detail": "26244 triangles, target 25000-45000"
+      "detail": "28322 triangles, target 25000-45000"
     },
     {
       "name": "humanoid skin",
@@ -64,7 +64,7 @@
     {
       "name": "facial morph targets",
       "passed": true,
-      "detail": "11 primitives with morph targets"
+      "detail": "15 primitives with morph targets"
     },
     {
       "name": "required animation clips",
@@ -74,9 +74,9 @@
     {
       "name": "material count",
       "passed": true,
-      "detail": "18 materials, target <= 32"
+      "detail": "22 materials, target <= 32"
     }
   ],
   "conclusion": "Runtime asset passes the current production gate.",
-  "generatedAt": "2026-07-04T03:26:38.324Z"
+  "generatedAt": "2026-07-04T04:41:44.715Z"
 }

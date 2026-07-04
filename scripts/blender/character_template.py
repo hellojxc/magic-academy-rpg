@@ -586,9 +586,12 @@ def make_materials(spec: dict[str, Any]) -> dict[str, bpy.types.Material]:
         "skin": material("Skin", "#ffe8dc", 0.56, emission_strength=0.16),
         "skin_warm": material("SkinWarm", "#ffc9b7", 0.60, emission_strength=0.12),
         "skin_shadow": material("SkinSoftShadow", "#f2b4a2", 0.66, emission_strength=0.04),
+        "skin_highlight": material("SkinSoftHighlight", "#fff3ea", 0.52, emission_strength=0.18),
         "cheek": material("CheekTint", face["cheekTint"], 0.82, alpha=0.82, backface_culling=False),
         "eye_white": material("EyeWhite", "#f8f2ff", 0.46, backface_culling=False, emission_strength=0.07),
         "eye": material("EyeIris", face["eyeColor"], 0.32, backface_culling=False, emission_strength=0.08),
+        "eye_ring": material("EyeIrisRing", "#21182d", 0.42, backface_culling=False, emission_strength=0.02),
+        "eye_gloss": material("EyeGloss", "#ffffff", 0.24, alpha=0.46, backface_culling=False, emission_strength=0.10),
         "eye_shadow": material("EyeShadow", "#1b2338", 0.5, backface_culling=False),
         "pupil": material("Pupil", "#14111c", 0.52, backface_culling=False),
         "brow": material("Brow", face["browColor"], 0.6, backface_culling=False),
@@ -739,6 +742,9 @@ def add_body(
         )
         parent_to_bone(front_edge, armature, "Chest")
 
+    if not is_masculine:
+        add_heroine_body_refinement(spec, m, mats, armature, collection)
+
     if is_astrologer:
         for index, z in enumerate((1.285, 1.215, 1.145, 1.075)):
             button = add_uv_sphere(
@@ -873,6 +879,86 @@ def add_player_body_shell(
         bevel=0.002 * scale,
     )
     parent_to_bone(waist, armature, "Hips")
+
+
+def add_heroine_body_refinement(
+    spec: dict[str, Any],
+    m: dict[str, float],
+    mats: dict[str, bpy.types.Material],
+    armature: bpy.types.Object,
+    collection: bpy.types.Collection,
+) -> None:
+    scale = m["scale"]
+    is_astrologer = spec["outfit"].get("style") == "astrologer-uniform"
+    panel_mat = mats["outfit_primary"] if is_astrologer else mats["outfit_secondary"]
+    side_mat = mats["outfit_dark"] if is_astrologer else mats["outfit_primary"]
+
+    rows = [
+        (1.335, 0.090, -0.218, 0.012),
+        (1.260, 0.116, -0.226, 0.018),
+        (1.165, 0.105, -0.231, 0.014),
+        (1.045, 0.082, -0.226, 0.010),
+        (0.925, 0.116, -0.206, 0.006),
+    ]
+    columns = [-1.0, -0.48, 0.0, 0.48, 1.0]
+    verts: list[tuple[float, float, float]] = []
+    for z, half_width, base_y, curve in rows:
+        for u in columns:
+            x = half_width * u * scale
+            y = (base_y - curve * (1.0 - abs(u)) ** 1.6) * scale
+            verts.append((x, y, z * scale))
+
+    faces: list[tuple[int, int, int, int]] = []
+    width = len(columns)
+    for row in range(len(rows) - 1):
+        for column in range(width - 1):
+            start = row * width + column
+            faces.append((start, start + 1, start + width + 1, start + width))
+
+    bodice = add_plane_mesh("HeroineSculptedBodiceFront", panel_mat, verts, faces, collection)
+    shade_smooth(bodice)
+    add_modifier_if_possible(bodice, "bodice cloth thickness", "SOLIDIFY", thickness=0.004 * scale)
+    parent_to_bone(bodice, armature, "Chest")
+
+    collar = add_hair_panel(
+        "HeroineSoftCollarPanel",
+        mats["outfit_primary"],
+        [
+            (-0.088 * scale, -0.232 * scale, 1.355 * scale),
+            (0.088 * scale, -0.232 * scale, 1.355 * scale),
+            (0.052 * scale, -0.238 * scale, 1.292 * scale),
+            (-0.052 * scale, -0.238 * scale, 1.292 * scale),
+        ],
+        collection,
+        0.003 * scale,
+    )
+    parent_to_bone(collar, armature, "Chest")
+
+    for side, sx in (("Left", -1), ("Right", 1)):
+        side_panel = add_hair_panel(
+            f"{side}HeroineWaistCurvePanel",
+            side_mat,
+            [
+                (sx * 0.102 * scale, -0.214 * scale, 1.255 * scale),
+                (sx * 0.153 * scale, -0.185 * scale, 1.232 * scale),
+                (sx * 0.126 * scale, -0.174 * scale, 0.955 * scale),
+                (sx * 0.073 * scale, -0.208 * scale, 0.986 * scale),
+            ],
+            collection,
+            0.0045 * scale,
+        )
+        parent_to_bone(side_panel, armature, "Chest")
+
+        waist_pin = add_uv_sphere(
+            f"{side}HeroineWaistGem",
+            mats["trim"],
+            (sx * 0.128 * scale, -0.216 * scale, 0.934 * scale),
+            (0.014 * scale, 0.0032 * scale, 0.014 * scale),
+            collection,
+            segments=12,
+            rings=6,
+        )
+        parent_to_bone(waist_pin, armature, "Hips")
 
 
 def add_limbs(
@@ -1217,10 +1303,17 @@ def add_player_limb_folds(
         parent_to_bone(fold, armature, f"{side}{bone}")
 
 
-def sculpt_player_head_mesh(head: bpy.types.Object) -> None:
+def sculpt_anime_head_mesh(head: bpy.types.Object, spec: dict[str, Any]) -> None:
     mesh = getattr(head, "data", None)
     if not mesh or not hasattr(mesh, "vertices"):
         return
+
+    is_player = spec["id"] == "player"
+    is_masculine = is_masculine_uniform(spec)
+    face_push = 0.96 if is_player else 0.84 if is_masculine else 0.90
+    jaw_strength = 0.34 if is_masculine else 0.43
+    cheek_strength = 0.06 if is_masculine else 0.10
+    cranium_strength = 0.08 if is_masculine else 0.12
 
     max_x = max((abs(vertex.co.x) for vertex in mesh.vertices), default=1.0)
     max_y = max((abs(vertex.co.y) for vertex in mesh.vertices), default=1.0)
@@ -1234,28 +1327,35 @@ def sculpt_player_head_mesh(head: bpy.types.Object) -> None:
         yn_front = max(0.0, -co.y / max_y)
         zn = co.z / max_z
 
-        # Pull the central front of the sphere forward into an anime-style face
-        # plane so eyes, nose, and mouth sit on the head instead of floating.
         face_width = max(0.0, 1.0 - (xn / 0.86) ** 2)
         face_height = max(0.0, 1.0 - (abs(zn - 0.02) / 0.92) ** 2)
         face_mask = face_width * face_height * (yn_front ** 1.35)
-        co.y -= max_y * 0.95 * face_mask
+        co.y -= max_y * face_push * face_mask
 
         if zn < -0.12:
             jaw_taper = min(1.0, (-zn - 0.12) / 0.78)
-            co.x *= 1.0 - 0.38 * (jaw_taper ** 1.35)
+            co.x *= 1.0 - jaw_strength * (jaw_taper ** 1.35)
             if co.y < 0:
-                co.y += max_y * 0.16 * jaw_taper
+                co.y += max_y * (0.13 if is_masculine else 0.18) * jaw_taper
 
         if zn > 0.26:
             cranium = min(1.0, (zn - 0.26) / 0.74)
-            co.x *= 1.0 + 0.07 * cranium
+            co.x *= 1.0 + cranium_strength * cranium
             if co.y > 0:
-                co.y *= 1.0 + 0.10 * cranium
+                co.y *= 1.0 + (0.08 if is_masculine else 0.12) * cranium
 
         if zn < -0.58 and co.y < 0:
             chin = min(1.0, (-zn - 0.58) / 0.42)
-            co.y -= max_y * 0.18 * chin * max(0.0, 1.0 - (xn / 0.58) ** 2)
+            co.y -= max_y * (0.15 if is_masculine else 0.20) * chin * max(0.0, 1.0 - (xn / 0.58) ** 2)
+
+        if -0.26 < zn < 0.18 and co.y < 0:
+            cheek = max(0.0, 1.0 - abs(abs(co.x) / max_x - 0.58) / 0.30)
+            cheek *= max(0.0, 1.0 - abs(zn + 0.04) / 0.34)
+            co.y -= max_y * cheek_strength * cheek
+
+        if 0.08 < zn < 0.36 and co.y < 0:
+            brow = max(0.0, 1.0 - (xn / 0.72) ** 2) * max(0.0, 1.0 - abs(zn - 0.22) / 0.20)
+            co.y -= max_y * (0.04 if is_masculine else 0.055) * brow
 
     mesh.update()
     shade_smooth(head)
@@ -1284,10 +1384,9 @@ def add_head(
         segments=64,
         rings=32,
     )
-    if is_player:
-        sculpt_player_head_mesh(head)
+    sculpt_anime_head_mesh(head, spec)
     parent_to_bone(head, armature, "Head")
-    add_player_face_structure(m, mats, armature, collection)
+    add_anime_face_structure(spec, m, mats, armature, collection)
 
     nose = add_uv_sphere("Nose", mats["skin_warm"], (0, -0.196 * scale, 1.51 * scale), (0.009 * scale, 0.007 * scale, 0.019 * scale), collection, 16, 8)
     parent_to_bone(nose, armature, "Head")
@@ -1324,6 +1423,18 @@ def add_head(
         )
         add_shape_key_transform(iris, "blink", scale=(1.0, 1.0, 0.12), offset=(0, 0, -0.002 * scale))
         parent_to_bone(iris, armature, "Head")
+
+        iris_ring = add_uv_sphere(
+            f"{side}IrisOuterRing",
+            mats["eye_ring"],
+            (eye_x + sx * 0.003 * scale, -0.221 * scale, 1.541 * scale),
+            ((0.019 if is_player else 0.018) * scale * eye_scale, 0.0017 * scale, (0.0205 if is_player else 0.020) * scale * eye_scale),
+            collection,
+            segments=32,
+            rings=8,
+        )
+        add_shape_key_transform(iris_ring, "blink", scale=(1.0, 1.0, 0.10), offset=(0, 0, -0.002 * scale))
+        parent_to_bone(iris_ring, armature, "Head")
 
         if is_player:
             upper_shadow = add_cube(
@@ -1373,6 +1484,18 @@ def add_head(
         )
         add_shape_key_transform(lower_highlight, "blink", scale=(1.0, 1.0, 0.1), offset=(0, 0, -0.001 * scale))
         parent_to_bone(lower_highlight, armature, "Head")
+
+        eye_gloss = add_uv_sphere(
+            f"{side}EyeGlossAccent",
+            mats["eye_gloss"],
+            (eye_x - sx * 0.012 * scale, -0.2255 * scale, 1.555 * scale),
+            ((0.010 if is_player else 0.011) * scale * eye_scale, 0.0009 * scale, (0.0045 if is_player else 0.005) * scale * eye_scale),
+            collection,
+            segments=14,
+            rings=6,
+        )
+        add_shape_key_transform(eye_gloss, "blink", scale=(1.0, 1.0, 0.08), offset=(0, 0, -0.002 * scale))
+        parent_to_bone(eye_gloss, armature, "Head")
 
         lash = add_cube(
             f"{side}UpperEyelash",
@@ -1435,13 +1558,38 @@ def add_head(
         parent_to_bone(cheek, armature, "Head")
 
 
-def add_player_face_structure(
+def add_anime_face_structure(
+    spec: dict[str, Any],
     m: dict[str, float],
     mats: dict[str, bpy.types.Material],
     armature: bpy.types.Object,
     collection: bpy.types.Collection,
 ) -> None:
     scale = m["scale"]
+    is_player = spec["id"] == "player"
+    is_masculine = is_masculine_uniform(spec)
+
+    nose_bridge = add_cube(
+        "NoseBridgeSoftPlane",
+        mats["skin_highlight"],
+        (0, (-0.211 if is_player else -0.205) * scale, 1.505 * scale),
+        ((0.009 if is_masculine else 0.007) * scale, 0.0014 * scale, 0.035 * scale),
+        collection,
+        bevel=0.001 * scale,
+    )
+    parent_to_bone(nose_bridge, armature, "Head")
+
+    nose_shadow = add_cube(
+        "NoseSideSoftShade",
+        mats["skin_shadow"],
+        (0.011 * scale, (-0.209 if is_player else -0.202) * scale, 1.49 * scale),
+        (0.004 * scale, 0.0012 * scale, 0.022 * scale),
+        collection,
+        rotation=(0, 0, -0.08),
+        bevel=0.0008 * scale,
+    )
+    parent_to_bone(nose_shadow, armature, "Head")
+
     lower_lip = add_cube(
         "HeroLowerLipSoftShade",
         mats["skin_warm"],
@@ -1453,12 +1601,23 @@ def add_player_face_structure(
     )
     parent_to_bone(lower_lip, armature, "Head")
 
+    chin_highlight = add_uv_sphere(
+        "ChinSoftHighlight",
+        mats["skin_highlight"],
+        (0.002 * scale, -0.207 * scale, 1.405 * scale),
+        ((0.022 if is_masculine else 0.019) * scale, 0.0016 * scale, 0.006 * scale),
+        collection,
+        segments=16,
+        rings=6,
+    )
+    parent_to_bone(chin_highlight, armature, "Head")
+
     for side, sx in (("Left", -1), ("Right", 1)):
         ear = add_uv_sphere(
             f"{side}HeroEar",
             mats["skin_warm"],
-            (sx * 0.151 * scale, -0.017 * scale, 1.525 * scale),
-            (0.015 * scale, 0.010 * scale, 0.037 * scale),
+            (sx * (0.151 if is_player else 0.157) * scale, (-0.017 if is_player else -0.012) * scale, 1.525 * scale),
+            ((0.015 if is_player else 0.014) * scale, 0.010 * scale, (0.037 if is_player else 0.034) * scale),
             collection,
             segments=18,
             rings=8,
@@ -1476,6 +1635,17 @@ def add_player_face_structure(
             rings=6,
         )
         parent_to_bone(inner_ear, armature, "Head")
+
+        cheek_lift = add_uv_sphere(
+            f"{side}CheekSoftLift",
+            mats["skin_highlight"],
+            (sx * (0.071 if is_masculine else 0.077) * scale, -0.213 * scale, 1.486 * scale),
+            ((0.014 if is_masculine else 0.018) * scale, 0.0014 * scale, (0.006 if is_masculine else 0.008) * scale),
+            collection,
+            segments=14,
+            rings=6,
+        )
+        parent_to_bone(cheek_lift, armature, "Head")
 
 
 def add_hair(
@@ -1522,6 +1692,7 @@ def add_hair(
         add_long_hair(m, mats, armature, collection)
     else:
         add_short_hair(spec, m, mats, armature, collection)
+    add_anime_hair_surface_details(spec, m, mats, armature, collection)
 
 
 def add_short_hair(
@@ -1709,6 +1880,62 @@ def add_player_layered_short_hair(
         0.012 * scale,
     )
     parent_to_bone(nape_shadow, armature, "Head")
+
+
+def add_anime_hair_surface_details(
+    spec: dict[str, Any],
+    m: dict[str, float],
+    mats: dict[str, bpy.types.Material],
+    armature: bpy.types.Object,
+    collection: bpy.types.Collection,
+) -> None:
+    scale = m["scale"]
+    volume = float(spec["hair"]["volume"])
+    is_long = spec["hair"]["length"] == "long"
+    is_player = spec["id"] == "player"
+    is_masculine = is_masculine_uniform(spec)
+
+    def lock(
+        name: str,
+        mat: bpy.types.Material,
+        points: list[tuple[float, float, float, float, float]],
+    ) -> None:
+        obj = add_hair_lock_mesh(
+            name,
+            mat,
+            [(x * scale, y * scale, z * scale, w * scale * volume, d * scale) for x, y, z, w, d in points],
+            collection,
+        )
+        parent_to_bone(obj, armature, "Head")
+
+    crown_sets = [
+        ("CrownSurfaceLeftLockTip", mats["hair_highlight"], [(-0.105, -0.060, 1.725, 0.026, 0.014), (-0.178, -0.095, 1.675, 0.018, 0.010), (-0.205, -0.084, 1.618, 0.006, 0.006)]),
+        ("CrownSurfaceRightLockTip", mats["hair_highlight"], [(0.105, -0.060, 1.725, 0.026, 0.014), (0.178, -0.095, 1.675, 0.018, 0.010), (0.205, -0.084, 1.618, 0.006, 0.006)]),
+        ("CrownSurfaceCenterSoftLock", mats["hair"], [(-0.018, -0.092, 1.730, 0.036, 0.016), (0.010, -0.158, 1.688, 0.025, 0.012), (-0.004, -0.205, 1.622, 0.008, 0.006)]),
+    ]
+    for name, mat, points in crown_sets:
+        lock(name, mat, points)
+
+    if is_long:
+        long_sets = [
+            ("LeftLongHairFaceFineTip", mats["hair_highlight"], [(-0.145, -0.172, 1.600, 0.019, 0.010), (-0.173, -0.144, 1.315, 0.014, 0.008), (-0.154, -0.100, 1.030, 0.005, 0.005)]),
+            ("RightLongHairFaceFineTip", mats["hair_highlight"], [(0.145, -0.172, 1.600, 0.019, 0.010), (0.173, -0.144, 1.315, 0.014, 0.008), (0.154, -0.100, 1.030, 0.005, 0.005)]),
+            ("LeftLongHairUnderLayerTip", mats["hair"], [(-0.225, 0.010, 1.505, 0.026, 0.012), (-0.245, 0.028, 1.185, 0.019, 0.010), (-0.212, 0.018, 0.875, 0.006, 0.006)]),
+            ("RightLongHairUnderLayerTip", mats["hair"], [(0.225, 0.010, 1.505, 0.026, 0.012), (0.245, 0.028, 1.185, 0.019, 0.010), (0.212, 0.018, 0.875, 0.006, 0.006)]),
+            ("BackHairCenterRibbonTip", mats["hair_highlight"], [(0.000, 0.184, 1.500, 0.030, 0.012), (0.018, 0.202, 1.185, 0.020, 0.010), (0.000, 0.176, 0.860, 0.006, 0.006)]),
+        ]
+        for name, mat, points in long_sets:
+            lock(name, mat, points)
+    else:
+        short_width = 0.040 if is_player else 0.034 if is_masculine else 0.038
+        short_sets = [
+            ("ShortHairLeftSideFineTip", mats["hair"], [(-0.165, -0.055, 1.640, short_width, 0.014), (-0.205, -0.040, 1.565, short_width * 0.58, 0.010), (-0.190, -0.012, 1.500, 0.006, 0.005)]),
+            ("ShortHairRightSideFineTip", mats["hair"], [(0.165, -0.055, 1.640, short_width, 0.014), (0.205, -0.040, 1.565, short_width * 0.58, 0.010), (0.190, -0.012, 1.500, 0.006, 0.005)]),
+            ("ShortHairBackNapeLeftTip", mats["hair_highlight"], [(-0.102, 0.132, 1.565, short_width * 0.82, 0.012), (-0.138, 0.158, 1.492, short_width * 0.50, 0.009), (-0.116, 0.156, 1.420, 0.006, 0.005)]),
+            ("ShortHairBackNapeRightTip", mats["hair_highlight"], [(0.102, 0.132, 1.565, short_width * 0.82, 0.012), (0.138, 0.158, 1.492, short_width * 0.50, 0.009), (0.116, 0.156, 1.420, 0.006, 0.005)]),
+        ]
+        for name, mat, points in short_sets:
+            lock(name, mat, points)
 
 
 def add_long_hair(

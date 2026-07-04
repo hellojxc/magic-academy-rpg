@@ -5,11 +5,11 @@
   "accepted": true,
   "summary": {
     "file": "public/assets/models/theo_wake.glb",
-    "sizeKb": 1244.8,
-    "nodes": 142,
-    "meshes": 95,
-    "primitives": 95,
-    "materials": 17,
+    "sizeKb": 1342.6,
+    "nodes": 158,
+    "meshes": 111,
+    "primitives": 111,
+    "materials": 21,
     "skins": 1,
     "bones": 45,
     "animations": [
@@ -17,8 +17,8 @@
       "talk",
       "walk"
     ],
-    "morphTargetPrimitiveCount": 11,
-    "triangleCount": 25063
+    "morphTargetPrimitiveCount": 15,
+    "triangleCount": 26843
   },
   "requirements": {
     "triangleBudgetHero": [
@@ -52,7 +52,7 @@
     {
       "name": "triangle budget",
       "passed": true,
-      "detail": "25063 triangles, target 14000-32000"
+      "detail": "26843 triangles, target 14000-32000"
     },
     {
       "name": "humanoid skin",
@@ -62,7 +62,7 @@
     {
       "name": "facial morph targets",
       "passed": true,
-      "detail": "11 primitives with morph targets"
+      "detail": "15 primitives with morph targets"
     },
     {
       "name": "required animation clips",
@@ -72,9 +72,9 @@
     {
       "name": "material count",
       "passed": true,
-      "detail": "17 materials, target <= 32"
+      "detail": "21 materials, target <= 32"
     }
   ],
   "conclusion": "Runtime asset passes the current production gate.",
-  "generatedAt": "2026-07-04T04:27:40.667Z"
+  "generatedAt": "2026-07-04T04:45:46.655Z"
 }

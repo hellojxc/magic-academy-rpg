@@ -5,11 +5,11 @@
   "accepted": true,
   "summary": {
     "file": "public/assets/models/talia_moss.glb",
-    "sizeKb": 1321.6,
-    "nodes": 160,
-    "meshes": 113,
-    "primitives": 113,
-    "materials": 18,
+    "sizeKb": 1446.9,
+    "nodes": 182,
+    "meshes": 135,
+    "primitives": 135,
+    "materials": 22,
     "skins": 1,
     "bones": 45,
     "animations": [
@@ -17,8 +17,8 @@
       "talk",
       "walk"
     ],
-    "morphTargetPrimitiveCount": 11,
-    "triangleCount": 26075
+    "morphTargetPrimitiveCount": 15,
+    "triangleCount": 28133
   },
   "requirements": {
     "triangleBudgetHero": [
@@ -52,7 +52,7 @@
     {
       "name": "triangle budget",
       "passed": true,
-      "detail": "26075 triangles, target 18000-32000"
+      "detail": "28133 triangles, target 18000-32000"
     },
     {
       "name": "humanoid skin",
@@ -62,7 +62,7 @@
     {
       "name": "facial morph targets",
       "passed": true,
-      "detail": "11 primitives with morph targets"
+      "detail": "15 primitives with morph targets"
     },
     {
       "name": "required animation clips",
@@ -72,9 +72,9 @@
     {
       "name": "material count",
       "passed": true,
-      "detail": "18 materials, target <= 32"
+      "detail": "22 materials, target <= 32"
     }
   ],
   "conclusion": "Runtime asset passes the current production gate.",
-  "generatedAt": "2026-07-04T04:27:40.664Z"
+  "generatedAt": "2026-07-04T04:45:46.651Z"
 }
