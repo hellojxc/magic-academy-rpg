@@ -1036,27 +1036,46 @@ export class AcademyWorld {
     }
 
     const colors = [0x7356d9, 0xf1c45f, 0x57b9d8, 0xd85f9e, 0x88bd64, 0xb24d43, 0xded4ba];
+    const bookMatricesByColor = new Map<number, THREE.Matrix4[]>();
+    const stripeMatrices: THREE.Matrix4[] = [];
+    const bookDummy = new THREE.Object3D();
+    const stripeDummy = new THREE.Object3D();
+    const composedStripeMatrix = new THREE.Matrix4();
+
     for (let row = 0; row < shelfLevels.length; row += 1) {
       let cursor = -width / 2 + 0.08;
       for (let i = 0; i < 11; i += 1) {
         const bookWidth = 0.065 + ((row + i * 2) % 5) * 0.012;
         const bookHeight = 0.29 + ((row + i) % 4) * 0.045;
         const bookDepth = 0.13 + ((row * 2 + i) % 3) * 0.024;
-        const bookMat = getStandardMaterial({ color: colors[(row * 3 + i) % colors.length], roughness: 0.5 });
-        const book = this.addBoxToGroup(
-          shelf,
-          new THREE.Vector3(cursor + bookWidth / 2, shelfLevels[row] + 0.06 + bookHeight / 2, depth / 2 - 0.04),
-          new THREE.Vector3(bookWidth, bookHeight, bookDepth),
-          bookMat
-        );
-        book.rotation.z = (((row + i) % 5) - 2) * 0.018;
+        const color = colors[(row * 3 + i) % colors.length];
+        bookDummy.position.set(cursor + bookWidth / 2, shelfLevels[row] + 0.06 + bookHeight / 2, depth / 2 - 0.04);
+        bookDummy.rotation.set(0, 0, (((row + i) % 5) - 2) * 0.018);
+        bookDummy.scale.set(bookWidth, bookHeight, bookDepth);
+        bookDummy.updateMatrix();
+
+        const bookMatrices = bookMatricesByColor.get(color);
+        if (bookMatrices) bookMatrices.push(bookDummy.matrix.clone());
+        else bookMatricesByColor.set(color, [bookDummy.matrix.clone()]);
+
         if ((row + i) % 3 === 0) {
-          this.addBoxToGroup(book, new THREE.Vector3(0, -bookHeight * 0.2, bookDepth / 2 + 0.007), new THREE.Vector3(bookWidth * 0.9, 0.018, 0.012), goldMat);
-          this.addBoxToGroup(book, new THREE.Vector3(0, bookHeight * 0.18, bookDepth / 2 + 0.007), new THREE.Vector3(bookWidth * 0.9, 0.018, 0.012), goldMat);
+          for (const y of [-bookHeight * 0.2, bookHeight * 0.18]) {
+            stripeDummy.position.set(0, y, bookDepth / 2 + 0.007);
+            stripeDummy.rotation.set(0, 0, 0);
+            stripeDummy.scale.set(bookWidth * 0.9, 0.018, 0.012);
+            stripeDummy.updateMatrix();
+            composedStripeMatrix.multiplyMatrices(bookDummy.matrix, stripeDummy.matrix);
+            stripeMatrices.push(composedStripeMatrix.clone());
+          }
         }
         cursor += bookWidth + 0.03;
       }
     }
+
+    for (const [color, matrices] of bookMatricesByColor) {
+      this.addInstancedBoxesToGroup(shelf, matrices, getStandardMaterial({ color, roughness: 0.5 }));
+    }
+    this.addInstancedBoxesToGroup(shelf, stripeMatrices, goldMat);
 
     this.addBookshelfDetails(shelf, shelfLevels, width, depth, goldMat);
 
@@ -1255,6 +1274,18 @@ export class AcademyWorld {
     mesh.receiveShadow = true;
     parent.add(mesh);
     return mesh;
+  }
+
+  private addInstancedBoxesToGroup(parent: THREE.Object3D, matrices: THREE.Matrix4[], material: THREE.Material): void {
+    if (matrices.length === 0) return;
+    const mesh = new THREE.InstancedMesh(UNIT_BOX, material, matrices.length);
+    mesh.instanceMatrix.setUsage(THREE.StaticDrawUsage);
+    matrices.forEach((matrix, index) => mesh.setMatrixAt(index, matrix));
+    mesh.instanceMatrix.needsUpdate = true;
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+    mesh.computeBoundingSphere();
+    parent.add(mesh);
   }
 
   private addFlatPlane(position: THREE.Vector3, size: THREE.Vector2, material: THREE.Material): THREE.Mesh {
