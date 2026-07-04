@@ -1209,8 +1209,8 @@ function EcctrlPlayer({ onFrame }: EcctrlPlayerProps): React.ReactElement {
       capsuleHalfHeight={0.58}
       capsuleRadius={0.32}
       floatHeight={0.42}
-      maxWalkVel={3.2}
-      maxRunVel={5.4}
+      maxWalkVel={4.4}
+      maxRunVel={7.2}
       jumpVel={4.2}
       slopeMaxAngle={0.78}
       followPlatform

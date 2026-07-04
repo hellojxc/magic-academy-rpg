@@ -1,4 +1,5 @@
 import { ThreeAcademyGame } from './three/ThreeAcademyGame';
+import { FpsCounter } from './ui/FpsCounter';
 
 interface GameInstance {
   start(): void;
@@ -11,11 +12,13 @@ if (!container) {
   throw new Error('Missing #game-container');
 }
 
+const fpsCounter = new FpsCounter(container);
 const game = await createGame(container);
 game.start();
 
 if (typeof window !== 'undefined') {
   (window as unknown as { __game?: GameInstance }).__game = game;
+  window.addEventListener('beforeunload', () => fpsCounter.destroy(), { once: true });
 }
 
 export { game };

@@ -43,6 +43,28 @@
       backdrop-filter: blur(8px);
     }
     .game-hud strong { color: #ffe07a; }
+    .fps-counter {
+      position: absolute;
+      top: 18px;
+      right: 18px;
+      z-index: 24;
+      min-width: 70px;
+      padding: 6px 8px;
+      border: 1px solid rgba(159, 220, 255, 0.32);
+      border-radius: 8px;
+      background: rgba(8, 12, 24, 0.72);
+      color: #bff4ff;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 1;
+      text-align: center;
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.72);
+      pointer-events: none;
+      backdrop-filter: blur(8px);
+    }
+    .fps-counter[data-tier="warn"] { color: #ffe07a; border-color: rgba(255, 224, 122, 0.4); }
+    .fps-counter[data-tier="bad"] { color: #ff8a8a; border-color: rgba(255, 138, 138, 0.45); }
     .hud-topline {
       white-space: nowrap;
     }
@@ -269,6 +291,13 @@
         min-width: 0;
         padding: 9px 10px;
         font-size: 12px;
+      }
+      .fps-counter {
+        top: 10px;
+        right: 10px;
+        min-width: 58px;
+        padding: 5px 6px;
+        font-size: 11px;
       }
       .hud-topline { white-space: normal; }
       .hud-derived { gap: 5px; font-size: 10px; }

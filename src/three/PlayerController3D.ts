@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { WORLD_BOUNDS, type Obstacle } from './WorldTypes';
 
 export class PlayerController3D {
-  private readonly speed = 2.9;
+  private readonly speed = 4.2;
   private readonly playerRadius = 0.32;
   private readonly velocity = new THREE.Vector3();
   private readonly targetVelocity = new THREE.Vector3();
