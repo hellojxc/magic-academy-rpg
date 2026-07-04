@@ -268,28 +268,39 @@ export class LawnLakeEnvironment {
       getStandardMaterial({ color: 0x514f4a, roughness: 0.9 }),
     ];
 
+    const sandMatrices: THREE.Matrix4[] = [];
+    const sandDummy = new THREE.Object3D();
     for (let i = 0; i < 82; i += 1) {
       const point = this.pointOnLakeRing(i, 82, 0.1 + seeded(i * 11) * 1.0);
-      const patch = new THREE.Mesh(Geo.circle(0.52 + seeded(i * 17) * 0.48, 14), sandMat);
-      patch.rotation.x = -Math.PI / 2;
-      patch.rotation.z = seeded(i * 19) * Math.PI;
-      patch.scale.set(1.55 + seeded(i * 23) * 1.5, 0.28 + seeded(i * 29) * 0.24, 1);
-      patch.position.set(point.x, this.terrainHeight(point.x, point.z) + 0.024 + i * 0.00002, point.z);
-      patch.receiveShadow = true;
-      this.scene.add(patch);
+      const radius = 0.52 + seeded(i * 17) * 0.48;
+      sandDummy.position.set(point.x, this.terrainHeight(point.x, point.z) + 0.024 + i * 0.00002, point.z);
+      sandDummy.rotation.set(-Math.PI / 2, 0, seeded(i * 19) * Math.PI);
+      sandDummy.scale.set(radius * (1.55 + seeded(i * 23) * 1.5), radius * (0.28 + seeded(i * 29) * 0.24), 1);
+      sandDummy.updateMatrix();
+      sandMatrices.push(sandDummy.matrix.clone());
     }
+    this.addInstancedStaticMesh(Geo.circle(1, 14), sandMat, sandMatrices, false, true);
 
+    const rockGeometry = new THREE.DodecahedronGeometry(1, 0);
+    const rockMatricesByMaterial = rockMats.map((): THREE.Matrix4[] => []);
+    const rockDummy = new THREE.Object3D();
     for (let i = 0; i < 110; i += 1) {
       const point = this.pointOnLakeRing(i, 110, 0.45 + seeded(i * 43) * 1.2);
       if (this.isInsideLake(point.x, point.z, -0.08)) continue;
-      const rock = new THREE.Mesh(new THREE.DodecahedronGeometry(0.05 + seeded(i * 3) * 0.12, 0), rockMats[i % rockMats.length]);
-      rock.scale.set(1.15 + seeded(i * 5) * 1.1, 0.35 + seeded(i * 7) * 0.42, 0.7 + seeded(i * 13) * 0.74);
-      rock.rotation.set(seeded(i * 31) * Math.PI, seeded(i * 37) * Math.PI, seeded(i * 41) * Math.PI);
-      rock.position.set(point.x, this.terrainHeight(point.x, point.z) + 0.045, point.z);
-      rock.castShadow = true;
-      rock.receiveShadow = true;
-      this.scene.add(rock);
+      const radius = 0.05 + seeded(i * 3) * 0.12;
+      rockDummy.position.set(point.x, this.terrainHeight(point.x, point.z) + 0.045, point.z);
+      rockDummy.rotation.set(seeded(i * 31) * Math.PI, seeded(i * 37) * Math.PI, seeded(i * 41) * Math.PI);
+      rockDummy.scale.set(
+        radius * (1.15 + seeded(i * 5) * 1.1),
+        radius * (0.35 + seeded(i * 7) * 0.42),
+        radius * (0.7 + seeded(i * 13) * 0.74)
+      );
+      rockDummy.updateMatrix();
+      rockMatricesByMaterial[i % rockMats.length].push(rockDummy.matrix.clone());
     }
+    rockMatricesByMaterial.forEach((matrices, index) => {
+      this.addInstancedStaticMesh(rockGeometry, rockMats[index], matrices, true, true);
+    });
 
     const lilyMat = getStandardMaterial({ color: 0x2c6a29, roughness: 0.72, metalness: 0.02 });
     const flowerMat = MatLib.lilyFlower;
@@ -426,20 +437,47 @@ export class LawnLakeEnvironment {
 
     const stemMat = getStandardMaterial({ color: 0x4a8b3a, roughness: 0.72 });
     const flowerMats = colors.map((c) => getStandardMaterial({ color: c, emissive: c, emissiveIntensity: 0.08, roughness: 0.46 }));
+    const stemMatrices: THREE.Matrix4[] = [];
+    const flowerMatricesByMaterial = flowerMats.map((): THREE.Matrix4[] => []);
+    const dummy = new THREE.Object3D();
     for (let i = 0; i < 18; i += 1) {
       const angle = (i / 18) * Math.PI * 2;
       const radius = seeded(i * 17 + x * 9) * 0.52;
       const fx = x + Math.cos(angle) * radius;
       const fz = z + Math.sin(angle) * radius;
-      const stem = new THREE.Mesh(Geo.cylinder(0.012, 0.015, 0.18, 5), stemMat);
-      stem.position.set(fx, y + 0.34, fz);
-      stem.castShadow = true;
-      this.scene.add(stem);
-      const flower = new THREE.Mesh(Geo.sphere(0.04, 8, 6), flowerMats[i % flowerMats.length]);
-      flower.position.set(fx, y + 0.45, fz);
-      flower.castShadow = true;
-      this.scene.add(flower);
+      dummy.position.set(fx, y + 0.34, fz);
+      dummy.rotation.set(0, 0, 0);
+      dummy.scale.set(1, 1, 1);
+      dummy.updateMatrix();
+      stemMatrices.push(dummy.matrix.clone());
+
+      dummy.position.set(fx, y + 0.45, fz);
+      dummy.updateMatrix();
+      flowerMatricesByMaterial[i % flowerMats.length].push(dummy.matrix.clone());
     }
+
+    this.addInstancedStaticMesh(Geo.cylinder(0.012, 0.015, 0.18, 5), stemMat, stemMatrices, true, false);
+    flowerMatricesByMaterial.forEach((matrices, index) => {
+      this.addInstancedStaticMesh(Geo.sphere(0.04, 8, 6), flowerMats[index], matrices, true, false);
+    });
+  }
+
+  private addInstancedStaticMesh(
+    geometry: THREE.BufferGeometry,
+    material: THREE.Material,
+    matrices: THREE.Matrix4[],
+    castShadow: boolean,
+    receiveShadow: boolean
+  ): void {
+    if (matrices.length === 0) return;
+    const mesh = new THREE.InstancedMesh(geometry, material, matrices.length);
+    mesh.instanceMatrix.setUsage(THREE.StaticDrawUsage);
+    matrices.forEach((matrix, index) => mesh.setMatrixAt(index, matrix));
+    mesh.instanceMatrix.needsUpdate = true;
+    mesh.castShadow = castShadow;
+    mesh.receiveShadow = receiveShadow;
+    mesh.computeBoundingSphere();
+    this.scene.add(mesh);
   }
 
   private addTrees(obstacles: Obstacle[]): void {
