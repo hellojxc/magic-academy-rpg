@@ -500,11 +500,11 @@ def make_materials(spec: dict[str, Any]) -> dict[str, bpy.types.Material]:
     hair_emission = 0.0 if is_player else 0.04
     hair_highlight_emission = 0.0 if is_player else 0.06
     return {
-        "skin": material("Skin", "#ffe3d4", 0.58, emission_strength=0.08),
-        "skin_warm": material("SkinWarm", "#ffc3ae", 0.62, emission_strength=0.06),
-        "skin_shadow": material("SkinSoftShadow", "#f0ad99", 0.68),
+        "skin": material("Skin", "#ffe8dc", 0.56, emission_strength=0.16),
+        "skin_warm": material("SkinWarm", "#ffc9b7", 0.60, emission_strength=0.12),
+        "skin_shadow": material("SkinSoftShadow", "#f2b4a2", 0.66, emission_strength=0.04),
         "cheek": material("CheekTint", face["cheekTint"], 0.82, alpha=0.82, backface_culling=False),
-        "eye_white": material("EyeWhite", "#fffaff", 0.44, backface_culling=False, emission_strength=0.1),
+        "eye_white": material("EyeWhite", "#f8f2ff", 0.46, backface_culling=False, emission_strength=0.07),
         "eye": material("EyeIris", face["eyeColor"], 0.32, backface_culling=False, emission_strength=0.08),
         "eye_shadow": material("EyeShadow", "#1b2338", 0.5, backface_culling=False),
         "pupil": material("Pupil", "#14111c", 0.52, backface_culling=False),
@@ -893,6 +893,8 @@ def add_limbs(
         parent_to_bone(hand, armature, f"{side}Hand")
         if is_player:
             add_player_hand_details(side, sx, m, mats, armature, collection)
+        elif not is_masculine:
+            add_soft_hand_details(side, sx, m, mats, armature, collection)
 
         if is_player:
             thigh = add_cone(
@@ -1048,6 +1050,58 @@ def add_player_hand_details(
     parent_to_bone(thumb, armature, f"{side}Hand")
 
 
+def add_soft_hand_details(
+    side: str,
+    sx: int,
+    m: dict[str, float],
+    mats: dict[str, bpy.types.Material],
+    armature: bpy.types.Object,
+    collection: bpy.types.Collection,
+) -> None:
+    scale = m["scale"]
+    shoulder = m["shoulder_width"]
+    palm_x = sx * (shoulder * 0.72)
+    palm_z = 0.649 * scale
+    for index, offset in enumerate((-0.015, -0.0045, 0.006, 0.016)):
+        length = (0.038 - abs(offset) * 0.18) * scale
+        radius = (0.0039 if index in (1, 2) else 0.0034) * scale
+        finger = add_cylinder(
+            f"{side}SoftFinger_{index}",
+            mats["skin"],
+            (palm_x + sx * offset * scale, -0.034 * scale, palm_z - length * 0.42),
+            radius,
+            length,
+            collection,
+            vertices=10,
+            rotation=(0.06, sx * 0.07, 0),
+            scale=(0.72, 0.95, 1.0),
+        )
+        parent_to_bone(finger, armature, f"{side}Hand")
+
+        nail = add_cube(
+            f"{side}SoftFingernail_{index}",
+            mats["cheek"],
+            (palm_x + sx * offset * scale, -0.038 * scale, palm_z - length * 0.86),
+            (radius * 0.95, 0.0014 * scale, radius * 0.52),
+            collection,
+            bevel=0.0008 * scale,
+        )
+        parent_to_bone(nail, armature, f"{side}Hand")
+
+    thumb = add_cylinder(
+        f"{side}SoftThumb",
+        mats["skin"],
+        (palm_x - sx * 0.024 * scale, -0.038 * scale, 0.646 * scale),
+        0.0042 * scale,
+        0.035 * scale,
+        collection,
+        vertices=10,
+        rotation=(0.28, sx * 0.82, 0.18),
+        scale=(0.74, 0.95, 1.0),
+    )
+    parent_to_bone(thumb, armature, f"{side}Hand")
+
+
 def add_player_limb_folds(
     side: str,
     sx: int,
@@ -1150,8 +1204,7 @@ def add_head(
     if is_player:
         sculpt_player_head_mesh(head)
     parent_to_bone(head, armature, "Head")
-    if is_player:
-        add_player_face_structure(m, mats, armature, collection)
+    add_player_face_structure(m, mats, armature, collection)
 
     nose = add_uv_sphere("Nose", mats["skin_warm"], (0, -0.196 * scale, 1.51 * scale), (0.009 * scale, 0.007 * scale, 0.019 * scale), collection, 16, 8)
     parent_to_bone(nose, armature, "Head")
@@ -1162,14 +1215,14 @@ def add_head(
     add_shape_key_transform(mouth, "surprised", scale=(0.64, 1.0, 2.2), offset=(0, -0.002 * scale, 0))
     parent_to_bone(mouth, armature, "Head")
 
-    eye_scale = float(spec["face"]["eyeScale"]) * (1.16 if is_player else 1.0)
+    eye_scale = float(spec["face"]["eyeScale"]) * (1.05 if is_player else 1.0)
     for side, sx in (("Left", -1), ("Right", 1)):
         eye_x = sx * (0.062 if is_player else 0.058) * scale
         eye_white = add_uv_sphere(
             f"{side}EyeWhite",
             mats["eye_white"],
             (eye_x, (-0.218 if is_player else -0.214) * scale, 1.546 * scale),
-            ((0.038 if is_player else 0.035) * scale * eye_scale, 0.0055 * scale, (0.026 if is_player else 0.024) * scale * eye_scale),
+            ((0.034 if is_player else 0.035) * scale * eye_scale, 0.0055 * scale, (0.023 if is_player else 0.024) * scale * eye_scale),
             collection,
             segments=36,
             rings=12,
@@ -1181,7 +1234,7 @@ def add_head(
             f"{side}Iris",
             mats["eye"],
             (eye_x + sx * 0.003 * scale, -0.220 * scale, 1.541 * scale),
-            ((0.018 if is_player else 0.016) * scale * eye_scale, 0.0035 * scale, (0.020 if is_player else 0.019) * scale * eye_scale),
+            ((0.017 if is_player else 0.016) * scale * eye_scale, 0.0035 * scale, (0.0185 if is_player else 0.019) * scale * eye_scale),
             collection,
             segments=32,
             rings=10,
@@ -1226,16 +1279,40 @@ def add_head(
         add_shape_key_transform(highlight, "blink", scale=(1.0, 1.0, 0.1), offset=(0, 0, -0.001 * scale))
         parent_to_bone(highlight, armature, "Head")
 
+        lower_highlight = add_uv_sphere(
+            f"{side}EyeLowerCatchlight",
+            mats["eye_white"],
+            (eye_x + sx * 0.010 * scale, -0.2245 * scale, 1.532 * scale),
+            (0.0038 * scale, 0.0015 * scale, 0.0032 * scale),
+            collection,
+            segments=14,
+            rings=6,
+        )
+        add_shape_key_transform(lower_highlight, "blink", scale=(1.0, 1.0, 0.1), offset=(0, 0, -0.001 * scale))
+        parent_to_bone(lower_highlight, armature, "Head")
+
         lash = add_cube(
             f"{side}UpperEyelash",
             mats["outline"],
             (eye_x, (-0.226 if is_player else -0.221) * scale, 1.57 * scale),
-            ((0.050 if is_player else 0.044) * scale * eye_scale, 0.0025 * scale, (0.0038 if is_player else 0.0032) * scale),
+            ((0.045 if is_player else 0.044) * scale * eye_scale, 0.0025 * scale, (0.0038 if is_player else 0.0032) * scale),
             collection,
             rotation=(0, 0, sx * 0.075),
             bevel=0.001 * scale,
         )
         parent_to_bone(lash, armature, "Head")
+
+        if not is_masculine_uniform(spec):
+            outer_lash = add_cube(
+                f"{side}OuterEyelashWing",
+                mats["outline"],
+                (eye_x + sx * 0.039 * scale, -0.225 * scale, 1.557 * scale),
+                (0.018 * scale, 0.0022 * scale, 0.0032 * scale),
+                collection,
+                rotation=(0, 0, sx * -0.42),
+                bevel=0.001 * scale,
+            )
+            parent_to_bone(outer_lash, armature, "Head")
 
         lower_lash = add_cube(
             f"{side}LowerEyelash",
@@ -1593,8 +1670,69 @@ def add_long_hair(
         panel = add_hair_panel(name, mat, [(x * scale, y * scale, z * scale) for x, y, z in verts], collection, 0.012 * scale)
         parent_to_bone(panel, armature, "Head")
 
+    add_long_hair_strand_locks(m, mats, armature, collection)
+
     clip = add_cone("StarHairClip", mats["trim"], (0.172 * scale, -0.218 * scale, 1.635 * scale), 0.036 * scale, 0.036 * scale, 0.014 * scale, collection, vertices=5, rotation=(math.pi / 2, 0, math.pi / 5))
     parent_to_bone(clip, armature, "Head")
+
+
+def add_long_hair_strand_locks(
+    m: dict[str, float],
+    mats: dict[str, bpy.types.Material],
+    armature: bpy.types.Object,
+    collection: bpy.types.Collection,
+) -> None:
+    scale = m["scale"]
+
+    def lock(name: str, mat: bpy.types.Material, points: list[tuple[float, float, float, float, float]]) -> None:
+        obj = add_hair_lock_mesh(
+            name,
+            mat,
+            [(x * scale, y * scale, z * scale, width * scale, depth * scale) for x, y, z, width, depth in points],
+            collection,
+        )
+        parent_to_bone(obj, armature, "Head")
+
+    strand_sets = [
+        (
+            "LongHairLeftFaceRibbon",
+            mats["hair"],
+            [(-0.168, -0.145, 1.57, 0.030, 0.016), (-0.195, -0.122, 1.34, 0.025, 0.014), (-0.176, -0.083, 1.08, 0.010, 0.008)],
+        ),
+        (
+            "LongHairRightFaceRibbon",
+            mats["hair"],
+            [(0.168, -0.145, 1.57, 0.030, 0.016), (0.195, -0.122, 1.34, 0.025, 0.014), (0.176, -0.083, 1.08, 0.010, 0.008)],
+        ),
+        (
+            "LongHairLeftOuterCurl",
+            mats["hair_highlight"],
+            [(-0.255, -0.022, 1.48, 0.024, 0.014), (-0.282, 0.012, 1.18, 0.020, 0.012), (-0.234, 0.028, 0.90, 0.009, 0.007)],
+        ),
+        (
+            "LongHairRightOuterCurl",
+            mats["hair_highlight"],
+            [(0.255, -0.022, 1.48, 0.024, 0.014), (0.282, 0.012, 1.18, 0.020, 0.012), (0.234, 0.028, 0.90, 0.009, 0.007)],
+        ),
+        (
+            "LongHairBackCenterSpine",
+            mats["hair_highlight"],
+            [(0.000, 0.158, 1.54, 0.032, 0.016), (0.000, 0.192, 1.18, 0.024, 0.014), (0.000, 0.174, 0.84, 0.010, 0.008)],
+        ),
+        (
+            "LongHairBackLeftLayeredTip",
+            mats["hair"],
+            [(-0.105, 0.162, 1.47, 0.030, 0.016), (-0.128, 0.188, 1.13, 0.024, 0.014), (-0.086, 0.166, 0.82, 0.010, 0.008)],
+        ),
+        (
+            "LongHairBackRightLayeredTip",
+            mats["hair"],
+            [(0.105, 0.162, 1.47, 0.030, 0.016), (0.128, 0.188, 1.13, 0.024, 0.014), (0.086, 0.166, 0.82, 0.010, 0.008)],
+        ),
+    ]
+
+    for name, mat, points in strand_sets:
+        lock(name, mat, points)
 
 
 def add_outfit(
@@ -2101,67 +2239,155 @@ def make_node_actions(rig: dict[str, Any], spec: dict[str, Any]) -> None:
 
 def make_idle_keys(spec: dict[str, Any]) -> list[tuple[int, dict[str, Any]]]:
     soft = 0.025 if spec["animation"]["idlePersonality"] == "gentle" else 0.018
-    return [
-        (1, {"Chest": ((0, 0, 0), (0, 0, 0)), "Head": ((0.02, 0, 0), (0, 0, 0))}),
-        (30, {"Chest": ((soft, 0, 0), (0, 0, 0.012)), "Head": ((-0.015, 0.02, 0.01), (0, 0, 0))}),
-        (60, {"Chest": ((0, 0, 0), (0, 0, 0)), "Head": ((0.02, 0, 0), (0, 0, 0))}),
-    ]
-
-
-def make_walk_keys(spec: dict[str, Any]) -> list[tuple[int, dict[str, Any]]]:
-    light = spec["animation"]["walkPersonality"] == "light"
-    stride = 0.42 if light else 0.34
-    arm = 0.32 if light else 0.26
-    bounce = 0.025 if light else 0.018
+    hand_soft = 0.016 if spec["animation"]["idlePersonality"] == "gentle" else 0.010
     return [
         (
             1,
             {
                 "Hips": ((0, 0, 0), (0, 0, 0)),
-                "LeftUpperLeg": ((stride, 0, 0), (0, 0, 0)),
-                "RightUpperLeg": ((-stride, 0, 0), (0, 0, 0)),
-                "LeftUpperArm": ((-arm, 0, 0.08), (0, 0, 0)),
-                "RightUpperArm": ((arm, 0, -0.08), (0, 0, 0)),
-            },
-        ),
-        (
-            15,
-            {
-                "Hips": ((0, 0, 0), (0, 0, bounce)),
-                "LeftUpperLeg": ((0, 0, 0), (0, 0, 0)),
-                "RightUpperLeg": ((0, 0, 0), (0, 0, 0)),
-                "LeftUpperArm": ((0, 0, 0), (0, 0, 0)),
-                "RightUpperArm": ((0, 0, 0), (0, 0, 0)),
+                "Spine": ((0, 0, 0), (0, 0, 0)),
+                "Chest": ((0, 0, 0), (0, 0, 0)),
+                "Head": ((0.018, 0, 0), (0, 0, 0)),
+                "LeftLowerArm": ((-0.08, 0, 0.02), (0, 0, 0)),
+                "RightLowerArm": ((-0.08, 0, -0.02), (0, 0, 0)),
+                "LeftHand": ((0, 0, 0.02), (0, 0, 0)),
+                "RightHand": ((0, 0, -0.02), (0, 0, 0)),
             },
         ),
         (
             30,
             {
-                "Hips": ((0, 0, 0), (0, 0, 0)),
-                "LeftUpperLeg": ((-stride, 0, 0), (0, 0, 0)),
-                "RightUpperLeg": ((stride, 0, 0), (0, 0, 0)),
-                "LeftUpperArm": ((arm, 0, 0.08), (0, 0, 0)),
-                "RightUpperArm": ((-arm, 0, -0.08), (0, 0, 0)),
-            },
-        ),
-        (
-            45,
-            {
-                "Hips": ((0, 0, 0), (0, 0, bounce)),
-                "LeftUpperLeg": ((0, 0, 0), (0, 0, 0)),
-                "RightUpperLeg": ((0, 0, 0), (0, 0, 0)),
-                "LeftUpperArm": ((0, 0, 0), (0, 0, 0)),
-                "RightUpperArm": ((0, 0, 0), (0, 0, 0)),
+                "Hips": ((0, 0, soft * 0.16), (0, 0, 0.008)),
+                "Spine": ((soft * 0.34, 0, 0), (0, 0, 0.004)),
+                "Chest": ((soft, 0.006, soft * 0.26), (0, 0, 0.012)),
+                "Head": ((-0.014, 0.022, 0.012), (0, 0, 0)),
+                "LeftUpperArm": ((-0.03, -0.01, -0.02), (0, 0, 0)),
+                "RightUpperArm": ((-0.03, 0.01, 0.02), (0, 0, 0)),
+                "LeftLowerArm": ((-0.08 + hand_soft, 0.01, 0.025), (0, 0, 0)),
+                "RightLowerArm": ((-0.08 - hand_soft, -0.01, -0.025), (0, 0, 0)),
+                "LeftHand": ((0.012, 0, 0.04), (0, 0, 0)),
+                "RightHand": ((-0.012, 0, -0.04), (0, 0, 0)),
             },
         ),
         (
             60,
             {
                 "Hips": ((0, 0, 0), (0, 0, 0)),
+                "Spine": ((0, 0, 0), (0, 0, 0)),
+                "Chest": ((0, 0, 0), (0, 0, 0)),
+                "Head": ((0.018, 0, 0), (0, 0, 0)),
+                "LeftLowerArm": ((-0.08, 0, 0.02), (0, 0, 0)),
+                "RightLowerArm": ((-0.08, 0, -0.02), (0, 0, 0)),
+                "LeftHand": ((0, 0, 0.02), (0, 0, 0)),
+                "RightHand": ((0, 0, -0.02), (0, 0, 0)),
+            },
+        ),
+    ]
+
+
+def make_walk_keys(spec: dict[str, Any]) -> list[tuple[int, dict[str, Any]]]:
+    light = spec["animation"]["walkPersonality"] == "light"
+    stride = 0.46 if light else 0.38
+    knee = 0.34 if light else 0.28
+    foot = 0.20 if light else 0.16
+    arm = 0.36 if light else 0.30
+    forearm = 0.16 if light else 0.12
+    bounce = 0.030 if light else 0.022
+    hip_sway = 0.035 if light else 0.026
+    return [
+        (
+            1,
+            {
+                "Hips": ((0, 0, -hip_sway), (0, 0, 0)),
+                "Spine": ((-0.015, -0.018, hip_sway * 0.25), (0, 0, 0)),
+                "Chest": ((-0.01, 0.026, -hip_sway * 0.5), (0, 0, 0)),
+                "Head": ((0.006, -0.016, hip_sway * 0.22), (0, 0, 0)),
                 "LeftUpperLeg": ((stride, 0, 0), (0, 0, 0)),
                 "RightUpperLeg": ((-stride, 0, 0), (0, 0, 0)),
+                "LeftLowerLeg": ((0.06, 0, 0), (0, 0, 0)),
+                "RightLowerLeg": ((knee, 0, 0), (0, 0, 0)),
+                "LeftFoot": ((-foot * 0.45, 0, 0), (0, 0, 0)),
+                "RightFoot": ((foot, 0, 0), (0, 0, 0)),
                 "LeftUpperArm": ((-arm, 0, 0.08), (0, 0, 0)),
                 "RightUpperArm": ((arm, 0, -0.08), (0, 0, 0)),
+                "LeftLowerArm": ((-forearm, 0, 0.03), (0, 0, 0)),
+                "RightLowerArm": ((-forearm * 0.6, 0, -0.03), (0, 0, 0)),
+            },
+        ),
+        (
+            15,
+            {
+                "Hips": ((0, 0, 0), (0, 0, bounce)),
+                "Spine": ((-0.02, 0, 0), (0, 0, 0)),
+                "Chest": ((-0.012, 0, 0), (0, 0, 0)),
+                "Head": ((-0.008, 0, 0), (0, 0, 0)),
+                "LeftUpperLeg": ((0.02, 0, 0), (0, 0, 0)),
+                "RightUpperLeg": ((0.0, 0, 0), (0, 0, 0)),
+                "LeftLowerLeg": ((knee * 0.55, 0, 0), (0, 0, 0)),
+                "RightLowerLeg": ((knee * 0.18, 0, 0), (0, 0, 0)),
+                "LeftFoot": ((foot * 0.25, 0, 0), (0, 0, 0)),
+                "RightFoot": ((-foot * 0.25, 0, 0), (0, 0, 0)),
+                "LeftUpperArm": ((0.02, 0, 0.02), (0, 0, 0)),
+                "RightUpperArm": ((-0.02, 0, -0.02), (0, 0, 0)),
+                "LeftLowerArm": ((-forearm * 0.8, 0, 0.015), (0, 0, 0)),
+                "RightLowerArm": ((-forearm * 0.8, 0, -0.015), (0, 0, 0)),
+            },
+        ),
+        (
+            30,
+            {
+                "Hips": ((0, 0, hip_sway), (0, 0, 0)),
+                "Spine": ((-0.015, 0.018, -hip_sway * 0.25), (0, 0, 0)),
+                "Chest": ((-0.01, -0.026, hip_sway * 0.5), (0, 0, 0)),
+                "Head": ((0.006, 0.016, -hip_sway * 0.22), (0, 0, 0)),
+                "LeftUpperLeg": ((-stride, 0, 0), (0, 0, 0)),
+                "RightUpperLeg": ((stride, 0, 0), (0, 0, 0)),
+                "LeftLowerLeg": ((knee, 0, 0), (0, 0, 0)),
+                "RightLowerLeg": ((0.06, 0, 0), (0, 0, 0)),
+                "LeftFoot": ((foot, 0, 0), (0, 0, 0)),
+                "RightFoot": ((-foot * 0.45, 0, 0), (0, 0, 0)),
+                "LeftUpperArm": ((arm, 0, 0.08), (0, 0, 0)),
+                "RightUpperArm": ((-arm, 0, -0.08), (0, 0, 0)),
+                "LeftLowerArm": ((-forearm * 0.6, 0, 0.03), (0, 0, 0)),
+                "RightLowerArm": ((-forearm, 0, -0.03), (0, 0, 0)),
+            },
+        ),
+        (
+            45,
+            {
+                "Hips": ((0, 0, 0), (0, 0, bounce)),
+                "Spine": ((-0.02, 0, 0), (0, 0, 0)),
+                "Chest": ((-0.012, 0, 0), (0, 0, 0)),
+                "Head": ((-0.008, 0, 0), (0, 0, 0)),
+                "LeftUpperLeg": ((0.0, 0, 0), (0, 0, 0)),
+                "RightUpperLeg": ((0.02, 0, 0), (0, 0, 0)),
+                "LeftLowerLeg": ((knee * 0.18, 0, 0), (0, 0, 0)),
+                "RightLowerLeg": ((knee * 0.55, 0, 0), (0, 0, 0)),
+                "LeftFoot": ((-foot * 0.25, 0, 0), (0, 0, 0)),
+                "RightFoot": ((foot * 0.25, 0, 0), (0, 0, 0)),
+                "LeftUpperArm": ((-0.02, 0, 0.02), (0, 0, 0)),
+                "RightUpperArm": ((0.02, 0, -0.02), (0, 0, 0)),
+                "LeftLowerArm": ((-forearm * 0.8, 0, 0.015), (0, 0, 0)),
+                "RightLowerArm": ((-forearm * 0.8, 0, -0.015), (0, 0, 0)),
+            },
+        ),
+        (
+            60,
+            {
+                "Hips": ((0, 0, -hip_sway), (0, 0, 0)),
+                "Spine": ((-0.015, -0.018, hip_sway * 0.25), (0, 0, 0)),
+                "Chest": ((-0.01, 0.026, -hip_sway * 0.5), (0, 0, 0)),
+                "Head": ((0.006, -0.016, hip_sway * 0.22), (0, 0, 0)),
+                "LeftUpperLeg": ((stride, 0, 0), (0, 0, 0)),
+                "RightUpperLeg": ((-stride, 0, 0), (0, 0, 0)),
+                "LeftLowerLeg": ((0.06, 0, 0), (0, 0, 0)),
+                "RightLowerLeg": ((knee, 0, 0), (0, 0, 0)),
+                "LeftFoot": ((-foot * 0.45, 0, 0), (0, 0, 0)),
+                "RightFoot": ((foot, 0, 0), (0, 0, 0)),
+                "LeftUpperArm": ((-arm, 0, 0.08), (0, 0, 0)),
+                "RightUpperArm": ((arm, 0, -0.08), (0, 0, 0)),
+                "LeftLowerArm": ((-forearm, 0, 0.03), (0, 0, 0)),
+                "RightLowerArm": ((-forearm * 0.6, 0, -0.03), (0, 0, 0)),
             },
         ),
     ]
@@ -2171,11 +2397,53 @@ def make_talk_keys(spec: dict[str, Any]) -> list[tuple[int, dict[str, Any]]]:
     warm = spec["animation"]["talkPersonality"] == "warm"
     hand_side = "LeftUpperArm" if warm else "RightUpperArm"
     hand_lower = "LeftLowerArm" if warm else "RightLowerArm"
+    other_side = "RightUpperArm" if warm else "LeftUpperArm"
+    other_lower = "RightLowerArm" if warm else "LeftLowerArm"
     return [
-        (1, {"Head": ((0.0, 0.0, 0.0), (0, 0, 0)), hand_side: ((0.0, 0.0, 0.0), (0, 0, 0)), hand_lower: ((0.0, 0.0, 0.0), (0, 0, 0))}),
-        (20, {"Head": ((-0.025, 0.03, 0.02), (0, 0, 0)), hand_side: ((-0.38, 0.0, 0.18), (0, 0, 0)), hand_lower: ((-0.32, 0.1, 0.0), (0, 0, 0))}),
-        (40, {"Head": ((0.018, -0.02, -0.015), (0, 0, 0)), hand_side: ((-0.24, 0.0, 0.08), (0, 0, 0)), hand_lower: ((-0.16, 0.06, 0.0), (0, 0, 0))}),
-        (60, {"Head": ((0.0, 0.0, 0.0), (0, 0, 0)), hand_side: ((0.0, 0.0, 0.0), (0, 0, 0)), hand_lower: ((0.0, 0.0, 0.0), (0, 0, 0))}),
+        (
+            1,
+            {
+                "Chest": ((0, 0, 0), (0, 0, 0)),
+                "Head": ((0.0, 0.0, 0.0), (0, 0, 0)),
+                hand_side: ((0.0, 0.0, 0.0), (0, 0, 0)),
+                hand_lower: ((-0.04, 0.0, 0.0), (0, 0, 0)),
+                other_side: ((-0.04, 0.0, 0.0), (0, 0, 0)),
+                other_lower: ((-0.06, 0.0, 0.0), (0, 0, 0)),
+            },
+        ),
+        (
+            20,
+            {
+                "Chest": ((0.018, 0.018 if warm else -0.018, 0.008), (0, 0, 0.006)),
+                "Head": ((-0.025, 0.03 if warm else -0.03, 0.02 if warm else -0.02), (0, 0, 0)),
+                hand_side: ((-0.42, 0.04 if warm else -0.04, 0.18), (0, 0, 0)),
+                hand_lower: ((-0.34, 0.12 if warm else -0.12, 0.02), (0, 0, 0)),
+                other_side: ((-0.10, -0.02 if warm else 0.02, -0.04), (0, 0, 0)),
+                other_lower: ((-0.10, 0.02 if warm else -0.02, 0.0), (0, 0, 0)),
+            },
+        ),
+        (
+            40,
+            {
+                "Chest": ((0.010, -0.014 if warm else 0.014, -0.006), (0, 0, 0.002)),
+                "Head": ((0.018, -0.02 if warm else 0.02, -0.015 if warm else 0.015), (0, 0, 0)),
+                hand_side: ((-0.25, -0.02 if warm else 0.02, 0.08), (0, 0, 0)),
+                hand_lower: ((-0.18, 0.06 if warm else -0.06, 0.0), (0, 0, 0)),
+                other_side: ((-0.07, 0.02 if warm else -0.02, 0.02), (0, 0, 0)),
+                other_lower: ((-0.08, -0.01 if warm else 0.01, 0.0), (0, 0, 0)),
+            },
+        ),
+        (
+            60,
+            {
+                "Chest": ((0, 0, 0), (0, 0, 0)),
+                "Head": ((0.0, 0.0, 0.0), (0, 0, 0)),
+                hand_side: ((0.0, 0.0, 0.0), (0, 0, 0)),
+                hand_lower: ((-0.04, 0.0, 0.0), (0, 0, 0)),
+                other_side: ((-0.04, 0.0, 0.0), (0, 0, 0)),
+                other_lower: ((-0.06, 0.0, 0.0), (0, 0, 0)),
+            },
+        ),
     ]
 
 

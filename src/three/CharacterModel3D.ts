@@ -29,6 +29,17 @@ interface BoneSet {
   rightFoot?: THREE.Object3D;
 }
 
+interface GLTFMorphBinding {
+  mesh: THREE.Mesh | THREE.SkinnedMesh;
+  dictionary: Record<string, number>;
+  influences: number[];
+}
+
+interface GLTFBoneBasePose {
+  position: THREE.Vector3;
+  rotation: THREE.Euler;
+}
+
 type ThreeVRMModule = typeof import('@pixiv/three-vrm');
 
 export class CharacterModel3D {
@@ -41,6 +52,8 @@ export class CharacterModel3D {
   private bones: BoneSet = {};
   private gltfMixer?: THREE.AnimationMixer;
   private readonly gltfActions = new Map<string, THREE.AnimationAction>();
+  private gltfMorphBindings: GLTFMorphBinding[] = [];
+  private readonly gltfBoneBasePoses = new Map<THREE.Object3D, GLTFBoneBasePose>();
   private activeGLTFAction?: THREE.AnimationAction;
   private buildPlan: CharacterBuildPlan;
   private moving = false;
@@ -80,7 +93,7 @@ export class CharacterModel3D {
     }
 
     if (this.gltfMixer) {
-      this.updateGLTFAnimation(delta);
+      this.updateGLTFAnimation(elapsedTime, delta);
       return;
     }
 
@@ -149,6 +162,8 @@ export class CharacterModel3D {
 
   private installVRM(vrm: VRM, vrmModule: ThreeVRMModule): void {
     this.vrm = vrm;
+    this.gltfMorphBindings = [];
+    this.gltfBoneBasePoses.clear();
     this.setAssetState('vrm');
     vrmModule.VRMUtils.rotateVRM0(vrm);
     vrmModule.VRMUtils.combineSkeletons(vrm.scene);
@@ -173,6 +188,9 @@ export class CharacterModel3D {
     scene.rotation.y = Math.PI;
     this.root.add(scene);
     this.setVRMShadows(scene);
+    this.bones = this.collectNamedBones(scene);
+    this.gltfMorphBindings = this.collectMorphTargets(scene);
+    this.captureGLTFBoneBasePoses();
 
     if (animations.length > 0) {
       this.gltfMixer = new THREE.AnimationMixer(scene);
@@ -190,9 +208,12 @@ export class CharacterModel3D {
     }
   }
 
-  private updateGLTFAnimation(delta: number): void {
+  private updateGLTFAnimation(elapsedTime: number, delta: number): void {
     this.playGLTFAction(this.moving ? 'walk' : 'idle', 0.22);
+    this.restoreGLTFBoneBasePoses();
     this.gltfMixer?.update(delta);
+    this.applyGLTFPoseOverlay(elapsedTime);
+    this.applyGLTFMorphExpressions(elapsedTime, delta);
   }
 
   private playGLTFAction(name: string, fadeDuration: number): void {
@@ -241,6 +262,67 @@ export class CharacterModel3D {
       rightLowerLeg: humanoid.getNormalizedBoneNode(boneName.RightLowerLeg) ?? undefined,
       rightFoot: humanoid.getNormalizedBoneNode(boneName.RightFoot) ?? undefined,
     };
+  }
+
+  private collectNamedBones(model: THREE.Object3D): BoneSet {
+    const entries: Array<[string, THREE.Object3D]> = [];
+    model.traverse((object) => {
+      if (object.name) entries.push([object.name.replace(/[^a-z0-9]/gi, '').toLowerCase(), object]);
+    });
+
+    const find = (name: string): THREE.Object3D | undefined => {
+      const target = name.toLowerCase();
+      return entries.find(([candidate]) => candidate === target || candidate.endsWith(target) || candidate.includes(target))?.[1];
+    };
+
+    return {
+      hips: find('hips'),
+      spine: find('spine'),
+      chest: find('chest'),
+      head: find('head'),
+      leftUpperArm: find('leftupperarm'),
+      leftLowerArm: find('leftlowerarm'),
+      rightUpperArm: find('rightupperarm'),
+      rightLowerArm: find('rightlowerarm'),
+      leftUpperLeg: find('leftupperleg'),
+      leftLowerLeg: find('leftlowerleg'),
+      leftFoot: find('leftfoot'),
+      rightUpperLeg: find('rightupperleg'),
+      rightLowerLeg: find('rightlowerleg'),
+      rightFoot: find('rightfoot'),
+    };
+  }
+
+  private collectMorphTargets(model: THREE.Object3D): GLTFMorphBinding[] {
+    const bindings: GLTFMorphBinding[] = [];
+    model.traverse((object) => {
+      if (!(object instanceof THREE.Mesh || object instanceof THREE.SkinnedMesh)) return;
+      if (!object.morphTargetDictionary || !object.morphTargetInfluences) return;
+      bindings.push({
+        mesh: object,
+        dictionary: object.morphTargetDictionary,
+        influences: object.morphTargetInfluences,
+      });
+    });
+    return bindings;
+  }
+
+  private captureGLTFBoneBasePoses(): void {
+    this.gltfBoneBasePoses.clear();
+    for (const bone of Object.values(this.bones)) {
+      if (!bone || this.gltfBoneBasePoses.has(bone)) continue;
+      this.gltfBoneBasePoses.set(bone, {
+        position: bone.position.clone(),
+        rotation: bone.rotation.clone(),
+      });
+    }
+  }
+
+  private restoreGLTFBoneBasePoses(): void {
+    for (const [bone, pose] of this.gltfBoneBasePoses) {
+      bone.position.copy(pose.position);
+      bone.rotation.copy(pose.rotation);
+    }
   }
 
   private updateLookTarget(lookAtWorldPosition: THREE.Vector3 | undefined, elapsedTime: number): void {
@@ -316,6 +398,77 @@ export class CharacterModel3D {
     if (this.bones.leftUpperLeg) this.bones.leftUpperLeg.rotation.x = -0.035 + breathe * 0.006;
     if (this.bones.rightUpperLeg) this.bones.rightUpperLeg.rotation.x = 0.03 - breathe * 0.006;
     if (this.bones.head) this.bones.head.rotation.y += Math.sin(performance.now() * 0.009) * 0.035 * talkBlend;
+  }
+
+  private applyGLTFPoseOverlay(elapsedTime: number): void {
+    if (!this.bones.hips && !this.bones.head) return;
+
+    const walk = Math.sin(elapsedTime * 8.2);
+    const opposite = Math.sin(elapsedTime * 8.2 + Math.PI);
+    const bounce = Math.abs(Math.cos(elapsedTime * 8.2));
+    const breathe = Math.sin(elapsedTime * 2.0);
+    const soft = Math.sin(elapsedTime * 1.1);
+    const movementBlend = this.moving ? 1 : 0;
+    const idleBlend = 1 - movementBlend;
+
+    if (this.bones.hips) {
+      this.bones.hips.position.y += bounce * 0.006 * movementBlend + breathe * 0.003 * idleBlend;
+      this.bones.hips.rotation.z += walk * 0.008 * movementBlend + soft * 0.004 * idleBlend;
+    }
+    if (this.bones.spine) {
+      this.bones.spine.rotation.x += breathe * 0.008 * idleBlend - bounce * 0.006 * movementBlend;
+      this.bones.spine.rotation.y += -walk * 0.012 * movementBlend;
+    }
+    if (this.bones.chest) {
+      this.bones.chest.rotation.y += walk * 0.016 * movementBlend;
+      this.bones.chest.rotation.z += soft * 0.006 * idleBlend - walk * 0.008 * movementBlend;
+    }
+    if (this.bones.head) {
+      this.bones.head.rotation.x += breathe * 0.008 * idleBlend - bounce * 0.004 * movementBlend;
+      this.bones.head.rotation.y += soft * 0.018 * idleBlend;
+      this.bones.head.rotation.z += -walk * 0.006 * movementBlend;
+    }
+
+    if (!this.moving) return;
+    if (this.bones.leftLowerLeg) this.bones.leftLowerLeg.rotation.x += Math.max(0, -walk) * 0.18;
+    if (this.bones.rightLowerLeg) this.bones.rightLowerLeg.rotation.x += Math.max(0, walk) * 0.18;
+    if (this.bones.leftFoot) this.bones.leftFoot.rotation.x += Math.max(0, walk) * 0.08;
+    if (this.bones.rightFoot) this.bones.rightFoot.rotation.x += Math.max(0, opposite) * 0.08;
+    if (this.bones.leftLowerArm) this.bones.leftLowerArm.rotation.x += -0.05 - Math.max(0, walk) * 0.04;
+    if (this.bones.rightLowerArm) this.bones.rightLowerArm.rotation.x += -0.05 - Math.max(0, opposite) * 0.04;
+  }
+
+  private applyGLTFMorphExpressions(elapsedTime: number, delta: number): void {
+    if (this.gltfMorphBindings.length === 0) return;
+
+    this.blinkTimer -= delta;
+    if (this.blinkTimer <= 0) {
+      this.blinkTimer = 2.2 + Math.random() * 2.4;
+      this.blinkDuration = 0.16;
+    }
+
+    let blink = 0;
+    if (this.blinkDuration > 0) {
+      this.blinkDuration -= delta;
+      const phase = 1 - Math.max(0, this.blinkDuration) / 0.16;
+      blink = Math.sin(phase * Math.PI);
+    }
+
+    const baseSmile = this.spec.id === 'player' ? 0.035 : this.spec.id === 'lyra' ? 0.18 : 0.08;
+    const smile = baseSmile + Math.sin(elapsedTime * 1.15) * (this.spec.id === 'lyra' ? 0.035 : 0.018);
+
+    for (const binding of this.gltfMorphBindings) {
+      for (const [name, index] of Object.entries(binding.dictionary)) {
+        const normalized = name.toLowerCase();
+        if (normalized.includes('blink')) {
+          binding.influences[index] = blink;
+        } else if (normalized.includes('smile') || normalized.includes('warm')) {
+          binding.influences[index] = Math.max(0, smile);
+        } else if (normalized.includes('concerned') || normalized.includes('surprised')) {
+          binding.influences[index] = 0;
+        }
+      }
+    }
   }
 
   private applyExpressions(elapsedTime: number, delta: number): void {

@@ -2,23 +2,23 @@
   "version": "runtime-character-audit-v1",
   "characterId": "lyra",
   "displayName": "Lyra",
-  "accepted": false,
+  "accepted": true,
   "summary": {
     "file": "public/assets/models/lyra.glb",
-    "sizeKb": 583.4,
-    "nodes": 102,
-    "meshes": 84,
-    "primitives": 84,
+    "sizeKb": 1267.7,
+    "nodes": 145,
+    "meshes": 126,
+    "primitives": 126,
     "materials": 18,
-    "skins": 0,
-    "bones": 0,
+    "skins": 1,
+    "bones": 17,
     "animations": [
-      "walk",
       "idle",
-      "talk"
+      "talk",
+      "walk"
     ],
-    "morphTargetPrimitiveCount": 0,
-    "triangleCount": 19504
+    "morphTargetPrimitiveCount": 11,
+    "triangleCount": 26244
   },
   "requirements": {
     "triangleBudgetHero": [
@@ -53,23 +53,23 @@
     },
     {
       "name": "triangle budget",
-      "passed": false,
-      "detail": "19504 triangles, target 25000-45000"
+      "passed": true,
+      "detail": "26244 triangles, target 25000-45000"
     },
     {
       "name": "humanoid skin",
-      "passed": false,
-      "detail": "0 skins, 0 bones"
+      "passed": true,
+      "detail": "1 skins, 17 bones"
     },
     {
       "name": "facial morph targets",
-      "passed": false,
-      "detail": "0 primitives with morph targets"
+      "passed": true,
+      "detail": "11 primitives with morph targets"
     },
     {
       "name": "required animation clips",
       "passed": true,
-      "detail": "has [walk, idle, talk], requires [idle, walk, talk]"
+      "detail": "has [idle, talk, walk], requires [idle, walk, talk]"
     },
     {
       "name": "material count",
@@ -77,6 +77,6 @@
       "detail": "18 materials, target <= 32"
     }
   ],
-  "conclusion": "Runtime asset is not yet a production-quality RPG character model.",
-  "generatedAt": "2026-07-03T21:48:44.365Z"
+  "conclusion": "Runtime asset passes the current production gate.",
+  "generatedAt": "2026-07-04T02:18:22.000Z"
 }
