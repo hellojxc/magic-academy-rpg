@@ -64,21 +64,22 @@ The web runtime should stay stable while source models improve.
 
 ## Current Mature Senpai Runtime Layer
 
-`mature_senpai` currently uses `mature-senpai-commercial-v6` as the active
+`mature_senpai` currently uses `mature-senpai-commercial-v8` as the active
 runtime asset. The generated source and audit files are:
 
-- `assets/characters/mature_senpai/tools/build_final_v6.py`
-- `assets/characters/mature_senpai/source/mature_senpai_commercial_v6.blend`
-- `assets/characters/mature_senpai/mature_senpai_commercial_v6.report.json`
-- `public/assets/models/mature_senpai_commercial_v6.glb`
-- `public/assets/models/mature_senpai_commercial_v6.png`
+- `assets/characters/mature_senpai/tools/build_final_v8.py`
+- `assets/characters/mature_senpai/source/mature_senpai_commercial_v8.blend`
+- `assets/characters/mature_senpai/mature_senpai_commercial_v8.report.json`
+- `public/assets/models/mature_senpai_commercial_v8.glb`
+- `public/assets/models/mature_senpai_commercial_v8.png`
 
 This layer completes the current automated Blender pass: helper mesh removal,
-named skinned submesh splitting, rule-painted runtime weights, six expression
-morph targets, hair/skirt/strap/pendant secondary bones, and dialogue-distance
-face detail overlays. v6 also replaces the noisy source arm/hand region with
-clean skinned arm/hand meshes so full-body and dialogue-distance views no
-longer show the dark AI geometry artifacts from v5. It deliberately remains
-marked as a commercial candidate because the topology, hands, and expression
-shapes are generated cleanup work rather than a final artist-sculpted quad
-retopology and hand-painted weight pass.
+hybrid source-preserving runtime retopo, named skinned submesh splitting,
+explicit per-part weight profiles, six expression morph targets,
+hair/hair-tip/skirt/skirt-tip/strap/pendant secondary bones, and
+dialogue-distance face detail overlays. v8 keeps the v7 arm/hand cleanup with
+separate fingers, thumbs, and soft nail surfaces, then adds a machine-readable
+audit report for part skinning, morphs, and secondary bones. It deliberately
+remains marked as a commercial candidate because the topology, hands, and
+expression shapes are generated cleanup work rather than a final
+artist-sculpted quad retopology and brush-painted weight pass.

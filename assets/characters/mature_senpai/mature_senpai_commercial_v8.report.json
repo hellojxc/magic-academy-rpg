@@ -1,0 +1,683 @@
+{
+  "assetId": "mature-senpai-commercial-v8",
+  "characterId": "mature_senpai",
+  "status": "active-retopo-rigging-layer-preview",
+  "source": "public/assets/models/mature_senpai_mcp_polish_v2.glb",
+  "blendSource": "assets/characters/mature_senpai/source/mature_senpai_commercial_v8.blend",
+  "output": "public/assets/models/mature_senpai_commercial_v8.glb",
+  "thumbnail": "public/assets/models/mature_senpai_commercial_v8.png",
+  "generatedBy": "BlenderMCP execute_code + assets/characters/mature_senpai/tools/build_final_v8.py",
+  "runtime": {
+    "defaultAsset": true,
+    "format": "glb",
+    "url": "/assets/models/mature_senpai_commercial_v8.glb",
+    "thumbnailUrl": "/assets/models/mature_senpai_commercial_v8.png",
+    "fallbackAssetId": "mature-senpai-commercial-v7",
+    "threeRuntimeFeatures": [
+      "SkinnedMesh",
+      "AnimationMixer clips",
+      "morphTargetInfluences",
+      "Secondary_* bone spring overlay"
+    ]
+  },
+  "productionFlags": {
+    "hybridRetopoLayer": true,
+    "splitRuntimeParts": true,
+    "facialMorphs": true,
+    "explicitWeightProfiles": true,
+    "hairSecondaryBones": true,
+    "skirtSecondaryBones": true,
+    "webRuntimeReady": true
+  },
+  "geometryCleanupMeshes": [
+    "MatureSenpai_LeftNaturalArmHand",
+    "MatureSenpai_RightNaturalArmHand"
+  ],
+  "parts": [
+    {
+      "name": "MatureSenpai_Face_Head",
+      "faces": 4582,
+      "vertices": 4262,
+      "materials": [
+        "Material.001"
+      ],
+      "hasSkinning": true,
+      "hasUv": true,
+      "hasMorphTargets": true,
+      "morphTargets": [
+        "Blink",
+        "ConfidentSmile",
+        "WarmSmile",
+        "Teasing",
+        "Surprised",
+        "Thoughtful"
+      ],
+      "vertexGroups": {
+        "Head": {
+          "weightedVertices": 4262,
+          "totalWeight": 4244.4476,
+          "maxWeight": 1.0
+        },
+        "Neck": {
+          "weightedVertices": 261,
+          "totalWeight": 17.5524,
+          "maxWeight": 0.25
+        }
+      },
+      "retopoLayer": "source-preserving split runtime mesh",
+      "weightProfile": "explicit profile weights for Face_Head"
+    },
+    {
+      "name": "MatureSenpai_Hair_LeftLock",
+      "faces": 9669,
+      "vertices": 9841,
+      "materials": [
+        "Material.001"
+      ],
+      "hasSkinning": true,
+      "hasUv": true,
+      "hasMorphTargets": false,
+      "morphTargets": [],
+      "vertexGroups": {
+        "Head": {
+          "weightedVertices": 9841,
+          "totalWeight": 8473.1779,
+          "maxWeight": 0.92
+        },
+        "Secondary_Hair_Left": {
+          "weightedVertices": 9841,
+          "totalWeight": 1367.8221,
+          "maxWeight": 0.3584
+        }
+      },
+      "retopoLayer": "source-preserving split runtime mesh",
+      "weightProfile": "explicit profile weights for Hair_LeftLock"
+    },
+    {
+      "name": "MatureSenpai_Hair_RightLock",
+      "faces": 10006,
+      "vertices": 9936,
+      "materials": [
+        "Material.001"
+      ],
+      "hasSkinning": true,
+      "hasUv": true,
+      "hasMorphTargets": false,
+      "morphTargets": [],
+      "vertexGroups": {
+        "Head": {
+          "weightedVertices": 9936,
+          "totalWeight": 8572.2482,
+          "maxWeight": 0.92
+        },
+        "Secondary_Hair_Right": {
+          "weightedVertices": 9936,
+          "totalWeight": 1363.752,
+          "maxWeight": 0.3609
+        }
+      },
+      "retopoLayer": "source-preserving split runtime mesh",
+      "weightProfile": "explicit profile weights for Hair_RightLock"
+    },
+    {
+      "name": "MatureSenpai_Hair_Back",
+      "faces": 7755,
+      "vertices": 7284,
+      "materials": [
+        "Material.001"
+      ],
+      "hasSkinning": true,
+      "hasUv": true,
+      "hasMorphTargets": false,
+      "morphTargets": [],
+      "vertexGroups": {
+        "Head": {
+          "weightedVertices": 7284,
+          "totalWeight": 6356.7071,
+          "maxWeight": 0.92
+        },
+        "Secondary_Hair_Back": {
+          "weightedVertices": 7283,
+          "totalWeight": 927.1711,
+          "maxWeight": 0.3293
+        },
+        "Secondary_Hair_Left": {
+          "weightedVertices": 1,
+          "totalWeight": 0.1219,
+          "maxWeight": 0.1219
+        }
+      },
+      "retopoLayer": "source-preserving split runtime mesh",
+      "weightProfile": "explicit profile weights for Hair_Back"
+    },
+    {
+      "name": "MatureSenpai_Torso_Camisole",
+      "faces": 10775,
+      "vertices": 10331,
+      "materials": [
+        "Material.001"
+      ],
+      "hasSkinning": true,
+      "hasUv": true,
+      "hasMorphTargets": false,
+      "morphTargets": [],
+      "vertexGroups": {
+        "Chest": {
+          "weightedVertices": 10331,
+          "totalWeight": 8280.9055,
+          "maxWeight": 1.0
+        },
+        "Spine": {
+          "weightedVertices": 10331,
+          "totalWeight": 2050.0945,
+          "maxWeight": 0.9101
+        }
+      },
+      "retopoLayer": "source-preserving split runtime mesh",
+      "weightProfile": "explicit profile weights for Torso_Camisole"
+    },
+    {
+      "name": "MatureSenpai_Skirt_LeftPanel",
+      "faces": 2470,
+      "vertices": 2374,
+      "materials": [
+        "Material.001"
+      ],
+      "hasSkinning": true,
+      "hasUv": true,
+      "hasMorphTargets": false,
+      "morphTargets": [],
+      "vertexGroups": {
+        "Hips": {
+          "weightedVertices": 2374,
+          "totalWeight": 1761.054,
+          "maxWeight": 0.95
+        },
+        "Secondary_Skirt_Center": {
+          "weightedVertices": 70,
+          "totalWeight": 15.9529,
+          "maxWeight": 0.4104
+        },
+        "Secondary_Skirt_Center_Tip": {
+          "weightedVertices": 32,
+          "totalWeight": 10.3755,
+          "maxWeight": 0.36
+        },
+        "Secondary_Skirt_Left": {
+          "weightedVertices": 2304,
+          "totalWeight": 414.6097,
+          "maxWeight": 0.4231
+        },
+        "Secondary_Skirt_Left_Tip": {
+          "weightedVertices": 576,
+          "totalWeight": 172.0076,
+          "maxWeight": 0.36
+        }
+      },
+      "retopoLayer": "source-preserving split runtime mesh",
+      "weightProfile": "explicit profile weights for Skirt_LeftPanel"
+    },
+    {
+      "name": "MatureSenpai_Skirt_RightPanel",
+      "faces": 2462,
+      "vertices": 2305,
+      "materials": [
+        "Material.001"
+      ],
+      "hasSkinning": true,
+      "hasUv": true,
+      "hasMorphTargets": false,
+      "morphTargets": [],
+      "vertexGroups": {
+        "Hips": {
+          "weightedVertices": 2305,
+          "totalWeight": 1693.894,
+          "maxWeight": 0.95
+        },
+        "Secondary_Skirt_Center": {
+          "weightedVertices": 69,
+          "totalWeight": 16.4621,
+          "maxWeight": 0.4169
+        },
+        "Secondary_Skirt_Center_Tip": {
+          "weightedVertices": 34,
+          "totalWeight": 10.3158,
+          "maxWeight": 0.36
+        },
+        "Secondary_Skirt_Right": {
+          "weightedVertices": 2236,
+          "totalWeight": 409.0832,
+          "maxWeight": 0.423
+        },
+        "Secondary_Skirt_Right_Tip": {
+          "weightedVertices": 583,
+          "totalWeight": 175.2448,
+          "maxWeight": 0.36
+        }
+      },
+      "retopoLayer": "source-preserving split runtime mesh",
+      "weightProfile": "explicit profile weights for Skirt_RightPanel"
+    },
+    {
+      "name": "MatureSenpai_Skirt_Center",
+      "faces": 1094,
+      "vertices": 976,
+      "materials": [
+        "Material.001"
+      ],
+      "hasSkinning": true,
+      "hasUv": true,
+      "hasMorphTargets": false,
+      "morphTargets": [],
+      "vertexGroups": {
+        "Hips": {
+          "weightedVertices": 976,
+          "totalWeight": 658.2178,
+          "maxWeight": 0.95
+        },
+        "Secondary_Skirt_Center": {
+          "weightedVertices": 976,
+          "totalWeight": 194.7477,
+          "maxWeight": 0.4185
+        },
+        "Secondary_Skirt_Center_Tip": {
+          "weightedVertices": 378,
+          "totalWeight": 123.0345,
+          "maxWeight": 0.36
+        }
+      },
+      "retopoLayer": "source-preserving split runtime mesh",
+      "weightProfile": "explicit profile weights for Skirt_Center"
+    },
+    {
+      "name": "MatureSenpai_Legs",
+      "faces": 4691,
+      "vertices": 4339,
+      "materials": [
+        "Material.001"
+      ],
+      "hasSkinning": true,
+      "hasUv": true,
+      "hasMorphTargets": false,
+      "morphTargets": [],
+      "vertexGroups": {
+        "Hips": {
+          "weightedVertices": 621,
+          "totalWeight": 49.68,
+          "maxWeight": 0.08
+        },
+        "LeftLowerLeg": {
+          "weightedVertices": 1769,
+          "totalWeight": 1335.4108,
+          "maxWeight": 0.9984
+        },
+        "LeftUpperLeg": {
+          "weightedVertices": 2093,
+          "totalWeight": 731.6692,
+          "maxWeight": 0.9997
+        },
+        "RightLowerLeg": {
+          "weightedVertices": 1949,
+          "totalWeight": 1506.5449,
+          "maxWeight": 0.9979
+        },
+        "RightUpperLeg": {
+          "weightedVertices": 2246,
+          "totalWeight": 715.6951,
+          "maxWeight": 0.9973
+        }
+      },
+      "retopoLayer": "source-preserving split runtime mesh",
+      "weightProfile": "explicit profile weights for Legs"
+    },
+    {
+      "name": "MatureSenpai_Shoes",
+      "faces": 4004,
+      "vertices": 3485,
+      "materials": [
+        "Material.001"
+      ],
+      "hasSkinning": true,
+      "hasUv": true,
+      "hasMorphTargets": false,
+      "morphTargets": [],
+      "vertexGroups": {
+        "LeftFoot": {
+          "weightedVertices": 1753,
+          "totalWeight": 1753.0,
+          "maxWeight": 1.0
+        },
+        "RightFoot": {
+          "weightedVertices": 1732,
+          "totalWeight": 1732.0,
+          "maxWeight": 1.0
+        }
+      },
+      "retopoLayer": "source-preserving split runtime mesh",
+      "weightProfile": "explicit profile weights for Shoes"
+    },
+    {
+      "name": "MatureSenpai_Strap_Left",
+      "faces": 1,
+      "vertices": 4,
+      "materials": [
+        "CommercialV4_IvoryStraps"
+      ],
+      "hasSkinning": true,
+      "hasUv": false,
+      "hasMorphTargets": false,
+      "morphTargets": [],
+      "vertexGroups": {
+        "Chest": {
+          "weightedVertices": 4,
+          "totalWeight": 2.32,
+          "maxWeight": 0.58
+        },
+        "Secondary_Strap_Left": {
+          "weightedVertices": 4,
+          "totalWeight": 1.68,
+          "maxWeight": 0.42
+        }
+      },
+      "retopoLayer": "source-preserving split runtime mesh",
+      "weightProfile": "explicit profile weights"
+    },
+    {
+      "name": "MatureSenpai_Strap_Right",
+      "faces": 1,
+      "vertices": 4,
+      "materials": [
+        "CommercialV4_IvoryStraps"
+      ],
+      "hasSkinning": true,
+      "hasUv": false,
+      "hasMorphTargets": false,
+      "morphTargets": [],
+      "vertexGroups": {
+        "Chest": {
+          "weightedVertices": 4,
+          "totalWeight": 2.32,
+          "maxWeight": 0.58
+        },
+        "Secondary_Strap_Right": {
+          "weightedVertices": 4,
+          "totalWeight": 1.68,
+          "maxWeight": 0.42
+        }
+      },
+      "retopoLayer": "source-preserving split runtime mesh",
+      "weightProfile": "explicit profile weights"
+    },
+    {
+      "name": "MatureSenpai_Pendant_Choker",
+      "faces": 4,
+      "vertices": 8,
+      "materials": [
+        "CommercialV4_GoldTrim",
+        "CommercialV4_PendantGem"
+      ],
+      "hasSkinning": true,
+      "hasUv": false,
+      "hasMorphTargets": false,
+      "morphTargets": [],
+      "vertexGroups": {
+        "Chest": {
+          "weightedVertices": 8,
+          "totalWeight": 1.28,
+          "maxWeight": 0.16
+        },
+        "Neck": {
+          "weightedVertices": 8,
+          "totalWeight": 3.84,
+          "maxWeight": 0.48
+        },
+        "Secondary_Pendant": {
+          "weightedVertices": 8,
+          "totalWeight": 2.88,
+          "maxWeight": 0.36
+        }
+      },
+      "retopoLayer": "source-preserving split runtime mesh",
+      "weightProfile": "explicit profile weights"
+    },
+    {
+      "name": "MatureSenpai_Face_DialogueDetails",
+      "faces": 9,
+      "vertices": 36,
+      "materials": [
+        "CommercialV5_SoftLash",
+        "CommercialV5_EyeCatchlight",
+        "CommercialV5_MouthLine",
+        "CommercialV5_CheekTint"
+      ],
+      "hasSkinning": true,
+      "hasUv": false,
+      "hasMorphTargets": false,
+      "morphTargets": [],
+      "vertexGroups": {
+        "Head": {
+          "weightedVertices": 36,
+          "totalWeight": 36.0,
+          "maxWeight": 1.0
+        }
+      },
+      "retopoLayer": "source-preserving split runtime mesh",
+      "weightProfile": "explicit profile weights"
+    },
+    {
+      "name": "MatureSenpai_LeftNaturalArmHand",
+      "faces": 180,
+      "vertices": 186,
+      "materials": [
+        "CommercialV8_NaturalAnimeSkin_ArmsHands",
+        "CommercialV8_SoftNails"
+      ],
+      "hasSkinning": true,
+      "hasUv": false,
+      "hasMorphTargets": false,
+      "morphTargets": [],
+      "vertexGroups": {
+        "Chest": {
+          "weightedVertices": 15,
+          "totalWeight": 4.48,
+          "maxWeight": 0.3
+        },
+        "LeftHand": {
+          "weightedVertices": 129,
+          "totalWeight": 114.02,
+          "maxWeight": 1.0
+        },
+        "LeftLowerArm": {
+          "weightedVertices": 70,
+          "totalWeight": 37.1,
+          "maxWeight": 0.88
+        },
+        "LeftUpperArm": {
+          "weightedVertices": 57,
+          "totalWeight": 30.4,
+          "maxWeight": 0.88
+        }
+      },
+      "retopoLayer": "rebuilt clean arm/hand runtime mesh",
+      "weightProfile": "explicit profile weights for LeftUpperArm/LeftLowerArm/LeftHand"
+    },
+    {
+      "name": "MatureSenpai_RightNaturalArmHand",
+      "faces": 180,
+      "vertices": 186,
+      "materials": [
+        "CommercialV8_NaturalAnimeSkin_ArmsHands",
+        "CommercialV8_SoftNails"
+      ],
+      "hasSkinning": true,
+      "hasUv": false,
+      "hasMorphTargets": false,
+      "morphTargets": [],
+      "vertexGroups": {
+        "Chest": {
+          "weightedVertices": 15,
+          "totalWeight": 4.48,
+          "maxWeight": 0.3
+        },
+        "RightHand": {
+          "weightedVertices": 129,
+          "totalWeight": 114.02,
+          "maxWeight": 1.0
+        },
+        "RightLowerArm": {
+          "weightedVertices": 70,
+          "totalWeight": 37.1,
+          "maxWeight": 0.88
+        },
+        "RightUpperArm": {
+          "weightedVertices": 57,
+          "totalWeight": 30.4,
+          "maxWeight": 0.88
+        }
+      },
+      "retopoLayer": "rebuilt clean arm/hand runtime mesh",
+      "weightProfile": "explicit profile weights for RightUpperArm/RightLowerArm/RightHand"
+    }
+  ],
+  "armatureBones": [
+    "Hips",
+    "Spine",
+    "Chest",
+    "Neck",
+    "Head",
+    "Secondary_Hair_Back",
+    "Secondary_Hair_Back_Tip",
+    "Secondary_Hair_Left",
+    "Secondary_Hair_Left_Tip",
+    "Secondary_Hair_Right",
+    "Secondary_Hair_Right_Tip",
+    "Secondary_Pendant",
+    "LeftUpperArm",
+    "LeftLowerArm",
+    "LeftHand",
+    "RightUpperArm",
+    "RightLowerArm",
+    "RightHand",
+    "Secondary_Strap_Left",
+    "Secondary_Strap_Right",
+    "LeftUpperLeg",
+    "LeftLowerLeg",
+    "LeftFoot",
+    "RightUpperLeg",
+    "RightLowerLeg",
+    "RightFoot",
+    "Secondary_Skirt_Left",
+    "Secondary_Skirt_Left_Tip",
+    "Secondary_Skirt_Right",
+    "Secondary_Skirt_Right_Tip",
+    "Secondary_Skirt_Center",
+    "Secondary_Skirt_Center_Tip"
+  ],
+  "morphTargets": {
+    "MatureSenpai_Face_Head": [
+      "Blink",
+      "ConfidentSmile",
+      "WarmSmile",
+      "Teasing",
+      "Surprised",
+      "Thoughtful"
+    ]
+  },
+  "morphTargetMeshes": [
+    "MatureSenpai_Face_Head"
+  ],
+  "secondaryBones": [
+    "Secondary_Hair_Back",
+    "Secondary_Hair_Back_Tip",
+    "Secondary_Hair_Left",
+    "Secondary_Hair_Left_Tip",
+    "Secondary_Hair_Right",
+    "Secondary_Hair_Right_Tip",
+    "Secondary_Pendant",
+    "Secondary_Strap_Left",
+    "Secondary_Strap_Right",
+    "Secondary_Skirt_Left",
+    "Secondary_Skirt_Left_Tip",
+    "Secondary_Skirt_Right",
+    "Secondary_Skirt_Right_Tip",
+    "Secondary_Skirt_Center",
+    "Secondary_Skirt_Center_Tip"
+  ],
+  "secondaryRig": {
+    "all": [
+      "Secondary_Hair_Back",
+      "Secondary_Hair_Back_Tip",
+      "Secondary_Hair_Left",
+      "Secondary_Hair_Left_Tip",
+      "Secondary_Hair_Right",
+      "Secondary_Hair_Right_Tip",
+      "Secondary_Pendant",
+      "Secondary_Strap_Left",
+      "Secondary_Strap_Right",
+      "Secondary_Skirt_Left",
+      "Secondary_Skirt_Left_Tip",
+      "Secondary_Skirt_Right",
+      "Secondary_Skirt_Right_Tip",
+      "Secondary_Skirt_Center",
+      "Secondary_Skirt_Center_Tip"
+    ],
+    "hair": [
+      "Secondary_Hair_Back",
+      "Secondary_Hair_Back_Tip",
+      "Secondary_Hair_Left",
+      "Secondary_Hair_Left_Tip",
+      "Secondary_Hair_Right",
+      "Secondary_Hair_Right_Tip"
+    ],
+    "skirt": [
+      "Secondary_Skirt_Left",
+      "Secondary_Skirt_Left_Tip",
+      "Secondary_Skirt_Right",
+      "Secondary_Skirt_Right_Tip",
+      "Secondary_Skirt_Center",
+      "Secondary_Skirt_Center_Tip"
+    ],
+    "accessory": [
+      "Secondary_Pendant",
+      "Secondary_Strap_Left",
+      "Secondary_Strap_Right"
+    ]
+  },
+  "acceptanceChecks": {
+    "hasSplitRuntimeParts": true,
+    "allPartsSkinned": true,
+    "hasFaceMorphTargets": true,
+    "hasSixNamedExpressionMorphs": true,
+    "hasHairSecondaryBones": true,
+    "hasSkirtSecondaryBones": true,
+    "hasWeightedNaturalHands": true,
+    "webRuntimeBudgetTarget": true
+  },
+  "runtimeDecision": {
+    "defaultAsset": true,
+    "fallbackAssetId": "mature-senpai-commercial-v7",
+    "reason": "This v8 asset is the retopo/partition/morph/weight/secondary-bone delivery layer. It keeps the v7 likeness and arm/hand cleanup, adds explicit tip-level secondary bones for hair and skirt panels, stores per-part weight summaries, and exposes a machine-readable audit for the web runtime."
+  },
+  "completedPasses": [
+    "helper mesh removal",
+    "hybrid source-preserving runtime retopo into named skinned submeshes",
+    "source loop-normal transfer to reduce split-part shading seams",
+    "explicit profile weight pass for face, hair, torso, arms, skirt, legs, and shoes",
+    "facial morph targets: Blink, ConfidentSmile, WarmSmile, Teasing, Surprised, Thoughtful",
+    "secondary hair, hair-tip, skirt, skirt-tip, strap, and pendant bone weight refresh",
+    "visible camisole strap and pendant/choker detail meshes",
+    "dialogue-distance face overlay meshes for catchlights, lashes, mouth line, and cheek tint",
+    "targeted natural skinned anime arm/hand geometry replacement for noisy source Arms_Hands regions",
+    "separate palm, finger, thumb, and soft nail surfaces for dialogue-distance readability",
+    "per-part skinning, morph, and secondary-bone audit report",
+    "runtime GLB export with skins, morph targets, and animations"
+  ],
+  "limitations": [
+    "The v8 retopo layer is a hybrid runtime retopo that preserves Hunyuan texture-critical triangles for likeness; it is not a fully artist-drawn quad topology over the whole body.",
+    "Weight painting is explicit and per-part but generated from authored profiles in Blender Python, not brush-painted vertex by vertex in the Blender UI.",
+    "Facial morphs are named and exported shape keys, but they are still generated expression deltas rather than artist-sculpted facial topology.",
+    "The face overlay is a runtime-readable polish layer, not a full texture repaint or sculpted eyelid/mouth topology pass.",
+    "The v8 arm/hand cleanup is more natural than v6 but still generated geometry; final art still needs hand-authored anatomy, knuckles, nails, and skin texture.",
+    "A final JRPG-quality asset still needs artist retopology, texture cleanup, and manual facial expression sculpting."
+  ]
+}
