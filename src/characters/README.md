@@ -22,7 +22,7 @@ cleanup, GLB/VRM export, and portrait comparison workflow. This is the path that
 should replace the procedural and Blender-template probes for final art.
 
 For `mature_senpai`, the current active asset is
-`mature-senpai-commercial-v8`, with `mature-senpai-commercial-v7` retained as the
+`mature-senpai-commercial-v9`, with `mature-senpai-commercial-v8` retained as the
 fallback candidate.
 
 Commercial-quality model replacement uses the explicit promotion command:
