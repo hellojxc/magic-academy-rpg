@@ -34,6 +34,7 @@ interface LightGroup {
 
 interface RegionUpdateGroup {
   id: string;
+  updateKey: string;
   center: THREE.Vector3;
   radiusSq: number;
   update: (elapsedTime: number, delta: number) => void;
@@ -57,6 +58,7 @@ const STORY_NPC_ACTIVE_DISTANCE_SQ = 18 * 18;
 const STORY_NPC_LOOK_AT_DISTANCE_SQ = 4 * 4;
 const STORY_NPC_IDLE_PRELOAD_DELAY_SECONDS = 3.2;
 const STORY_NPC_HEAVY_IDLE_PRELOAD_DELAY_SECONDS = 8;
+const POINT_LIGHT_UPDATE_DISTANCE_SQ = 0.35 * 0.35;
 
 export class AcademyWorld {
   private readonly obstacles: Obstacle[] = [];
@@ -65,9 +67,12 @@ export class AcademyWorld {
   private readonly animatedObjects: AnimatedObject[] = [];
   private readonly lightGroups: LightGroup[] = [];
   private readonly regionUpdateGroups: RegionUpdateGroup[] = [];
+  private readonly updatedRegionKeys = new Set<string>();
   private readonly sunTarget = new THREE.Object3D();
   private sun!: THREE.DirectionalLight;
   private readonly sunOffset = new THREE.Vector3(-8, 12, 6);
+  private lastPointLightUpdateX = Number.NaN;
+  private lastPointLightUpdateZ = Number.NaN;
   private playerRig!: CharacterModel3D;
   private lyraRig!: CharacterModel3D;
   private player!: THREE.Object3D;
@@ -201,6 +206,13 @@ export class AcademyWorld {
   private updatePointLights(): void {
     const px = this.player.position.x;
     const pz = this.player.position.z;
+    const movedX = px - this.lastPointLightUpdateX;
+    const movedZ = pz - this.lastPointLightUpdateZ;
+    if (movedX * movedX + movedZ * movedZ < POINT_LIGHT_UPDATE_DISTANCE_SQ) return;
+
+    this.lastPointLightUpdateX = px;
+    this.lastPointLightUpdateZ = pz;
+
     for (const group of this.lightGroups) {
       const dx = px - group.center.x;
       const dz = pz - group.center.z;
@@ -216,7 +228,7 @@ export class AcademyWorld {
    * 玩家附近的区域每帧更新动画，远处区域冻结以节省 CPU/GPU。
    */
   private registerRegionUpdateGroups(): void {
-    const make = (id: string, fn: (t: number, d: number) => void): RegionUpdateGroup => {
+    const make = (id: string, updateKey: string, fn: (t: number, d: number) => void): RegionUpdateGroup => {
       const region = REGIONS.find((r) => r.id === id);
       if (!region) throw new Error(`Unknown region: ${id}`);
       const cx = (region.bounds.minX + region.bounds.maxX) / 2;
@@ -226,6 +238,7 @@ export class AcademyWorld {
       const radius = Math.min(w, d) / 2 + 4;
       return {
         id,
+        updateKey,
         center: new THREE.Vector3(cx, 0, cz),
         radiusSq: radius * radius,
         update: fn,
@@ -233,32 +246,33 @@ export class AcademyWorld {
     };
 
     this.regionUpdateGroups.push(
-      make('atrium', (t, _d) => {
+      make('atrium', 'atrium', (t, _d) => {
         for (const item of this.animatedObjects) {
           item.object.position.y = item.baseY + Math.sin(t * item.speed + item.phase) * item.amplitude;
           item.object.rotation.y += 0.006;
         }
       }),
-      make('grand_hall', (t) => this.grandHall.update(t)),
-      make('dining_hall', (t) => this.diningHall.update(t)),
-      make('lawn', (t, d) => this.outdoor.update(t, d)),
-      make('lake', (t, d) => this.outdoor.update(t, d)),
-      make('greenhouse', (t, d) => this.extendedGrounds.update(t, d)),
-      make('training_ground', (t, d) => {
-        this.extendedGrounds.update(t, d);
-        this.equipmentShowcase.update(t);
-      }),
-      make('moonstone_grotto', (t, d) => this.extendedGrounds.update(t, d)),
+      make('grand_hall', 'grandHall', (t) => this.grandHall.update(t)),
+      make('dining_hall', 'diningHall', (t) => this.diningHall.update(t)),
+      make('lawn', 'outdoor', (t, d) => this.outdoor.update(t, d)),
+      make('lake', 'outdoor', (t, d) => this.outdoor.update(t, d)),
+      make('greenhouse', 'extendedGrounds', (t, d) => this.extendedGrounds.update(t, d)),
+      make('training_ground', 'extendedGrounds', (t, d) => this.extendedGrounds.update(t, d)),
+      make('training_ground', 'equipmentShowcase', (t) => this.equipmentShowcase.update(t)),
+      make('moonstone_grotto', 'extendedGrounds', (t, d) => this.extendedGrounds.update(t, d)),
     );
   }
 
   private updateRegions(elapsedTime: number, delta: number): void {
     const px = this.player.position.x;
     const pz = this.player.position.z;
+    this.updatedRegionKeys.clear();
     for (const group of this.regionUpdateGroups) {
       const dx = px - group.center.x;
       const dz = pz - group.center.z;
       if (dx * dx + dz * dz > group.radiusSq) continue;
+      if (this.updatedRegionKeys.has(group.updateKey)) continue;
+      this.updatedRegionKeys.add(group.updateKey);
       group.update(elapsedTime, delta);
     }
   }
