@@ -29,11 +29,35 @@ only pipeline probes; they should not be treated as final character art.
 
 1. Convert the portrait and `CharacterSpec` into a model brief.
 2. Generate candidate meshes with AI tools such as CharacterGen or Hunyuan3D.
-3. Bring the best candidate into Blender.
-4. Rebuild the face, hair, body, clothing, topology, UVs, materials, rig, facial
+3. Audit each generated GLB/VRM before registration:
+
+   ```sh
+   npm run assets:characters:candidate:audit -- \
+     --character lyra \
+     --tool charactergen \
+     --input /path/to/generated.glb
+   ```
+
+   The audit separates `acceptedForCleanup` from `runtimeReady`. AI outputs can
+   be useful Blender cleanup candidates without being safe runtime replacements.
+4. Register the best inspected candidate:
+
+   ```sh
+   npm run assets:characters:candidate:register -- \
+     --character lyra \
+     --tool charactergen \
+     --job lyra-charactergen-001 \
+     --input /path/to/generated.glb
+   ```
+
+   Registration automatically writes a candidate audit report for GLB, GLTF, and
+   VRM inputs. OBJ/FBX sources should be converted to GLB/VRM before automated
+   promotion decisions.
+5. Bring the best candidate into Blender.
+6. Rebuild the face, hair, body, clothing, topology, UVs, materials, rig, facial
    morphs, and secondary-motion bones.
-5. Export the source `.blend` to `public/assets/models/<character-id>.glb`.
-6. Inspect the GLB and compare it against the portrait in the review page.
-7. Enable or keep the asset in `public/assets/models/character-models.json`.
+7. Export the source `.blend` to `public/assets/models/<character-id>.glb`.
+8. Inspect the GLB and compare it against the portrait in the review page.
+9. Enable or keep the asset in `public/assets/models/character-models.json`.
 
 The web runtime should stay stable while source models improve.

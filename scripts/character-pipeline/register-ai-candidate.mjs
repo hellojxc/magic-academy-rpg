@@ -1,5 +1,6 @@
 import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { basename, extname, resolve } from 'node:path';
+import { spawnSync } from 'node:child_process';
 
 const supportedTools = new Set([
   'stdgen',
@@ -19,6 +20,10 @@ function readArg(name, fallback) {
   const index = process.argv.indexOf(name);
   if (index >= 0 && process.argv[index + 1]) return process.argv[index + 1];
   return fallback;
+}
+
+function hasFlag(name) {
+  return process.argv.includes(name);
 }
 
 function slug(value) {
@@ -43,6 +48,7 @@ const input = readArg('--input');
 const preview = readArg('--preview');
 const jobId = readArg('--job', 'manual-import');
 const label = slug(readArg('--label', `${characterId}-${tool}-${timestamp()}`));
+const skipAudit = hasFlag('--skip-audit');
 
 if (!supportedTools.has(tool)) {
   console.error(`[ai-candidate-register] Unsupported tool: ${tool}`);
@@ -86,6 +92,28 @@ if (preview) {
 
 const brief = readJsonIfExists(resolve(`assets/characters/${characterId}/character-model-brief.json`));
 const job = readJsonIfExists(resolve(`assets/characters/${characterId}/candidates/jobs/${jobId}/job.json`));
+let auditFile;
+let candidateAudit;
+if (!skipAudit && ['.glb', '.gltf', '.vrm'].includes(extension)) {
+  auditFile = `${characterId}-${tool}-candidate-audit.json`;
+  const auditPath = resolve(candidateDir, auditFile);
+  const auditResult = spawnSync(process.execPath, [
+    resolve('scripts/character-pipeline/audit-character-candidate.mjs'),
+    '--character',
+    characterId,
+    '--tool',
+    tool,
+    '--label',
+    label,
+    '--input',
+    candidatePath,
+    '--out',
+    auditPath,
+  ], { stdio: 'inherit' });
+  if (auditResult.status !== 0) process.exit(auditResult.status ?? 1);
+  candidateAudit = readJsonIfExists(auditPath);
+}
+
 const manifest = {
   version: 'ai-character-candidate-v1',
   characterId,
@@ -99,7 +127,24 @@ const manifest = {
     preview: previewFile
       ? `assets/characters/${characterId}/candidates/registered/${label}/${previewFile}`
       : undefined,
+    audit: auditFile
+      ? `assets/characters/${characterId}/candidates/registered/${label}/${auditFile}`
+      : undefined,
   },
+  candidateGate: candidateAudit
+    ? {
+      acceptedForCleanup: candidateAudit.acceptedForCleanup,
+      runtimeReady: candidateAudit.runtimeReady,
+      score: candidateAudit.score,
+    }
+    : {
+      acceptedForCleanup: false,
+      runtimeReady: false,
+      score: 0,
+      reason: skipAudit
+        ? 'audit skipped'
+        : 'format must be converted to GLB/VRM before automated candidate audit',
+    },
   sourceInput: basename(inputPath),
   registeredAt: new Date().toISOString(),
   nextSteps: [
