@@ -90,6 +90,8 @@ export const defaultCharacterAssetManifest: CharacterAssetManifest = {
   ],
 };
 
+const manifestCache = new Map<string, Promise<CharacterAssetManifest>>();
+
 export function getCharacterAsset(
   manifest: CharacterAssetManifest,
   characterId: CharacterId,
@@ -107,6 +109,15 @@ export function getDeclaredCharacterAsset(
 export async function loadCharacterAssetManifest(
   manifestUrl = '/assets/models/character-models.json',
 ): Promise<CharacterAssetManifest> {
+  const cached = manifestCache.get(manifestUrl);
+  if (cached) return cached;
+
+  const request = fetchCharacterAssetManifest(manifestUrl);
+  manifestCache.set(manifestUrl, request);
+  return request;
+}
+
+async function fetchCharacterAssetManifest(manifestUrl: string): Promise<CharacterAssetManifest> {
   try {
     const response = await fetch(manifestUrl, { cache: 'no-cache' });
     const contentType = response.headers.get('content-type') ?? '';

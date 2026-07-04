@@ -40,9 +40,23 @@ interface GLTFBoneBasePose {
   rotation: THREE.Euler;
 }
 
+interface AssetLoadQueueEntry {
+  priority: number;
+  sequence: number;
+  task: () => Promise<void>;
+  resolve: () => void;
+  reject: (error: unknown) => void;
+}
+
 type ThreeVRMModule = typeof import('@pixiv/three-vrm');
 
 export class CharacterModel3D {
+  private static readonly maxConcurrentAssetLoads = 2;
+  private static readonly pendingAssetLoads: AssetLoadQueueEntry[] = [];
+  private static readonly assetUrlAvailability = new Map<string, Promise<boolean>>();
+  private static activeAssetLoads = 0;
+  private static assetLoadSequence = 0;
+
   readonly root = new THREE.Group();
   private readonly fallback: ProceduralCharacterRig;
   private readonly lookTarget = new THREE.Object3D();
@@ -69,7 +83,14 @@ export class CharacterModel3D {
     this.root.userData.characterAssetState = this.assetState;
     this.fallback = new ProceduralCharacterRig(spec.id);
     this.root.add(this.fallback.root);
-    void this.loadModel();
+    void CharacterModel3D.enqueueAssetLoad(
+      () => this.loadModel(),
+      this.getAssetLoadPriority(),
+    ).catch((error) => {
+      this.setAssetState('failed');
+      this.fallback.root.visible = true;
+      console.warn(`Failed to schedule ${this.spec.id} character asset`, error);
+    });
   }
 
   setMoving(moving: boolean): void {
@@ -150,14 +171,68 @@ export class CharacterModel3D {
       return undefined;
     }
 
+    const available = await CharacterModel3D.isModelUrlAvailable(url);
+    return available ? url : undefined;
+  }
+
+  private getAssetLoadPriority(): number {
+    if (this.spec.id === 'player') return 0;
+    if (this.spec.id === 'lyra') return 1;
+    if (this.spec.runtime.role === 'hero') return 2;
+    if (this.spec.runtime.role === 'supporting') return 6;
+    return 8;
+  }
+
+  private static enqueueAssetLoad(task: () => Promise<void>, priority: number): Promise<void> {
+    return new Promise((resolve, reject) => {
+      CharacterModel3D.pendingAssetLoads.push({
+        priority,
+        sequence: CharacterModel3D.assetLoadSequence += 1,
+        task,
+        resolve,
+        reject,
+      });
+      CharacterModel3D.pendingAssetLoads.sort((a, b) => a.priority - b.priority || a.sequence - b.sequence);
+      CharacterModel3D.drainAssetLoadQueue();
+    });
+  }
+
+  private static drainAssetLoadQueue(): void {
+    while (
+      CharacterModel3D.activeAssetLoads < CharacterModel3D.maxConcurrentAssetLoads
+      && CharacterModel3D.pendingAssetLoads.length > 0
+    ) {
+      const entry = CharacterModel3D.pendingAssetLoads.shift();
+      if (!entry) return;
+
+      CharacterModel3D.activeAssetLoads += 1;
+      void entry.task()
+        .then(entry.resolve, entry.reject)
+        .finally(() => {
+          CharacterModel3D.activeAssetLoads -= 1;
+          CharacterModel3D.drainAssetLoadQueue();
+        });
+    }
+  }
+
+  private static async isModelUrlAvailable(url: string): Promise<boolean> {
+    const cached = CharacterModel3D.assetUrlAvailability.get(url);
+    if (cached) return cached;
+
+    const request = CharacterModel3D.checkModelUrlAvailability(url);
+    CharacterModel3D.assetUrlAvailability.set(url, request);
+    return request;
+  }
+
+  private static async checkModelUrlAvailability(url: string): Promise<boolean> {
     try {
       const response = await fetch(url, { method: 'HEAD' });
       const contentType = response.headers.get('content-type') ?? '';
-      if (response.ok && !contentType.includes('text/html')) return url;
+      return response.ok && !contentType.includes('text/html');
     } catch {
       // Missing optional assets should silently fall back to the authored rig.
     }
-    return undefined;
+    return false;
   }
 
   private installVRM(vrm: VRM, vrmModule: ThreeVRMModule): void {
