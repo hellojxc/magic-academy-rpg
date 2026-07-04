@@ -1,0 +1,26 @@
+{
+  "assetId": "mature-senpai-production-v1",
+  "characterId": "mature_senpai",
+  "status": "disabled-reference-template",
+  "source": "assets/characters/mature_senpai/source/mature_senpai.blend",
+  "output": "public/assets/models/mature_senpai_production_v1.glb",
+  "thumbnail": "public/assets/models/mature_senpai_production_v1.png",
+  "generatedBy": "scripts/blender/character_template.py",
+  "inspection": {
+    "sizeKb": 1536.5,
+    "nodes": 204,
+    "meshPrimitives": 157,
+    "estimatedTriangles": 30992,
+    "materials": 19,
+    "skins": 1,
+    "bones": 45,
+    "morphTargetPrimitives": 15,
+    "animations": ["idle", "talk", "walk"]
+  },
+  "decision": {
+    "runtimeDefault": false,
+    "reason": "The procedural template has useful modular parts, bones, and morph hooks, but its visual likeness is less lively than the Hunyuan-generated mature_senpai mesh.",
+    "activeRuntimeAssetId": "mature-senpai-rigged-v1",
+    "nextStep": "Use the Hunyuan mesh as the likeness base, then do Blender retopology, hand-authored face/hair/outfit cleanup, and rigging without replacing the silhouette with the procedural template."
+  }
+}

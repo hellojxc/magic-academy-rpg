@@ -9,12 +9,15 @@ Current target: v7 mature senpai concept, used as an adult academy NPC.
 - `character-model-brief.json`: source-of-truth model brief.
 - `tools/rig_hunyuan_preview.py`: Blender batch rigging script for the current preview asset.
 - `mature_senpai_rigged_v1.report.json`: generated rig and animation audit.
+- `mature_senpai_production_v1.report.json`: disabled procedural template audit and decision record.
+- `source/mature_senpai.blend`: procedural Blender reference template for rigging and modular cleanup experiments.
 - `candidates/registered/mature-senpai-hunyuan-v7-textured-preview/`: local 179k triangle Hunyuan audit candidate.
 - `candidates/registered/mature-senpai-hunyuan-v7-web/`: local 60k triangle Hunyuan audit candidate.
 
 Runtime export registered for preview:
 
 - `mature_senpai_rigged_v1.glb`: 60k triangle auto-rigged web preview with `idle`, `walk`, and `talk` clips.
+- `mature_senpai_production_v1.glb`: disabled procedural Blender template export; useful for bone, morph, and modular-part reference, but not visually close enough to replace the Hunyuan mesh.
 
 Local inspection exports not intended for the runtime commit:
 
@@ -24,9 +27,10 @@ Local inspection exports not intended for the runtime commit:
 
 ## Current Gate
 
-The Hunyuan output now has a usable auto-rigged game preview. It can load as a
-skinned GLB, play basic idle/walk/talk clips, and receive runtime toon/outline
-treatment in Three.js.
+The Hunyuan output remains the active runtime preview because it keeps the more
+lively AI-generated likeness. The procedural Blender template has better
+separation and morph hooks, but it is too schematic to become the default
+visual model.
 
 Remaining production blockers:
 
@@ -38,9 +42,11 @@ Remaining production blockers:
 - The character still needs retopology before it should be treated as final
   mainstream JRPG-quality runtime art.
 
-The `mature_senpai_rigged_v1.glb` file is suitable for an in-game animated
-preview NPC. It should not replace the final character until retopology,
-hand-painted weights, face morphs, and final material polish are complete.
+The `mature_senpai_rigged_v1.glb` file is the current in-game animated preview
+NPC. It should not be considered final until retopology, hand-painted weights,
+face morphs, and final material polish are complete. The next production pass
+should preserve the Hunyuan model's likeness instead of replacing it with the
+procedural template's simplified silhouette.
 
 ## Next Production Step
 

@@ -560,12 +560,12 @@ def build_character(spec: dict[str, Any], out_dir: Path, save_blend: bool) -> Pa
     add_camera_and_light(spec)
 
     out_dir.mkdir(parents=True, exist_ok=True)
-    output = out_dir / f"{character_id}.blender-template.glb"
+    output = out_dir / spec.get("outputFile", f"{character_id}.blender-template.glb")
     export_glb(output)
 
     if save_blend:
-        bpy.ops.wm.save_as_mainfile(filepath=str(out_dir / f"{character_id}.blender-template.blend"))
-        source_path = Path("assets") / "characters" / character_id / "source" / f"{character_id}.blend"
+        bpy.ops.wm.save_as_mainfile(filepath=str(out_dir / f"{output.stem}.blend"))
+        source_path = REPO_ROOT / "assets" / "characters" / character_id / "source" / f"{character_id}.blend"
         source_path.parent.mkdir(parents=True, exist_ok=True)
         bpy.ops.wm.save_as_mainfile(filepath=str(source_path))
 
@@ -640,6 +640,11 @@ def is_masculine_uniform(spec: dict[str, Any]) -> bool:
     )
 
 
+def is_mature_senpai_style(spec: dict[str, Any]) -> bool:
+    outfit = spec.get("outfit", {})
+    return spec.get("id") == "mature_senpai" or outfit.get("style") == "elegant-mature-camisole-slit-skirt"
+
+
 def add_body(
     spec: dict[str, Any],
     m: dict[str, float],
@@ -657,6 +662,10 @@ def add_body(
         neck = add_cylinder("Neck", mats["skin"], (0, -0.005 * scale, m["neck_z"]), 0.055 * scale, 0.1 * scale, collection, vertices=24)
         parent_to_bone(neck, armature, "Neck")
         add_limbs(spec, m, mats, armature, collection)
+        return
+
+    if is_mature_senpai_style(spec):
+        add_mature_senpai_body(spec, m, mats, armature, collection)
         return
 
     jacket_mat = mats["outfit_dark"] if is_masculine or is_astrologer else mats["outfit_primary"]
@@ -759,6 +768,65 @@ def add_body(
             parent_to_bone(button, armature, "Chest")
 
     neck = add_cylinder("Neck", mats["skin"], (0, -0.005 * scale, m["neck_z"]), 0.055 * scale, 0.1 * scale, collection, vertices=24)
+    parent_to_bone(neck, armature, "Neck")
+
+    add_limbs(spec, m, mats, armature, collection)
+
+
+def add_mature_senpai_body(
+    spec: dict[str, Any],
+    m: dict[str, float],
+    mats: dict[str, bpy.types.Material],
+    armature: bpy.types.Object,
+    collection: bpy.types.Collection,
+) -> None:
+    scale = m["scale"]
+
+    pelvis = add_uv_sphere(
+        "MatureSenpaiNaturalHips",
+        mats["skin"],
+        (0, 0.006 * scale, m["hip_z"]),
+        (m["hip_width"] * 0.37, 0.094 * scale, 0.086 * scale),
+        collection,
+        segments=40,
+        rings=16,
+    )
+    parent_to_bone(pelvis, armature, "Hips")
+
+    waist = add_uv_sphere(
+        "MatureSenpaiSoftWaist",
+        mats["skin"],
+        (0, -0.004 * scale, 1.045 * scale),
+        (m["waist_width"] * 0.44, 0.080 * scale, 0.190 * scale),
+        collection,
+        segments=40,
+        rings=18,
+    )
+    parent_to_bone(waist, armature, "Spine")
+
+    chest = add_uv_sphere(
+        "MatureSenpaiUpperChest",
+        mats["skin"],
+        (0, -0.010 * scale, 1.245 * scale),
+        (m["shoulder_width"] * 0.405, 0.092 * scale, 0.168 * scale),
+        collection,
+        segments=48,
+        rings=20,
+    )
+    parent_to_bone(chest, armature, "Chest")
+
+    shoulder_line = add_uv_sphere(
+        "MatureSenpaiShoulderSoftLine",
+        mats["skin_highlight"],
+        (0, -0.076 * scale, 1.318 * scale),
+        (m["shoulder_width"] * 0.32, 0.010 * scale, 0.018 * scale),
+        collection,
+        segments=24,
+        rings=8,
+    )
+    parent_to_bone(shoulder_line, armature, "Chest")
+
+    neck = add_cylinder("Neck", mats["skin"], (0, -0.005 * scale, m["neck_z"]), 0.054 * scale, 0.105 * scale, collection, vertices=28)
     parent_to_bone(neck, armature, "Neck")
 
     add_limbs(spec, m, mats, armature, collection)
@@ -972,13 +1040,14 @@ def add_limbs(
     shoulder = m["shoulder_width"]
     is_player = spec["id"] == "player"
     is_masculine = is_masculine_uniform(spec)
-    sleeve_mat = mats["outfit_primary"]
+    is_mature_senpai = is_mature_senpai_style(spec)
+    sleeve_mat = mats["skin"] if is_mature_senpai else mats["outfit_primary"]
     glove_mat = mats["shoe"] if is_masculine else mats["skin"]
     leg_mat = mats["outfit_dark"] if is_player else mats["outfit_dark"] if is_masculine else mats["skin"]
-    upper_arm_radius = 0.044 if is_player else 0.039 if is_masculine else 0.032
-    lower_arm_radius = 0.037 if is_player else 0.033 if is_masculine else 0.028
-    upper_leg_radius = 0.049 if is_player else 0.045 if is_masculine else 0.037
-    lower_leg_radius = 0.041 if is_player else 0.037 if is_masculine else 0.031
+    upper_arm_radius = 0.044 if is_player else 0.039 if is_masculine else 0.035 if is_mature_senpai else 0.032
+    lower_arm_radius = 0.037 if is_player else 0.033 if is_masculine else 0.030 if is_mature_senpai else 0.028
+    upper_leg_radius = 0.049 if is_player else 0.045 if is_masculine else 0.044 if is_mature_senpai else 0.037
+    lower_leg_radius = 0.041 if is_player else 0.037 if is_masculine else 0.033 if is_mature_senpai else 0.031
     arm_reach = 0.63 if is_player else 0.60 if is_masculine else 0.56
     forearm_reach = 0.76 if is_player else 0.71 if is_masculine else 0.66
 
@@ -1037,18 +1106,19 @@ def add_limbs(
             lower_arm.rotation_euler[1] = sx * 0.12
         parent_to_bone(lower_arm, armature, f"{side}LowerArm")
 
-        cuff = add_cylinder(
-            f"{side}Cuff",
-            mats["trim"] if is_masculine else mats["accent"],
-            (sx * (shoulder * (0.83 if is_player else 0.77 if is_masculine else 0.71)), -0.006 * scale, 0.74 * scale),
-            (0.052 if is_player else 0.045 if is_masculine else 0.038) * scale,
-            (0.035 if is_player else 0.031 if is_masculine else 0.026) * scale,
-            collection,
-            vertices=18,
-            rotation=(math.pi / 2, 0, 0),
-            scale=(0.82, 0.58, 1),
-        )
-        parent_to_bone(cuff, armature, f"{side}LowerArm")
+        if not is_mature_senpai:
+            cuff = add_cylinder(
+                f"{side}Cuff",
+                mats["trim"] if is_masculine else mats["accent"],
+                (sx * (shoulder * (0.83 if is_player else 0.77 if is_masculine else 0.71)), -0.006 * scale, 0.74 * scale),
+                (0.052 if is_player else 0.045 if is_masculine else 0.038) * scale,
+                (0.035 if is_player else 0.031 if is_masculine else 0.026) * scale,
+                collection,
+                vertices=18,
+                rotation=(math.pi / 2, 0, 0),
+                scale=(0.82, 0.58, 1),
+            )
+            parent_to_bone(cuff, armature, f"{side}LowerArm")
 
         hand = add_uv_sphere(
             f"{side}Hand",
@@ -1115,6 +1185,10 @@ def add_limbs(
             )
         parent_to_bone(lower_leg, armature, f"{side}LowerLeg")
 
+        if is_mature_senpai:
+            add_mature_senpai_sandal(side, sx, m, mats, armature, collection)
+            continue
+
         if is_masculine:
             trouser_trim = add_cylinder(
                 f"{side}TrouserGoldHem",
@@ -1163,6 +1237,93 @@ def add_limbs(
         parent_to_bone(sole, armature, f"{side}Foot")
         if is_player:
             add_player_limb_folds(side, sx, m, mats, armature, collection)
+
+
+def add_mature_senpai_sandal(
+    side: str,
+    sx: int,
+    m: dict[str, float],
+    mats: dict[str, bpy.types.Material],
+    armature: bpy.types.Object,
+    collection: bpy.types.Collection,
+) -> None:
+    scale = m["scale"]
+    foot_x = sx * 0.09 * scale
+
+    sole = add_cube(
+        f"{side}RomanHeelSandalSole",
+        mats["shoe"],
+        (foot_x, -0.054 * scale, 0.036 * scale),
+        (0.045 * scale, 0.092 * scale, 0.010 * scale),
+        collection,
+        bevel=0.006 * scale,
+    )
+    parent_to_bone(sole, armature, f"{side}Foot")
+
+    foot_top = add_uv_sphere(
+        f"{side}RomanHeelVisibleFoot",
+        mats["skin"],
+        (foot_x, -0.066 * scale, 0.066 * scale),
+        (0.034 * scale, 0.060 * scale, 0.017 * scale),
+        collection,
+        segments=18,
+        rings=8,
+    )
+    parent_to_bone(foot_top, armature, f"{side}Foot")
+
+    heel = add_cylinder(
+        f"{side}RomanHeelSandalHeel",
+        mats["trim"],
+        (foot_x, 0.006 * scale, 0.034 * scale),
+        0.0065 * scale,
+        0.064 * scale,
+        collection,
+        vertices=12,
+        scale=(0.75, 0.75, 1.0),
+    )
+    parent_to_bone(heel, armature, f"{side}Foot")
+
+    heel_tip = add_uv_sphere(
+        f"{side}RomanHeelTip",
+        mats["sole"],
+        (foot_x, 0.006 * scale, 0.002 * scale),
+        (0.007 * scale, 0.007 * scale, 0.0035 * scale),
+        collection,
+        segments=10,
+        rings=6,
+    )
+    parent_to_bone(heel_tip, armature, f"{side}Foot")
+
+    strap_specs = [
+        ("ToeBand", 0.000, -0.102, 0.067, 0.043, 0.006, 0.005, 0.0),
+        ("InstepDiagonalA", -0.010, -0.065, 0.077, 0.050, 0.005, 0.0045, sx * 0.48),
+        ("InstepDiagonalB", 0.010, -0.064, 0.090, 0.050, 0.005, 0.0045, sx * -0.48),
+        ("AnkleFrontBand", 0.000, -0.016, 0.152, 0.048, 0.005, 0.005, 0.0),
+    ]
+    for name, offset_x, y, z, width, depth, height, rotation_z in strap_specs:
+        strap = add_cube(
+            f"{side}RomanHeel{name}",
+            mats["trim"],
+            (foot_x + sx * offset_x * scale, y * scale, z * scale),
+            (width * scale, depth * scale, height * scale),
+            collection,
+            rotation=(0, 0, rotation_z),
+            bevel=0.0015 * scale,
+        )
+        parent_to_bone(strap, armature, f"{side}Foot")
+
+    ankle_wrap = add_cylinder(
+        f"{side}RomanHeelAnkleWrap",
+        mats["shoe"],
+        (foot_x, -0.006 * scale, 0.162 * scale),
+        0.036 * scale,
+        0.008 * scale,
+        collection,
+        vertices=24,
+        rotation=(math.pi / 2, 0, 0),
+        scale=(0.96, 0.58, 1.0),
+    )
+    parent_to_bone(ankle_wrap, armature, f"{side}LowerLeg")
 
 
 def add_player_hand_details(
@@ -1689,7 +1850,9 @@ def add_hair(
     parent_to_bone(back, armature, "Head")
 
     if spec["hair"]["length"] == "long":
-        add_long_hair(m, mats, armature, collection)
+        add_long_hair(spec, m, mats, armature, collection)
+        if is_mature_senpai_style(spec):
+            add_mature_senpai_hair_details(m, mats, armature, collection)
     else:
         add_short_hair(spec, m, mats, armature, collection)
     add_anime_hair_surface_details(spec, m, mats, armature, collection)
@@ -1939,6 +2102,7 @@ def add_anime_hair_surface_details(
 
 
 def add_long_hair(
+    spec: dict[str, Any],
     m: dict[str, float],
     mats: dict[str, bpy.types.Material],
     armature: bpy.types.Object,
@@ -1982,8 +2146,82 @@ def add_long_hair(
 
     add_long_hair_strand_locks(m, mats, armature, collection)
 
-    clip = add_cone("StarHairClip", mats["trim"], (0.172 * scale, -0.218 * scale, 1.635 * scale), 0.036 * scale, 0.036 * scale, 0.014 * scale, collection, vertices=5, rotation=(math.pi / 2, 0, math.pi / 5))
-    parent_to_bone(clip, armature, "Head")
+    if not is_mature_senpai_style(spec):
+        clip = add_cone("StarHairClip", mats["trim"], (0.172 * scale, -0.218 * scale, 1.635 * scale), 0.036 * scale, 0.036 * scale, 0.014 * scale, collection, vertices=5, rotation=(math.pi / 2, 0, math.pi / 5))
+        parent_to_bone(clip, armature, "Head")
+
+
+def add_mature_senpai_hair_details(
+    m: dict[str, float],
+    mats: dict[str, bpy.types.Material],
+    armature: bpy.types.Object,
+    collection: bpy.types.Collection,
+) -> None:
+    scale = m["scale"]
+
+    def lock(name: str, mat: bpy.types.Material, points: list[tuple[float, float, float, float, float]]) -> None:
+        obj = add_hair_lock_mesh(
+            name,
+            mat,
+            [(x * scale, y * scale, z * scale, width * scale, depth * scale) for x, y, z, width, depth in points],
+            collection,
+        )
+        parent_to_bone(obj, armature, "Head")
+
+    mature_wave_sets = [
+        (
+            "MatureSenpaiLeftSoftWave",
+            mats["hair"],
+            [(-0.205, -0.095, 1.570, 0.036, 0.017), (-0.250, -0.050, 1.315, 0.030, 0.014), (-0.218, -0.010, 1.045, 0.018, 0.010), (-0.260, 0.018, 0.860, 0.008, 0.006)],
+        ),
+        (
+            "MatureSenpaiRightSoftWave",
+            mats["hair"],
+            [(0.205, -0.095, 1.570, 0.036, 0.017), (0.250, -0.050, 1.315, 0.030, 0.014), (0.218, -0.010, 1.045, 0.018, 0.010), (0.260, 0.018, 0.860, 0.008, 0.006)],
+        ),
+        (
+            "MatureSenpaiLeftWineHighlight",
+            mats["hair_highlight"],
+            [(-0.132, -0.178, 1.590, 0.023, 0.011), (-0.165, -0.142, 1.365, 0.018, 0.009), (-0.142, -0.102, 1.115, 0.010, 0.006)],
+        ),
+        (
+            "MatureSenpaiRightWineHighlight",
+            mats["hair_highlight"],
+            [(0.132, -0.178, 1.590, 0.023, 0.011), (0.165, -0.142, 1.365, 0.018, 0.009), (0.142, -0.102, 1.115, 0.010, 0.006)],
+        ),
+        (
+            "MatureSenpaiBackLayeredWave",
+            mats["hair"],
+            [(0.000, 0.178, 1.530, 0.060, 0.018), (-0.030, 0.210, 1.245, 0.040, 0.014), (0.026, 0.185, 0.960, 0.018, 0.009), (0.000, 0.170, 0.810, 0.008, 0.006)],
+        ),
+        (
+            "MatureSenpaiBackGlossRibbon",
+            mats["hair_highlight"],
+            [(0.074, 0.150, 1.480, 0.026, 0.012), (0.104, 0.184, 1.210, 0.020, 0.010), (0.070, 0.166, 0.920, 0.008, 0.006)],
+        ),
+    ]
+
+    for name, mat, points in mature_wave_sets:
+        lock(name, mat, points)
+
+    side_sheen = [
+        ("MatureSenpaiLeftTempleSheen", -1),
+        ("MatureSenpaiRightTempleSheen", 1),
+    ]
+    for name, sx in side_sheen:
+        sheen = add_hair_panel(
+            name,
+            mats["hair_highlight"],
+            [
+                (sx * 0.076 * scale, -0.230 * scale, 1.690 * scale),
+                (sx * 0.174 * scale, -0.212 * scale, 1.620 * scale),
+                (sx * 0.132 * scale, -0.225 * scale, 1.562 * scale),
+                (sx * 0.038 * scale, -0.238 * scale, 1.632 * scale),
+            ],
+            collection,
+            0.0028 * scale,
+        )
+        parent_to_bone(sheen, armature, "Head")
 
 
 def add_long_hair_strand_locks(
@@ -2055,6 +2293,10 @@ def add_outfit(
     scale = m["scale"]
     is_player = spec["id"] == "player"
     is_masculine = is_masculine_uniform(spec)
+    if is_mature_senpai_style(spec):
+        add_mature_senpai_outfit(m, mats, armature, collection)
+        return
+
     if is_masculine:
         front_y = -0.154 if is_player else -0.235
         tie = add_cone("Necktie", mats["accent"], (0, front_y * scale, 1.22 * scale), 0.035 * scale, 0.012 * scale, 0.23 * scale, collection, vertices=4, rotation=(0, 0, math.pi / 4))
@@ -2154,6 +2396,210 @@ def add_outfit(
                 bevel=0.0015 * scale,
             )
             parent_to_bone(trim, armature, "Chest")
+
+
+def add_mature_senpai_outfit(
+    m: dict[str, float],
+    mats: dict[str, bpy.types.Material],
+    armature: bpy.types.Object,
+    collection: bpy.types.Collection,
+) -> None:
+    scale = m["scale"]
+
+    bust_centers = [("Left", -1), ("Right", 1)]
+    for side, sx in bust_centers:
+        bust = add_uv_sphere(
+            f"{side}MatureSenpaiCamisoleBustShape",
+            mats["outfit_primary"],
+            (sx * 0.052 * scale, -0.102 * scale, 1.195 * scale),
+            (0.047 * scale, 0.031 * scale, 0.054 * scale),
+            collection,
+            segments=32,
+            rings=14,
+        )
+        parent_to_bone(bust, armature, "Chest")
+
+    camisole_panels = [
+        (
+            "LeftMatureSenpaiIvoryCamisolePanel",
+            [(-0.122, -0.224, 1.305), (-0.020, -0.238, 1.218), (-0.034, -0.232, 0.955), (-0.128, -0.214, 0.965)],
+        ),
+        (
+            "RightMatureSenpaiIvoryCamisolePanel",
+            [(0.020, -0.238, 1.218), (0.122, -0.224, 1.305), (0.128, -0.214, 0.965), (0.034, -0.232, 0.955)],
+        ),
+        (
+            "MatureSenpaiLooseCamisoleLowerDrape",
+            [(-0.100, -0.226, 1.070), (0.100, -0.226, 1.070), (0.084, -0.220, 0.930), (-0.084, -0.220, 0.930)],
+        ),
+    ]
+    for name, verts_panel in camisole_panels:
+        panel = add_hair_panel(
+            name,
+            mats["outfit_primary"],
+            [(x * scale, y * scale, z * scale) for x, y, z in verts_panel],
+            collection,
+            0.0048 * scale,
+        )
+        parent_to_bone(panel, armature, "Chest")
+
+    neckline = [
+        ("LeftCamisoleNecklineTrim", -1, -0.057, 1.282, 0.124, 0.010, 0.006, -0.42),
+        ("RightCamisoleNecklineTrim", 1, 0.057, 1.282, 0.124, 0.010, 0.006, 0.42),
+        ("CamisoleWaistGoldTrim", 0, 0.0, 0.942, 0.134, 0.007, 0.006, 0.0),
+    ]
+    for name, sx, x, z, width_value, depth, height, rotation_z in neckline:
+        trim = add_cube(
+            name,
+            mats["trim"],
+            (x * scale, -0.239 * scale, z * scale),
+            (width_value * scale, depth * scale, height * scale),
+            collection,
+            rotation=(0, 0, sx * rotation_z),
+            bevel=0.0015 * scale,
+        )
+        parent_to_bone(trim, armature, "Chest")
+
+    for side, sx in (("Left", -1), ("Right", 1)):
+        strap = add_cube(
+            f"{side}MatureSenpaiThinShoulderStrap",
+            mats["trim"],
+            (sx * 0.094 * scale, -0.214 * scale, 1.366 * scale),
+            (0.009 * scale, 0.006 * scale, 0.127 * scale),
+            collection,
+            rotation=(0.08, 0, sx * 0.10),
+            bevel=0.0012 * scale,
+        )
+        parent_to_bone(strap, armature, "Chest")
+
+        strap_anchor = add_uv_sphere(
+            f"{side}CamisoleGoldStrapAnchor",
+            mats["trim"],
+            (sx * 0.095 * scale, -0.236 * scale, 1.306 * scale),
+            (0.010 * scale, 0.0035 * scale, 0.010 * scale),
+            collection,
+            segments=10,
+            rings=6,
+        )
+        parent_to_bone(strap_anchor, armature, "Chest")
+
+    waist_band = add_cylinder(
+        "MatureSenpaiHighWaistGoldBand",
+        mats["trim"],
+        (0, -0.010 * scale, 0.910 * scale),
+        0.187 * scale,
+        0.022 * scale,
+        collection,
+        vertices=64,
+        scale=(1.18, 0.56, 0.38),
+    )
+    parent_to_bone(waist_band, armature, "Hips")
+
+    skirt_panels = [
+        (
+            "MatureSenpaiFrontSkirtPanel",
+            mats["outfit_secondary"],
+            [(-0.128, -0.226, 0.910), (0.128, -0.226, 0.910), (0.152, -0.234, 0.585), (-0.152, -0.234, 0.585)],
+            "Hips",
+            0.006,
+        ),
+        (
+            "LeftMatureSenpaiSideSlitSkirtPanel",
+            mats["outfit_secondary"],
+            [(-0.220, -0.088, 0.900), (-0.134, -0.190, 0.900), (-0.164, -0.204, 0.610), (-0.266, -0.058, 0.570)],
+            "Hips",
+            0.006,
+        ),
+        (
+            "RightMatureSenpaiSideSlitSkirtPanel",
+            mats["outfit_secondary"],
+            [(0.134, -0.190, 0.900), (0.220, -0.088, 0.900), (0.266, -0.058, 0.570), (0.164, -0.204, 0.610)],
+            "Hips",
+            0.006,
+        ),
+        (
+            "MatureSenpaiBackSkirtPanel",
+            mats["outfit_secondary"],
+            [(-0.225, 0.092, 0.900), (0.225, 0.092, 0.900), (0.260, 0.130, 0.600), (-0.260, 0.130, 0.600)],
+            "Hips",
+            0.007,
+        ),
+    ]
+    for name, mat, verts_panel, bone_name, thickness in skirt_panels:
+        panel = add_hair_panel(
+            name,
+            mat,
+            [(x * scale, y * scale, z * scale) for x, y, z in verts_panel],
+            collection,
+            thickness * scale,
+        )
+        parent_to_bone(panel, armature, bone_name)
+
+    slit_trim_specs = [
+        ("LeftSlitFrontGoldEdge", -1, -0.144, -0.218, 0.750, -0.08),
+        ("RightSlitFrontGoldEdge", 1, 0.144, -0.218, 0.750, 0.08),
+        ("LeftSlitOuterGoldEdge", -1, -0.246, -0.079, 0.725, 0.12),
+        ("RightSlitOuterGoldEdge", 1, 0.246, -0.079, 0.725, -0.12),
+    ]
+    for name, sx, x, y, z, rotation_z in slit_trim_specs:
+        edge = add_cube(
+            name,
+            mats["trim"],
+            (x * scale, y * scale, z * scale),
+            (0.006 * scale, 0.0045 * scale, 0.175 * scale),
+            collection,
+            rotation=(0, 0, sx * rotation_z),
+            bevel=0.0012 * scale,
+        )
+        parent_to_bone(edge, armature, "Hips")
+
+    hem = add_cube(
+        "MatureSenpaiFrontSkirtHemGold",
+        mats["trim"],
+        (0, -0.238 * scale, 0.590 * scale),
+        (0.162 * scale, 0.005 * scale, 0.006 * scale),
+        collection,
+        bevel=0.0012 * scale,
+    )
+    parent_to_bone(hem, armature, "Hips")
+
+    choker = add_cylinder(
+        "MatureSenpaiGoldChoker",
+        mats["trim"],
+        (0, -0.078 * scale, 1.390 * scale),
+        0.066 * scale,
+        0.010 * scale,
+        collection,
+        vertices=36,
+        rotation=(math.pi / 2, 0, 0),
+        scale=(1.0, 0.42, 1.0),
+    )
+    parent_to_bone(choker, armature, "Neck")
+
+    pendant = add_uv_sphere(
+        "MatureSenpaiPurplePendant",
+        mats["eye"],
+        (0, -0.218 * scale, 1.315 * scale),
+        (0.018 * scale, 0.005 * scale, 0.024 * scale),
+        collection,
+        segments=18,
+        rings=8,
+    )
+    parent_to_bone(pendant, armature, "Chest")
+
+    for side, sx in (("Left", -1), ("Right", 1)):
+        star = add_cone(
+            f"{side}MatureSenpaiSkirtStarAccent",
+            mats["trim"],
+            (sx * 0.200 * scale, -0.112 * scale, 0.790 * scale),
+            0.020 * scale,
+            0.020 * scale,
+            0.005 * scale,
+            collection,
+            vertices=5,
+            rotation=(math.pi / 2, 0, math.pi / 5 + sx * 0.16),
+        )
+        parent_to_bone(star, armature, "Hips")
 
 
 def add_player_uniform_details(
@@ -2423,6 +2869,9 @@ def add_accessories(
 ) -> None:
     scale = m["scale"]
     held = spec["outfit"]["heldItem"]
+    if is_mature_senpai_style(spec):
+        return
+
     if held == "practice-wand":
         wand = add_cylinder("PracticeWand", mats["shoe"], (0.39 * scale, -0.08 * scale, 0.79 * scale), 0.012 * scale, 0.58 * scale, collection, vertices=10, rotation=(0.25, 0.18, 0.2))
         parent_to_bone(wand, armature, "RightHand")

@@ -65,6 +65,25 @@
       "textureBudgetKb": 2048
     },
     {
+      "id": "mature-senpai-production-v1",
+      "characterId": "mature_senpai",
+      "enabled": false,
+      "format": "glb",
+      "quality": "hero",
+      "url": "/assets/models/mature_senpai_production_v1.glb",
+      "thumbnailUrl": "/assets/models/mature_senpai_production_v1.png",
+      "animationClips": [
+        "idle",
+        "walk",
+        "talk"
+      ],
+      "materialProfile": "toon",
+      "supportsFacialMorphs": true,
+      "supportsSpringBones": true,
+      "triangleBudget": 76000,
+      "textureBudgetKb": 2048
+    },
+    {
       "id": "mature-senpai-rigged-v1",
       "characterId": "mature_senpai",
       "enabled": true,

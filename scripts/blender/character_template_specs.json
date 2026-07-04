@@ -136,6 +136,53 @@
         "walkPersonality": "light",
         "talkPersonality": "warm"
       }
+    },
+    {
+      "id": "mature_senpai",
+      "displayName": "Elena",
+      "outputFile": "mature_senpai_production_v1.glb",
+      "heightMeters": 1.72,
+      "body": {
+        "presentation": "female",
+        "headScale": [0.9, 1.04, 0.78],
+        "shoulderWidth": 0.37,
+        "torsoLength": 0.52,
+        "waistWidth": 0.28,
+        "hipWidth": 0.39,
+        "armLength": 0.59,
+        "legLength": 0.86,
+        "handScale": 0.94,
+        "footScale": 0.94
+      },
+      "face": {
+        "eyeScale": 1.12,
+        "eyeColor": "#7b55b6",
+        "browColor": "#6b243f",
+        "cheekTint": "#e7b4aa"
+      },
+      "hair": {
+        "style": "long-wavy-burgundy",
+        "length": "long",
+        "color": "#441323",
+        "highlightColor": "#7d2a45",
+        "volume": 0.98
+      },
+      "outfit": {
+        "style": "elegant-mature-camisole-slit-skirt",
+        "primaryColor": "#f6f0e6",
+        "secondaryColor": "#a999d8",
+        "darkColor": "#5d3f88",
+        "accentColor": "#d9c9ff",
+        "trimColor": "#d5aa4f",
+        "shoeColor": "#f3e8d6",
+        "cape": "none",
+        "heldItem": "none"
+      },
+      "animation": {
+        "idlePersonality": "gentle",
+        "walkPersonality": "light",
+        "talkPersonality": "warm"
+      }
     }
   ]
 }

@@ -207,9 +207,9 @@ export const miraVossSpec: CharacterSpec = {
 
 export const matureSenpaiSpec: CharacterSpec = {
   id: 'mature_senpai',
-  displayName: 'Mature Senpai',
+  displayName: 'Elena',
   designIntent:
-    'A mature big-sister academy NPC based on the v7 Hunyuan/illustration reference: burgundy long hair, elegant ivory camisole top, lavender double side-slit skirt, and Roman-style strappy high heels. Current runtime asset is an auto-rigged Hunyuan preview with basic idle, walk, and talk clips; final production still needs retopology, hand-painted weights, and facial morphs.',
+    'A mature big-sister academy NPC based on the v7 Hunyuan/illustration reference: burgundy long hair, elegant ivory camisole top, lavender double side-slit skirt, and Roman-style strappy high heels. Runtime currently keeps the Hunyuan rigged visual asset because it preserves the more lively generated likeness; the modular Blender template is disabled and kept only as a rigging/retopology reference.',
   body: {
     heightMeters: 1.72,
     headToBodyRatio: 0.18,

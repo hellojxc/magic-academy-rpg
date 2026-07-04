@@ -1,8 +1,9 @@
 {
   "version": "character-model-brief-v1",
   "characterId": "mature_senpai",
-  "displayName": "Mature Senpai",
+  "displayName": "Elena",
   "currentPreviewAssetId": "mature-senpai-rigged-v1",
+  "templateReferenceAssetId": "mature-senpai-production-v1",
   "finalRuntimeAssetId": "mature-senpai-supporting-v1",
   "referenceImages": {
     "concept": "assets/characters/mature_senpai/references/concept-sheet-v7-roman-strappy-heels.png",
@@ -42,6 +43,8 @@
   "sourceModelRequirements": {
     "sourceFile": "assets/characters/mature_senpai/source/mature_senpai.blend",
     "targetRuntimeFile": "public/assets/models/mature_senpai.glb",
+    "currentRuntimeFile": "public/assets/models/mature_senpai_rigged_v1.glb",
+    "disabledTemplateFile": "public/assets/models/mature_senpai_production_v1.glb",
     "preferredFormat": "glb",
     "acceptableFormat": "vrm",
     "triangleBudget": {
