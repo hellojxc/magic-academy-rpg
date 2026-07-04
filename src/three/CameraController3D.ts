@@ -3,10 +3,14 @@ import * as THREE from 'three';
 export class CameraController3D {
   private readonly targetOffset = new THREE.Vector3(0, 1.12, 0);
   private readonly desiredPosition = new THREE.Vector3();
+  private readonly desiredLookTarget = new THREE.Vector3();
   private readonly lookTarget = new THREE.Vector3();
   private yaw = Math.PI * 0.15;
   private pitch = 0.42;
   private distance = 6.5;
+  private targetYaw = this.yaw;
+  private targetPitch = this.pitch;
+  private targetDistance = this.distance;
   private dragging = false;
   private lastPointerX = 0;
   private lastPointerY = 0;
@@ -30,7 +34,11 @@ export class CameraController3D {
 
   /** 立即把相机定位到目标位置，跳过平滑插值（用于初始化） */
   private snap(): void {
-    this.lookTarget.copy(this.target.position).add(this.targetOffset);
+    this.targetYaw = this.yaw;
+    this.targetPitch = this.pitch;
+    this.targetDistance = this.distance;
+    this.desiredLookTarget.copy(this.target.position).add(this.targetOffset);
+    this.lookTarget.copy(this.desiredLookTarget);
     const horizontalDistance = Math.cos(this.pitch) * this.distance;
     this.desiredPosition.set(
       this.lookTarget.x + Math.sin(this.yaw) * horizontalDistance,
@@ -42,7 +50,12 @@ export class CameraController3D {
   }
 
   update(delta: number): void {
-    this.lookTarget.copy(this.target.position).add(this.targetOffset);
+    this.yaw = CameraController3D.dampAngle(this.yaw, this.targetYaw, 18, delta);
+    this.pitch += (this.targetPitch - this.pitch) * (1 - Math.exp(-18 * delta));
+    this.distance += (this.targetDistance - this.distance) * (1 - Math.exp(-14 * delta));
+
+    this.desiredLookTarget.copy(this.target.position).add(this.targetOffset);
+    this.lookTarget.lerp(this.desiredLookTarget, 1 - Math.exp(-18 * delta));
     const horizontalDistance = Math.cos(this.pitch) * this.distance;
     this.desiredPosition.set(
       this.lookTarget.x + Math.sin(this.yaw) * horizontalDistance,
@@ -50,7 +63,7 @@ export class CameraController3D {
       this.lookTarget.z + Math.cos(this.yaw) * horizontalDistance
     );
 
-    this.camera.position.lerp(this.desiredPosition, 1 - Math.exp(-10 * delta));
+    this.camera.position.lerp(this.desiredPosition, 1 - Math.exp(-14 * delta));
     this.camera.lookAt(this.lookTarget);
   }
 
@@ -78,8 +91,8 @@ export class CameraController3D {
     this.lastPointerX = event.clientX;
     this.lastPointerY = event.clientY;
 
-    this.yaw -= deltaX * 0.006;
-    this.pitch = THREE.MathUtils.clamp(this.pitch + deltaY * 0.0045, 0.22, 1.05);
+    this.targetYaw -= deltaX * 0.006;
+    this.targetPitch = THREE.MathUtils.clamp(this.targetPitch + deltaY * 0.0045, 0.22, 1.05);
   };
 
   private readonly onPointerUp = (): void => {
@@ -88,10 +101,15 @@ export class CameraController3D {
 
   private readonly onWheel = (event: WheelEvent): void => {
     event.preventDefault();
-    this.distance = THREE.MathUtils.clamp(this.distance + event.deltaY * 0.006, 4.2, 10.5);
+    this.targetDistance = THREE.MathUtils.clamp(this.targetDistance + event.deltaY * 0.006, 4.2, 10.5);
   };
 
   private readonly onContextMenu = (event: MouseEvent): void => {
     event.preventDefault();
   };
+
+  private static dampAngle(current: number, target: number, lambda: number, delta: number): number {
+    const wrapped = THREE.MathUtils.euclideanModulo(target - current + Math.PI, Math.PI * 2) - Math.PI;
+    return current + wrapped * (1 - Math.exp(-lambda * delta));
+  }
 }

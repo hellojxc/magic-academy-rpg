@@ -50,6 +50,14 @@ interface StoryNpcObject {
   idleSpeed: number;
 }
 
+const STORY_NPC_IMMEDIATE_ASSET_DISTANCE_SQ = 6.2 * 6.2;
+const STORY_NPC_IDLE_ASSET_DISTANCE_SQ = 13 * 13;
+const STORY_NPC_HEAVY_IDLE_ASSET_DISTANCE_SQ = 8.5 * 8.5;
+const STORY_NPC_ACTIVE_DISTANCE_SQ = 18 * 18;
+const STORY_NPC_LOOK_AT_DISTANCE_SQ = 4 * 4;
+const STORY_NPC_IDLE_PRELOAD_DELAY_SECONDS = 3.2;
+const STORY_NPC_HEAVY_IDLE_PRELOAD_DELAY_SECONDS = 8;
+
 export class AcademyWorld {
   private readonly obstacles: Obstacle[] = [];
   private readonly npcs: InteractiveNPC[] = [];
@@ -124,7 +132,7 @@ export class AcademyWorld {
     this.playerRig.update(elapsedTime, delta);
     this.lyraRig.setMoving(false);
     this.lyraRig.update(elapsedTime, delta, this.player.position);
-    this.updateStoryNpcs(elapsedTime, delta);
+    this.updateStoryNpcs(elapsedTime, delta, playerMoving);
 
     // 阴影相机跟随玩家
     this.sunTarget.position.copy(this.player.position);
@@ -796,7 +804,7 @@ export class AcademyWorld {
 
   private addStoryNpc(npcData: NPCData, index: number): void {
     if (hasCharacterSpec(npcData.id)) {
-      const rig = new CharacterModel3D(getCharacterSpec(npcData.id));
+      const rig = new CharacterModel3D(getCharacterSpec(npcData.id), { autoLoad: false });
       const root = rig.root;
       root.position.set(npcData.worldX ?? 0, 0, npcData.worldZ ?? 0);
       root.rotation.y = npcData.rotationY ?? (Math.PI + index * 0.37);
@@ -908,29 +916,53 @@ export class AcademyWorld {
     });
   }
 
-  private updateStoryNpcs(elapsedTime: number, delta: number): void {
+  private updateStoryNpcs(elapsedTime: number, delta: number, playerMoving: boolean): void {
     for (const npc of this.storyNpcObjects) {
-      const showcaseMoving = this.updateMatureSenpaiShowcaseWalk(npc, elapsedTime, delta);
-      npc.rig?.setMoving(showcaseMoving);
-      npc.rig?.update(elapsedTime, delta, this.player.position);
-      npc.object.position.y = npc.baseY + Math.sin(elapsedTime * npc.idleSpeed + npc.phase) * 0.025;
       const dx = this.player.position.x - npc.object.position.x;
       const dz = this.player.position.z - npc.object.position.z;
       const distanceSq = dx * dx + dz * dz;
-      if (distanceSq > 16) continue;
+      if (npc.rig && this.shouldLoadStoryNpcAsset(npc.id, distanceSq, elapsedTime, playerMoving)) {
+        void npc.rig.startAssetLoad();
+      }
+
+      if (distanceSq > STORY_NPC_ACTIVE_DISTANCE_SQ) {
+        npc.rig?.setMoving(false);
+        continue;
+      }
+
+      const showcaseMoving = this.updateMatureSenpaiShowcaseWalk(npc, elapsedTime, delta, distanceSq);
+      npc.rig?.setMoving(showcaseMoving);
+      npc.rig?.update(elapsedTime, delta, this.player.position);
+      npc.object.position.y = npc.baseY + Math.sin(elapsedTime * npc.idleSpeed + npc.phase) * 0.025;
+      if (distanceSq > STORY_NPC_LOOK_AT_DISTANCE_SQ) continue;
       const targetYaw = Math.atan2(dx, dz);
       const wrapped = THREE.MathUtils.euclideanModulo(targetYaw - npc.object.rotation.y + Math.PI, Math.PI * 2) - Math.PI;
       npc.object.rotation.y += wrapped * (1 - Math.exp(-7 * delta));
     }
   }
 
-  private updateMatureSenpaiShowcaseWalk(npc: StoryNpcObject, elapsedTime: number, delta: number): boolean {
-    if (npc.id !== 'mature_senpai') return false;
+  private shouldLoadStoryNpcAsset(id: string, distanceSq: number, elapsedTime: number, playerMoving: boolean): boolean {
+    if (distanceSq <= STORY_NPC_IMMEDIATE_ASSET_DISTANCE_SQ) return true;
 
-    const playerDx = this.player.position.x - npc.object.position.x;
-    const playerDz = this.player.position.z - npc.object.position.z;
-    const playerDistanceSq = playerDx * playerDx + playerDz * playerDz;
-    if (playerDistanceSq < 16) return false;
+    if (id === 'mature_senpai') {
+      return !playerMoving
+        && elapsedTime >= STORY_NPC_HEAVY_IDLE_PRELOAD_DELAY_SECONDS
+        && distanceSq <= STORY_NPC_HEAVY_IDLE_ASSET_DISTANCE_SQ;
+    }
+
+    return !playerMoving
+      && elapsedTime >= STORY_NPC_IDLE_PRELOAD_DELAY_SECONDS
+      && distanceSq <= STORY_NPC_IDLE_ASSET_DISTANCE_SQ;
+  }
+
+  private updateMatureSenpaiShowcaseWalk(
+    npc: StoryNpcObject,
+    elapsedTime: number,
+    delta: number,
+    playerDistanceSq: number
+  ): boolean {
+    if (npc.id !== 'mature_senpai') return false;
+    if (playerDistanceSq < STORY_NPC_LOOK_AT_DISTANCE_SQ) return false;
 
     const phase = elapsedTime * 0.36 + npc.phase;
     const targetX = npc.homeX + Math.sin(phase * 0.72) * 0.18;

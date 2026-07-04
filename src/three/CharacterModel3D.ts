@@ -76,6 +76,10 @@ interface AssetLoadQueueEntry {
   reject: (error: unknown) => void;
 }
 
+interface CharacterModel3DOptions {
+  readonly autoLoad?: boolean;
+}
+
 type ThreeVRMModule = typeof import('@pixiv/three-vrm');
 
 export class CharacterModel3D {
@@ -107,8 +111,9 @@ export class CharacterModel3D {
   private gltfLookYaw = 0;
   private gltfLookPitch = 0;
   private assetState: CharacterAssetState = 'loading';
+  private assetLoadPromise?: Promise<void>;
 
-  constructor(private readonly spec: CharacterSpec) {
+  constructor(private readonly spec: CharacterSpec, options: CharacterModel3DOptions = {}) {
     this.buildPlan = createCharacterBuildPlan(spec);
     this.root.userData.characterId = spec.id;
     this.root.userData.characterDisplayName = spec.displayName;
@@ -116,7 +121,17 @@ export class CharacterModel3D {
     this.root.userData.characterAssetState = this.assetState;
     this.fallback = new ProceduralCharacterRig(spec.id);
     this.root.add(this.fallback.root);
-    void CharacterModel3D.enqueueAssetLoad(
+    if (options.autoLoad === false) {
+      this.setAssetState('fallback');
+    } else {
+      void this.startAssetLoad();
+    }
+  }
+
+  startAssetLoad(): Promise<void> {
+    if (this.assetLoadPromise) return this.assetLoadPromise;
+    this.setAssetState('loading');
+    this.assetLoadPromise = CharacterModel3D.enqueueAssetLoad(
       () => this.loadModel(),
       this.getAssetLoadPriority(),
     ).catch((error) => {
@@ -124,6 +139,7 @@ export class CharacterModel3D {
       this.fallback.root.visible = true;
       console.warn(`Failed to schedule ${this.spec.id} character asset`, error);
     });
+    return this.assetLoadPromise;
   }
 
   setMoving(moving: boolean): void {
