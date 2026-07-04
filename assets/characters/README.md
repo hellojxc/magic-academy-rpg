@@ -61,3 +61,21 @@ only pipeline probes; they should not be treated as final character art.
 9. Enable or keep the asset in `public/assets/models/character-models.json`.
 
 The web runtime should stay stable while source models improve.
+
+## Current Mature Senpai Runtime Layer
+
+`mature_senpai` currently uses `mature-senpai-commercial-v5` as the active
+runtime asset. The generated source and audit files are:
+
+- `assets/characters/mature_senpai/tools/build_final_v5.py`
+- `assets/characters/mature_senpai/source/mature_senpai_commercial_v5.blend`
+- `assets/characters/mature_senpai/mature_senpai_commercial_v5.report.json`
+- `public/assets/models/mature_senpai_commercial_v5.glb`
+- `public/assets/models/mature_senpai_commercial_v5.png`
+
+This layer completes the current automated Blender pass: helper mesh removal,
+named skinned submesh splitting, rule-painted runtime weights, six expression
+morph targets, hair/skirt/strap/pendant secondary bones, and dialogue-distance
+face detail overlays. It deliberately remains marked as a commercial candidate
+because the topology and expression shapes are generated cleanup work rather
+than a final artist-sculpted quad retopology and hand-painted weight pass.

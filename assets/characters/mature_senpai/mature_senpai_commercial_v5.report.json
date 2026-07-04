@@ -1,0 +1,165 @@
+{
+  "assetId": "mature-senpai-commercial-v5",
+  "characterId": "mature_senpai",
+  "status": "active-commercial-candidate-preview",
+  "source": "public/assets/models/mature_senpai_mcp_polish_v2.glb",
+  "blendSource": "assets/characters/mature_senpai/source/mature_senpai_commercial_v5.blend",
+  "output": "public/assets/models/mature_senpai_commercial_v5.glb",
+  "thumbnail": "public/assets/models/mature_senpai_commercial_v5.png",
+  "generatedBy": "BlenderMCP execute_code + assets/characters/mature_senpai/tools/build_final_v5.py",
+  "parts": [
+    {
+      "name": "MatureSenpai_Face_Head",
+      "faces": 4582,
+      "vertices": 4262,
+      "hasMorphTargets": true
+    },
+    {
+      "name": "MatureSenpai_Hair_LeftLock",
+      "faces": 9669,
+      "vertices": 9841,
+      "hasMorphTargets": false
+    },
+    {
+      "name": "MatureSenpai_Hair_RightLock",
+      "faces": 10006,
+      "vertices": 9936,
+      "hasMorphTargets": false
+    },
+    {
+      "name": "MatureSenpai_Hair_Back",
+      "faces": 7755,
+      "vertices": 7284,
+      "hasMorphTargets": false
+    },
+    {
+      "name": "MatureSenpai_Torso_Camisole",
+      "faces": 10775,
+      "vertices": 10331,
+      "hasMorphTargets": false
+    },
+    {
+      "name": "MatureSenpai_Arms_Hands",
+      "faces": 2414,
+      "vertices": 2162,
+      "hasMorphTargets": false
+    },
+    {
+      "name": "MatureSenpai_Skirt_LeftPanel",
+      "faces": 2470,
+      "vertices": 2374,
+      "hasMorphTargets": false
+    },
+    {
+      "name": "MatureSenpai_Skirt_RightPanel",
+      "faces": 2462,
+      "vertices": 2305,
+      "hasMorphTargets": false
+    },
+    {
+      "name": "MatureSenpai_Skirt_Center",
+      "faces": 1094,
+      "vertices": 976,
+      "hasMorphTargets": false
+    },
+    {
+      "name": "MatureSenpai_Legs",
+      "faces": 4691,
+      "vertices": 4339,
+      "hasMorphTargets": false
+    },
+    {
+      "name": "MatureSenpai_Shoes",
+      "faces": 4004,
+      "vertices": 3485,
+      "hasMorphTargets": false
+    },
+    {
+      "name": "MatureSenpai_Strap_Left",
+      "faces": 1,
+      "vertices": 4,
+      "hasMorphTargets": false
+    },
+    {
+      "name": "MatureSenpai_Strap_Right",
+      "faces": 1,
+      "vertices": 4,
+      "hasMorphTargets": false
+    },
+    {
+      "name": "MatureSenpai_Pendant_Choker",
+      "faces": 4,
+      "vertices": 8,
+      "hasMorphTargets": false
+    },
+    {
+      "name": "MatureSenpai_Face_DialogueDetails",
+      "faces": 9,
+      "vertices": 36,
+      "hasMorphTargets": false
+    }
+  ],
+  "armatureBones": [
+    "Hips",
+    "Spine",
+    "Chest",
+    "Neck",
+    "Head",
+    "Secondary_Hair_Back",
+    "Secondary_Hair_Left",
+    "Secondary_Hair_Right",
+    "Secondary_Pendant",
+    "LeftUpperArm",
+    "LeftLowerArm",
+    "LeftHand",
+    "RightUpperArm",
+    "RightLowerArm",
+    "RightHand",
+    "Secondary_Strap_Left",
+    "Secondary_Strap_Right",
+    "LeftUpperLeg",
+    "LeftLowerLeg",
+    "LeftFoot",
+    "RightUpperLeg",
+    "RightLowerLeg",
+    "RightFoot",
+    "Secondary_Skirt_Left",
+    "Secondary_Skirt_Right"
+  ],
+  "morphTargetMeshes": [
+    "MatureSenpai_Face_Head"
+  ],
+  "secondaryBones": [
+    "Secondary_Hair_Back",
+    "Secondary_Hair_Left",
+    "Secondary_Hair_Right",
+    "Secondary_Pendant",
+    "Secondary_Strap_Left",
+    "Secondary_Strap_Right",
+    "Secondary_Skirt_Left",
+    "Secondary_Skirt_Right"
+  ],
+  "runtimeDecision": {
+    "defaultAsset": true,
+    "fallbackAssetId": "mature-senpai-commercial-v4",
+    "reason": "This v5 asset extends v4 with dialogue-distance face overlays for eye catchlights, lashes, mouth line, and cheek tint while preserving the split skinned runtime mesh, six facial morph targets, refreshed rule-painted weights, and secondary hair/skirt/strap/pendant bone hooks."
+  },
+  "completedPasses": [
+    "helper mesh removal",
+    "single-mesh split into named skinned submeshes",
+    "source loop-normal transfer to reduce split-part shading seams",
+    "deterministic weight-paint pass for face, hair, torso, arms, skirt, legs, and shoes",
+    "facial morph targets: Blink, ConfidentSmile, WarmSmile, Teasing, Surprised, Thoughtful",
+    "secondary hair, skirt, strap, and pendant bone weight refresh",
+    "visible camisole strap and pendant/choker detail meshes",
+    "dialogue-distance face overlay meshes for catchlights, lashes, mouth line, and cheek tint",
+    "runtime GLB export with skins, morph targets, and animations"
+  ],
+  "limitations": [
+    "Automated topology split preserves Hunyuan triangles and UVs; it is not a hand-drawn quad retopology.",
+    "Weight painting is rule-based in Blender Python, not artist hand-painted brush work.",
+    "Facial morphs are broader than v3 but still generated shape keys, not artist-sculpted expression blendshapes.",
+    "The face overlay is a runtime-readable polish layer, not a full texture repaint or sculpted eyelid/mouth topology pass.",
+    "A final JRPG-quality asset still needs artist retopology, texture cleanup, and manual facial expression sculpting."
+  ]
+}
