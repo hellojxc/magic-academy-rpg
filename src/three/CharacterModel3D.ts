@@ -84,6 +84,7 @@ export class CharacterModel3D {
   private static readonly assetUrlAvailability = new Map<string, Promise<boolean>>();
   private static activeAssetLoads = 0;
   private static assetLoadSequence = 0;
+  private static toonGradient?: THREE.DataTexture;
 
   readonly root = new THREE.Group();
   private readonly fallback: ProceduralCharacterRig;
@@ -297,6 +298,7 @@ export class CharacterModel3D {
     scene.rotation.y = Math.PI;
     this.root.add(scene);
     this.setVRMShadows(scene);
+    if (this.buildPlan.asset) this.applyGLTFVisualProfile(scene, this.buildPlan.asset);
     this.bones = this.collectNamedBones(scene);
     this.gltfMorphBindings = this.collectMorphTargets(scene);
     this.gltfSecondaryBindings = this.collectSecondaryMotionObjects(scene);
@@ -317,6 +319,121 @@ export class CharacterModel3D {
       }
       this.playGLTFAction('idle', 0);
     }
+  }
+
+  private applyGLTFVisualProfile(model: THREE.Object3D, asset: CharacterAssetEntry): void {
+    if (asset.materialProfile !== 'toon' && asset.materialProfile !== 'mtoon') return;
+
+    const meshes: Array<THREE.Mesh | THREE.SkinnedMesh> = [];
+    model.traverse((object) => {
+      if (object instanceof THREE.Mesh || object instanceof THREE.SkinnedMesh) meshes.push(object);
+    });
+
+    const outlineMaterial = this.createGLTFOutlineMaterial();
+    for (const mesh of meshes) {
+      this.convertGLTFMeshToToon(mesh);
+      if (asset.quality === 'hero' && this.shouldOutlineGLTFMesh(mesh)) {
+        this.addGLTFMeshOutline(mesh, outlineMaterial, 1.018);
+      }
+    }
+    model.userData.characterVisualProfile = asset.materialProfile;
+  }
+
+  private convertGLTFMeshToToon(mesh: THREE.Mesh | THREE.SkinnedMesh): void {
+    const convertMaterial = (material: THREE.Material): THREE.Material => {
+      if (material instanceof THREE.MeshToonMaterial) {
+        material.gradientMap = CharacterModel3D.getToonGradient();
+        material.needsUpdate = true;
+        return material;
+      }
+
+      const source = material as THREE.Material & {
+        color?: THREE.Color;
+        map?: THREE.Texture | null;
+        alphaMap?: THREE.Texture | null;
+        emissive?: THREE.Color;
+        emissiveIntensity?: number;
+      };
+      const color = source.color instanceof THREE.Color ? source.color.clone() : new THREE.Color(0xffffff);
+      const toon = new THREE.MeshToonMaterial({
+        name: `${material.name || mesh.name || 'Character'}_RuntimeToon`,
+        color,
+        map: source.map ?? null,
+        alphaMap: source.alphaMap ?? null,
+        gradientMap: CharacterModel3D.getToonGradient(),
+        transparent: material.transparent || material.opacity < 1,
+        opacity: material.opacity,
+        alphaTest: material.alphaTest,
+        side: material.side === THREE.DoubleSide ? THREE.DoubleSide : THREE.FrontSide,
+        depthTest: material.depthTest,
+        depthWrite: material.depthWrite,
+      });
+      if (source.emissive instanceof THREE.Color) toon.emissive.copy(source.emissive);
+      if (typeof source.emissiveIntensity === 'number') toon.emissiveIntensity = source.emissiveIntensity;
+      return toon;
+    };
+
+    if (Array.isArray(mesh.material)) {
+      mesh.material = mesh.material.map(convertMaterial);
+    } else {
+      mesh.material = convertMaterial(mesh.material);
+    }
+  }
+
+  private shouldOutlineGLTFMesh(mesh: THREE.Mesh | THREE.SkinnedMesh): boolean {
+    if (!mesh.geometry) return false;
+    const normalized = mesh.name.replace(/[^a-z0-9]/gi, '').toLowerCase();
+    if (!normalized) return false;
+    if (normalized.includes('inkoutline') || normalized.includes('selectionring')) return false;
+    if (/(eye|iris|pupil|catchlight|eyelash|brow|mouth|lip|cheek|nose)/.test(normalized)) return false;
+    if (/(button|gem|crest|ring|finger|thumb|wand|paper|book|shadow)/.test(normalized)) return false;
+    const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+    if (materials.some((material) => material.transparent || material.opacity < 0.9)) return false;
+
+    if (!mesh.geometry.boundingSphere) mesh.geometry.computeBoundingSphere();
+    const radius = mesh.geometry.boundingSphere?.radius ?? 0;
+    return radius >= 0.035;
+  }
+
+  private addGLTFMeshOutline(
+    mesh: THREE.Mesh | THREE.SkinnedMesh,
+    material: THREE.MeshBasicMaterial,
+    scale: number,
+  ): void {
+    const parent = mesh.parent;
+    if (!parent) return;
+
+    const outline = mesh instanceof THREE.SkinnedMesh
+      ? new THREE.SkinnedMesh(mesh.geometry, material)
+      : new THREE.Mesh(mesh.geometry, material);
+    outline.name = `${mesh.name || 'CharacterMesh'}_InkOutline`;
+    outline.position.copy(mesh.position);
+    outline.quaternion.copy(mesh.quaternion);
+    outline.scale.copy(mesh.scale).multiplyScalar(scale);
+    outline.frustumCulled = false;
+    outline.castShadow = false;
+    outline.receiveShadow = false;
+    outline.renderOrder = -20;
+    outline.raycast = () => {};
+
+    if (outline instanceof THREE.SkinnedMesh && mesh instanceof THREE.SkinnedMesh) {
+      outline.bindMode = mesh.bindMode;
+      outline.bind(mesh.skeleton, mesh.bindMatrix);
+      outline.morphTargetDictionary = mesh.morphTargetDictionary;
+      outline.morphTargetInfluences = mesh.morphTargetInfluences;
+    }
+
+    parent.add(outline);
+  }
+
+  private createGLTFOutlineMaterial(): THREE.MeshBasicMaterial {
+    return new THREE.MeshBasicMaterial({
+      color: this.spec.id === 'player' ? 0x15131b : 0x24172f,
+      side: THREE.BackSide,
+      depthTest: true,
+      depthWrite: true,
+      transparent: false,
+    });
   }
 
   private updateGLTFAnimation(elapsedTime: number, delta: number, lookAtWorldPosition?: THREE.Vector3): void {
@@ -809,5 +926,24 @@ export class CharacterModel3D {
     const loader = new GLTFLoader();
     loader.register((parser) => new vrmModule.VRMLoaderPlugin(parser));
     return loader;
+  }
+
+  private static getToonGradient(): THREE.DataTexture {
+    if (!CharacterModel3D.toonGradient) {
+      const data = new Uint8Array([
+        56, 56, 56, 255,
+        116, 116, 116, 255,
+        176, 176, 176, 255,
+        226, 226, 226, 255,
+        255, 255, 255, 255,
+      ]);
+      const texture = new THREE.DataTexture(data, 5, 1, THREE.RGBAFormat);
+      texture.minFilter = THREE.NearestFilter;
+      texture.magFilter = THREE.NearestFilter;
+      texture.colorSpace = THREE.SRGBColorSpace;
+      texture.needsUpdate = true;
+      CharacterModel3D.toonGradient = texture;
+    }
+    return CharacterModel3D.toonGradient;
   }
 }
