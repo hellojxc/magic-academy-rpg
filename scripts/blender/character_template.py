@@ -510,6 +510,13 @@ def add_body(
     outfit_style = spec["outfit"].get("style")
     is_astrologer = outfit_style == "astrologer-uniform"
     scale = m["scale"]
+    if is_player:
+        add_player_body_shell(m, mats, armature, collection)
+        neck = add_cylinder("Neck", mats["skin"], (0, -0.005 * scale, m["neck_z"]), 0.055 * scale, 0.1 * scale, collection, vertices=24)
+        parent_to_bone(neck, armature, "Neck")
+        add_limbs(spec, m, mats, armature, collection)
+        return
+
     jacket_mat = mats["outfit_dark"] if is_masculine or is_astrologer else mats["outfit_primary"]
     shirt_mat = mats["outfit_secondary"] if is_masculine else mats["outfit_primary"]
     torso_x = m["waist_width"] * (0.53 if is_player else 0.50 if is_masculine else 0.44 if is_astrologer else 0.48)
@@ -610,6 +617,123 @@ def add_body(
     parent_to_bone(neck, armature, "Neck")
 
     add_limbs(spec, m, mats, armature, collection)
+
+
+def add_player_body_shell(
+    m: dict[str, float],
+    mats: dict[str, bpy.types.Material],
+    armature: bpy.types.Object,
+    collection: bpy.types.Collection,
+) -> None:
+    scale = m["scale"]
+
+    def ring(z: float, half_width: float, front: float, back: float) -> list[tuple[float, float, float]]:
+        point_count = 96
+        points = []
+        for index in range(point_count):
+            angle = 2 * math.pi * index / point_count
+            sx = math.sin(angle)
+            cy = math.cos(angle)
+            y_radius = back if cy >= 0 else front
+            side_fill = 0.96 + 0.04 * max(0.0, cy)
+            x = half_width * sx * side_fill * scale
+            y = cy * y_radius * scale
+            if cy < 0:
+                y *= abs(cy) ** 0.22
+            points.append((x, y, z * scale))
+        return points
+
+    rings = []
+    for index in range(16):
+        t = index / 15
+        z = 0.83 + 0.48 * t
+        shoulder = math.sin(t * math.pi / 2) ** 0.9
+        chest = math.sin(t * math.pi)
+        rings.append(ring(
+            z,
+            0.142 + 0.064 * shoulder,
+            0.108 + 0.028 * chest,
+            0.068 + 0.016 * chest,
+        ))
+    verts = [point for current in rings for point in current]
+    faces: list[tuple[int, ...]] = []
+    ring_size = len(rings[0])
+    for ring_index in range(len(rings) - 1):
+        start = ring_index * ring_size
+        next_start = (ring_index + 1) * ring_size
+        for index in range(ring_size):
+            faces.append((
+                start + index,
+                start + ((index + 1) % ring_size),
+                next_start + ((index + 1) % ring_size),
+                next_start + index,
+            ))
+    faces.append(tuple(reversed(range(ring_size))))
+    top_start = (len(rings) - 1) * ring_size
+    faces.append(tuple(top_start + index for index in range(ring_size)))
+
+    shell = add_plane_mesh("HeroJacketBodyShell", mats["outfit_primary"], verts, faces, collection)
+    shade_smooth(shell)
+    parent_to_bone(shell, armature, "Chest")
+
+    shirt = add_hair_panel(
+        "HeroShirtFrontPanel",
+        mats["outfit_secondary"],
+        [
+            (-0.052 * scale, -0.141 * scale, 1.31 * scale),
+            (0.052 * scale, -0.141 * scale, 1.31 * scale),
+            (0.080 * scale, -0.142 * scale, 0.94 * scale),
+            (-0.080 * scale, -0.142 * scale, 0.94 * scale),
+        ],
+        collection,
+        0.004 * scale,
+    )
+    parent_to_bone(shirt, armature, "Chest")
+
+    for side, sx in (("Left", -1), ("Right", 1)):
+        lapel_verts = [
+            (sx * 0.038 * scale, -0.148 * scale, 1.31 * scale),
+            (sx * 0.138 * scale, -0.132 * scale, 1.27 * scale),
+            (sx * 0.128 * scale, -0.136 * scale, 0.98 * scale),
+            (sx * 0.028 * scale, -0.150 * scale, 1.02 * scale),
+        ]
+        if sx > 0:
+            lapel_verts = list(reversed(lapel_verts))
+        lapel = add_hair_panel(
+            f"{side}HeroTailoredLapel",
+            mats["outfit_dark"],
+            lapel_verts,
+            collection,
+            0.004 * scale,
+        )
+        parent_to_bone(lapel, armature, "Chest")
+
+        trim_verts = [
+            (sx * 0.126 * scale, -0.145 * scale, 1.285 * scale),
+            (sx * 0.136 * scale, -0.142 * scale, 1.285 * scale),
+            (sx * 0.144 * scale, -0.136 * scale, 0.965 * scale),
+            (sx * 0.134 * scale, -0.139 * scale, 0.965 * scale),
+        ]
+        if sx > 0:
+            trim_verts = list(reversed(trim_verts))
+        side_trim = add_hair_panel(
+            f"{side}HeroFrontGoldSeamPanel",
+            mats["trim"],
+            trim_verts,
+            collection,
+            0.002 * scale,
+        )
+        parent_to_bone(side_trim, armature, "Chest")
+
+    waist = add_cube(
+        "HeroWaistBandInset",
+        mats["sole"],
+        (0, -0.133 * scale, 0.885 * scale),
+        (0.145 * scale, 0.006 * scale, 0.014 * scale),
+        collection,
+        bevel=0.002 * scale,
+    )
+    parent_to_bone(waist, armature, "Hips")
 
 
 def add_limbs(
@@ -1200,17 +1324,19 @@ def add_outfit(
     collection: bpy.types.Collection,
 ) -> None:
     scale = m["scale"]
+    is_player = spec["id"] == "player"
     is_masculine = is_masculine_uniform(spec)
     if is_masculine:
-        tie = add_cone("Necktie", mats["accent"], (0, -0.235 * scale, 1.22 * scale), 0.035 * scale, 0.012 * scale, 0.23 * scale, collection, vertices=4, rotation=(0, 0, math.pi / 4))
+        front_y = -0.154 if is_player else -0.235
+        tie = add_cone("Necktie", mats["accent"], (0, front_y * scale, 1.22 * scale), 0.035 * scale, 0.012 * scale, 0.23 * scale, collection, vertices=4, rotation=(0, 0, math.pi / 4))
         parent_to_bone(tie, armature, "Chest")
-        knot = add_uv_sphere("TieKnot", mats["trim"], (0, -0.238 * scale, 1.35 * scale), (0.035 * scale, 0.012 * scale, 0.03 * scale), collection, 16, 8)
+        knot = add_uv_sphere("TieKnot", mats["trim"], (0, (front_y - 0.003) * scale, 1.35 * scale), (0.035 * scale, 0.012 * scale, 0.03 * scale), collection, 16, 8)
         parent_to_bone(knot, armature, "Chest")
         for index, z in enumerate((1.27, 1.18, 1.09)):
             button = add_uv_sphere(
                 f"JacketGoldButton_{index}",
                 mats["trim"],
-                (0.055 * scale, -0.244 * scale, z * scale),
+                (0.055 * scale, (front_y - 0.009) * scale, z * scale),
                 (0.013 * scale, 0.004 * scale, 0.013 * scale),
                 collection,
                 12,
@@ -1220,7 +1346,7 @@ def add_outfit(
         belt = add_cube(
             "HeroBelt",
             mats["sole"],
-            (0, -0.19 * scale, 0.88 * scale),
+            (0, (-0.135 if is_player else -0.19) * scale, 0.88 * scale),
             (0.145 * scale, 0.01 * scale, 0.015 * scale),
             collection,
             bevel=0.003 * scale,
@@ -1229,13 +1355,13 @@ def add_outfit(
         buckle = add_cube(
             "HeroBeltBuckle",
             mats["trim"],
-            (0, -0.202 * scale, 0.88 * scale),
+            (0, (-0.143 if is_player else -0.202) * scale, 0.88 * scale),
             (0.026 * scale, 0.006 * scale, 0.022 * scale),
             collection,
             bevel=0.002 * scale,
         )
         parent_to_bone(buckle, armature, "Hips")
-        add_player_uniform_details(m, mats, armature, collection)
+        add_player_uniform_details(m, mats, armature, collection, is_tailored_shell=is_player)
     else:
         add_skirt(m, mats, armature, collection)
         is_astrologer = spec["outfit"].get("style") == "astrologer-uniform"
@@ -1306,17 +1432,20 @@ def add_player_uniform_details(
     mats: dict[str, bpy.types.Material],
     armature: bpy.types.Object,
     collection: bpy.types.Collection,
+    is_tailored_shell: bool = False,
 ) -> None:
     scale = m["scale"]
+    front_y = -0.152 if is_tailored_shell else -0.225
+    trim_y = -0.158 if is_tailored_shell else -0.238
     for side, sx in (("Left", -1), ("Right", 1)):
         tail = add_hair_panel(
             f"{side}HeroJacketTail",
             mats["outfit_dark"],
             [
-                (sx * 0.06 * scale, -0.225 * scale, 1.02 * scale),
-                (sx * 0.185 * scale, -0.215 * scale, 1.02 * scale),
-                (sx * 0.20 * scale, -0.225 * scale, 0.80 * scale),
-                (sx * 0.045 * scale, -0.238 * scale, 0.82 * scale),
+                (sx * 0.06 * scale, front_y * scale, 1.02 * scale),
+                (sx * 0.185 * scale, (front_y + 0.010) * scale, 1.02 * scale),
+                (sx * 0.20 * scale, front_y * scale, 0.80 * scale),
+                (sx * 0.045 * scale, trim_y * scale, 0.82 * scale),
             ],
             collection,
             0.006 * scale,
@@ -1326,7 +1455,7 @@ def add_player_uniform_details(
         tail_trim = add_cube(
             f"{side}HeroJacketTailGoldEdge",
             mats["trim"],
-            (sx * 0.19 * scale, -0.238 * scale, 0.91 * scale),
+            (sx * 0.19 * scale, trim_y * scale, 0.91 * scale),
             (0.006 * scale, 0.005 * scale, 0.18 * scale),
             collection,
             rotation=(0, 0, sx * 0.08),
@@ -1369,7 +1498,7 @@ def add_player_uniform_details(
     star = add_cone(
         "HeroCollarStar",
         mats["trim"],
-        (0, -0.252 * scale, 1.365 * scale),
+        (0, (-0.166 if is_tailored_shell else -0.252) * scale, 1.365 * scale),
         0.032 * scale,
         0.032 * scale,
         0.008 * scale,
@@ -1379,15 +1508,16 @@ def add_player_uniform_details(
     )
     parent_to_bone(star, armature, "Chest")
 
-    vest = add_cube(
-        "HeroCreamVestInset",
-        mats["outfit_secondary"],
-        (0, -0.232 * scale, 1.13 * scale),
-        (0.075 * scale, 0.007 * scale, 0.19 * scale),
-        collection,
-        bevel=0.004 * scale,
-    )
-    parent_to_bone(vest, armature, "Chest")
+    if not is_tailored_shell:
+        vest = add_cube(
+            "HeroCreamVestInset",
+            mats["outfit_secondary"],
+            (0, -0.232 * scale, 1.13 * scale),
+            (0.075 * scale, 0.007 * scale, 0.19 * scale),
+            collection,
+            bevel=0.004 * scale,
+        )
+        parent_to_bone(vest, armature, "Chest")
 
 
 def add_astrologer_details(

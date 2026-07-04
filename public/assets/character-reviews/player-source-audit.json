@@ -1,6 +1,6 @@
 {
   "characterId": "player",
-  "meshes": 114,
+  "meshes": 110,
   "materials": 19,
   "armatures": 1,
   "maxBones": 17,
@@ -22,7 +22,7 @@
     "RightPupil",
     "RightEyeHighlight"
   ],
-  "estimatedTriangles": 32080,
+  "estimatedTriangles": 30340,
   "source": "/home/dennisj/apps/magic-academy-rpg-preview/assets/characters/player/source/player.blend",
   "output": "/home/dennisj/apps/magic-academy-rpg-preview/public/assets/models/player.glb",
   "preview": "/home/dennisj/apps/magic-academy-rpg-preview/public/assets/character-reviews/player-source-preview.png"
