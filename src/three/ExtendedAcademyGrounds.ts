@@ -187,22 +187,49 @@ export class ExtendedAcademyGrounds {
     const flowerMats = [0x8fffb3, 0xd7a6ff, 0xffd27a, 0xff7aa8, 0x8bdcff]
       .map((c) => getStandardMaterial({ color: c, emissive: c, emissiveIntensity: 0.12, roughness: 0.5 }));
 
+    const stemMatrices: THREE.Matrix4[] = [];
+    const flowerMatricesByMaterial = flowerMats.map((): THREE.Matrix4[] => []);
+    const dummy = new THREE.Object3D();
     for (let i = 0; i < 26; i += 1) {
       const px = x + (seeded(i * 31 + x * 13) - 0.5) * (width - 0.55);
       const pz = z + (seeded(i * 41 + z * 17) - 0.5) * (depth - 0.35);
       const stemHeight = 0.18 + seeded(i * 47) * 0.22;
-      const stem = new THREE.Mesh(Geo.cylinder(0.01, 0.013, stemHeight, 5), stemMat);
-      stem.position.set(px, 0.54 + stemHeight / 2, pz);
-      stem.rotation.x = (seeded(i * 53) - 0.5) * 0.22;
-      stem.rotation.z = (seeded(i * 59) - 0.5) * 0.22;
-      stem.castShadow = true;
-      this.scene.add(stem);
+      dummy.position.set(px, 0.54 + stemHeight / 2, pz);
+      dummy.rotation.set((seeded(i * 53) - 0.5) * 0.22, 0, (seeded(i * 59) - 0.5) * 0.22);
+      dummy.scale.set(1, stemHeight, 1);
+      dummy.updateMatrix();
+      stemMatrices.push(dummy.matrix.clone());
 
-      const flower = new THREE.Mesh(Geo.sphere(0.035 + seeded(i * 61) * 0.025, 8, 6), flowerMats[i % flowerMats.length]);
-      flower.position.set(px, 0.56 + stemHeight, pz);
-      flower.castShadow = true;
-      this.scene.add(flower);
+      const flowerRadius = 0.035 + seeded(i * 61) * 0.025;
+      dummy.position.set(px, 0.56 + stemHeight, pz);
+      dummy.rotation.set(0, 0, 0);
+      dummy.scale.setScalar(flowerRadius);
+      dummy.updateMatrix();
+      flowerMatricesByMaterial[i % flowerMats.length].push(dummy.matrix.clone());
     }
+
+    this.addInstancedStaticMesh(Geo.cylinder(0.01, 0.013, 1, 5), stemMat, stemMatrices, true, false);
+    flowerMatricesByMaterial.forEach((matrices, index) => {
+      this.addInstancedStaticMesh(Geo.sphere(1, 8, 6), flowerMats[index], matrices, true, false);
+    });
+  }
+
+  private addInstancedStaticMesh(
+    geometry: THREE.BufferGeometry,
+    material: THREE.Material,
+    matrices: THREE.Matrix4[],
+    castShadow: boolean,
+    receiveShadow: boolean
+  ): void {
+    if (matrices.length === 0) return;
+    const mesh = new THREE.InstancedMesh(geometry, material, matrices.length);
+    mesh.instanceMatrix.setUsage(THREE.StaticDrawUsage);
+    matrices.forEach((matrix, index) => mesh.setMatrixAt(index, matrix));
+    mesh.instanceMatrix.needsUpdate = true;
+    mesh.castShadow = castShadow;
+    mesh.receiveShadow = receiveShadow;
+    mesh.computeBoundingSphere();
+    this.scene.add(mesh);
   }
 
   private addGreenhousePond(obstacles: Obstacle[]): void {
