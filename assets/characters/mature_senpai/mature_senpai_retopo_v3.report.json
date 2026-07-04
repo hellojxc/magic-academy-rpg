@@ -1,0 +1,131 @@
+{
+  "assetId": "mature-senpai-retopo-v3",
+  "characterId": "mature_senpai",
+  "status": "active-runtime-preview",
+  "source": "public/assets/models/mature_senpai_mcp_polish_v2.glb",
+  "blendSource": "assets/characters/mature_senpai/source/mature_senpai_retopo_v3.blend",
+  "output": "public/assets/models/mature_senpai_retopo_v3.glb",
+  "thumbnail": "public/assets/models/mature_senpai_retopo_v3.png",
+  "generatedBy": "BlenderMCP execute_code + assets/characters/mature_senpai/tools/build_retopo_v3.py",
+  "parts": [
+    {
+      "name": "MatureSenpai_Face_Head",
+      "faces": 4582,
+      "vertices": 4262,
+      "hasMorphTargets": true
+    },
+    {
+      "name": "MatureSenpai_Hair_LeftLock",
+      "faces": 9669,
+      "vertices": 9841,
+      "hasMorphTargets": false
+    },
+    {
+      "name": "MatureSenpai_Hair_RightLock",
+      "faces": 10006,
+      "vertices": 9936,
+      "hasMorphTargets": false
+    },
+    {
+      "name": "MatureSenpai_Hair_Back",
+      "faces": 7755,
+      "vertices": 7284,
+      "hasMorphTargets": false
+    },
+    {
+      "name": "MatureSenpai_Torso_Camisole",
+      "faces": 10775,
+      "vertices": 10331,
+      "hasMorphTargets": false
+    },
+    {
+      "name": "MatureSenpai_Arms_Hands",
+      "faces": 2414,
+      "vertices": 2162,
+      "hasMorphTargets": false
+    },
+    {
+      "name": "MatureSenpai_Skirt_LeftPanel",
+      "faces": 2470,
+      "vertices": 2374,
+      "hasMorphTargets": false
+    },
+    {
+      "name": "MatureSenpai_Skirt_RightPanel",
+      "faces": 2462,
+      "vertices": 2305,
+      "hasMorphTargets": false
+    },
+    {
+      "name": "MatureSenpai_Skirt_Center",
+      "faces": 1094,
+      "vertices": 976,
+      "hasMorphTargets": false
+    },
+    {
+      "name": "MatureSenpai_Legs",
+      "faces": 4691,
+      "vertices": 4339,
+      "hasMorphTargets": false
+    },
+    {
+      "name": "MatureSenpai_Shoes",
+      "faces": 4004,
+      "vertices": 3485,
+      "hasMorphTargets": false
+    }
+  ],
+  "armatureBones": [
+    "Hips",
+    "Spine",
+    "Chest",
+    "Neck",
+    "Head",
+    "Secondary_Hair_Back",
+    "Secondary_Hair_Left",
+    "Secondary_Hair_Right",
+    "LeftUpperArm",
+    "LeftLowerArm",
+    "LeftHand",
+    "RightUpperArm",
+    "RightLowerArm",
+    "RightHand",
+    "LeftUpperLeg",
+    "LeftLowerLeg",
+    "LeftFoot",
+    "RightUpperLeg",
+    "RightLowerLeg",
+    "RightFoot",
+    "Secondary_Skirt_Left",
+    "Secondary_Skirt_Right"
+  ],
+  "morphTargetMeshes": [
+    "MatureSenpai_Face_Head"
+  ],
+  "secondaryBones": [
+    "Secondary_Hair_Back",
+    "Secondary_Hair_Left",
+    "Secondary_Hair_Right",
+    "Secondary_Skirt_Left",
+    "Secondary_Skirt_Right"
+  ],
+  "runtimeDecision": {
+    "defaultAsset": true,
+    "fallbackAssetId": "mature-senpai-mcp-polish-v2",
+    "reason": "This v3 asset adds runtime-visible production structure: named skinned submeshes, facial morph targets, rule-painted weights, and secondary hair/skirt bone hooks while preserving the Hunyuan v7 likeness."
+  },
+  "completedPasses": [
+    "helper mesh removal",
+    "single-mesh split into named skinned submeshes",
+    "deterministic weight-paint pass for face, hair, torso, arms, skirt, legs, and shoes",
+    "facial morph targets: Blink, WarmSmile, Surprised",
+    "secondary hair and skirt bone weight refresh",
+    "runtime GLB export with skins, morph targets, and animations"
+  ],
+  "limitations": [
+    "Automated topology split preserves Hunyuan triangles and UVs; it is not a hand-drawn quad retopology.",
+    "Weight painting is rule-based in Blender Python, not artist hand-painted brush work.",
+    "Facial morphs are subtle geometric morph targets on the generated face surface, not sculpted expression blendshapes.",
+    "A final JRPG-quality asset still needs artist retopology, texture cleanup, and manual facial expression sculpting."
+  ]
+}
