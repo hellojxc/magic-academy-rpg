@@ -1,6 +1,7 @@
 import {
   defaultCharacterAssetManifest,
   getCharacterAsset,
+  getDeclaredCharacterAsset,
   type CharacterAssetEntry,
   type CharacterAssetManifest,
 } from './CharacterManifest';
@@ -32,7 +33,10 @@ export function createCharacterBuildPlan(
 ): CharacterBuildPlan {
   const manifest = options.manifest ?? defaultCharacterAssetManifest;
   const distanceToCameraMeters = options.distanceToCameraMeters ?? 0;
-  const asset = getCharacterAsset(manifest, spec.id);
+  const preferredAsset = getDeclaredCharacterAsset(manifest, spec.runtime.preferredAssetId);
+  const asset = preferredAsset?.enabled && preferredAsset.characterId === spec.id
+    ? preferredAsset
+    : getCharacterAsset(manifest, spec.id);
 
   return {
     characterId: spec.id,
