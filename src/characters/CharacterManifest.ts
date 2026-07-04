@@ -87,6 +87,21 @@ export const defaultCharacterAssetManifest: CharacterAssetManifest = {
       triangleBudget: 32000,
       textureBudgetKb: 2048,
     },
+    {
+      id: 'mature-senpai-hunyuan-v7-web-preview',
+      characterId: 'mature_senpai',
+      enabled: true,
+      format: 'glb',
+      quality: 'mid',
+      url: '/assets/models/mature_senpai_hunyuan_v7_web.glb',
+      thumbnailUrl: '/assets/portraits/mature-senpai-v7.png',
+      animationClips: [],
+      materialProfile: 'standard',
+      supportsFacialMorphs: false,
+      supportsSpringBones: false,
+      triangleBudget: 60000,
+      textureBudgetKb: 34816,
+    },
   ],
 };
 

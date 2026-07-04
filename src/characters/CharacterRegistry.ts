@@ -205,10 +205,79 @@ export const miraVossSpec: CharacterSpec = {
   },
 };
 
+export const matureSenpaiSpec: CharacterSpec = {
+  id: 'mature_senpai',
+  displayName: 'Mature Senpai',
+  designIntent:
+    'A mature big-sister academy NPC based on the v7 Hunyuan/illustration reference: burgundy long hair, elegant ivory camisole top, lavender double side-slit skirt, and Roman-style strappy high heels. Current runtime asset is a static visual-review mesh and must be retopologized and rigged before final gameplay use.',
+  body: {
+    heightMeters: 1.72,
+    headToBodyRatio: 0.18,
+    silhouette: 'teacher',
+    shoulderWidth: 0.37,
+    torsoLength: 0.52,
+    waistWidth: 0.28,
+    hipWidth: 0.39,
+    armLength: 0.59,
+    handScale: 0.94,
+    legLength: 0.86,
+    footScale: 0.94,
+  },
+  face: {
+    eyeShape: 'soft mature purple anime eyes',
+    eyeColor: '#7b55b6',
+    eyeScale: 1.08,
+    browShape: 'gentle confident arc',
+    browColor: '#6b243f',
+    noseBridge: 'stylized-minimal',
+    mouthShape: 'small elegant smile',
+    cheekTint: '#e7b4aa',
+    expressionSet: ['neutral', 'blink', 'confident-smile', 'teasing', 'surprised', 'thoughtful'],
+  },
+  hair: {
+    color: '#6b243f',
+    highlightColor: '#b74d70',
+    style: 'long wavy burgundy hair',
+    bangs: 'side-parted bangs with layered face locks',
+    length: 'long',
+    volume: 0.9,
+    secondaryMotion: 'full',
+    accessories: [],
+  },
+  outfit: {
+    style: 'elegant mature academy fantasy outfit',
+    primaryColor: '#f6f0e6',
+    secondaryColor: '#a999d8',
+    accentColor: '#d5aa4f',
+    torso: 'ivory fitted camisole-style top with thin gold straps',
+    sleeves: 'sleeveless thin straps',
+    lowerBody: 'lavender high-waist skirt with double side slits',
+    outerwear: 'none',
+    shoes: 'ivory and gold Roman-style strappy high-heeled sandals',
+    accessories: ['gold choker with purple gem pendant', 'gold star skirt accents'],
+    heldItems: [],
+  },
+  animation: {
+    locomotionSet: 'academy-female-locomotion',
+    idleSet: 'mature-senpai-static-preview',
+    interactionSet: 'conversation-female-confident',
+    facialSet: 'anime-mature-basic',
+    secondaryMotion: ['long-hair-sway', 'skirt-sway', 'strap-sway', 'pendant-sway'],
+  },
+  runtime: {
+    role: 'supporting',
+    preferredAssetId: 'mature-senpai-hunyuan-v7-web-preview',
+    fallbackRigId: 'mature-senpai-procedural-rig',
+    lodProfile: 'supporting-mid',
+    maxVisibleDistanceMeters: 30,
+  },
+};
+
 export const characterSpecs: Record<string, CharacterSpec> = {
   player: playerSpec,
   lyra: lyraSpec,
   mira_voss: miraVossSpec,
+  mature_senpai: matureSenpaiSpec,
   ...storyNpcCharacterSpecs,
 };
 

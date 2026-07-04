@@ -1,0 +1,82 @@
+{
+  "version": "character-model-brief-v1",
+  "characterId": "mature_senpai",
+  "displayName": "Mature Senpai",
+  "currentPreviewAssetId": "mature-senpai-hunyuan-v7-web-preview",
+  "finalRuntimeAssetId": "mature-senpai-supporting-v1",
+  "referenceImages": {
+    "concept": "assets/characters/mature_senpai/references/concept-sheet-v7-roman-strappy-heels.png",
+    "multiviewSheet": "assets/characters/mature_senpai/references/hunyuan-multiview-v7/mature-senpai-v7-multiview-sheet.png",
+    "front": "assets/characters/mature_senpai/references/hunyuan-multiview-v7/mature-senpai-v7-front.png",
+    "side": "assets/characters/mature_senpai/references/hunyuan-multiview-v7/mature-senpai-v7-right.png",
+    "back": "assets/characters/mature_senpai/references/hunyuan-multiview-v7/mature-senpai-v7-back.png"
+  },
+  "targetIdentity": {
+    "style": "mainstream Japanese RPG mature academy heroine",
+    "silhouette": "172 cm mature big-sister NPC with long burgundy hair, elegant posture, fitted ivory camisole top, lavender double side-slit skirt, and Roman-style strappy high-heeled sandals",
+    "heightMeters": 1.72,
+    "headToBodyRatio": 0.18,
+    "facePriorities": [
+      "soft mature anime eyes with purple iris color",
+      "gentle confident expression",
+      "minimal stylized nose",
+      "small elegant mouth",
+      "clean face planes suitable for dialogue close-ups"
+    ],
+    "hairPriorities": [
+      "long burgundy wavy hair",
+      "side-parted bangs",
+      "layered side locks",
+      "separated hair chunks for secondary motion",
+      "no hair accessories"
+    ],
+    "outfitPriorities": [
+      "ivory fitted camisole-style top with thin gold straps and gold trim",
+      "small gold choker with purple gem pendant",
+      "lavender high-waist skirt with double side slits",
+      "gold star accents near slits and hem",
+      "bare legs",
+      "ivory and gold Roman-style strappy high-heeled sandals"
+    ]
+  },
+  "sourceModelRequirements": {
+    "sourceFile": "assets/characters/mature_senpai/source/mature_senpai.blend",
+    "targetRuntimeFile": "public/assets/models/mature_senpai.glb",
+    "preferredFormat": "glb",
+    "acceptableFormat": "vrm",
+    "triangleBudget": {
+      "hero": [35000, 60000],
+      "mid": [18000, 28000],
+      "low": [5000, 9000]
+    },
+    "textureBudgetKb": 4096,
+    "requiredAnimationClips": ["idle", "walk", "talk"],
+    "requiredExpressions": [
+      "neutral",
+      "blink",
+      "confident-smile",
+      "teasing",
+      "surprised",
+      "thoughtful"
+    ],
+    "requiredSecondaryMotion": [
+      "long-hair-sway",
+      "skirt-sway",
+      "strap-sway",
+      "pendant-sway"
+    ]
+  },
+  "aiCandidatePlan": {
+    "primaryTool": "hunyuan3d",
+    "secondaryTool": "manual-blender-retopology",
+    "candidateFolder": "assets/characters/mature_senpai/candidates",
+    "minimumCandidates": 1,
+    "acceptanceGate": [
+      "front silhouette matches v7 concept sheet",
+      "face remains mature and elegant instead of generic childlike anime",
+      "hair, top, skirt, legs, hands, and sandals are separable enough for retopology",
+      "texture atlas keeps the ivory, lavender, burgundy, purple, and gold palette",
+      "mesh can be retopologized and rigged without losing identity"
+    ]
+  }
+}

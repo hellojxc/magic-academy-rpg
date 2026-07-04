@@ -19,6 +19,25 @@
     "order": 0
   },
   {
+    "id": "mature_senpai",
+    "name": "艾琳娜",
+    "gender": "女",
+    "personality": "优雅自信、带有高年级学姐的从容感，擅长用温柔但直接的方式指导新生。",
+    "title": "高年级魔法礼仪顾问",
+    "x": 620,
+    "y": 318,
+    "color": "0xa999d8",
+    "radius": 16,
+    "area": "library",
+    "description": "高年级魔法礼仪顾问。性别：女。性格：优雅自信、带有高年级学姐的从容感。当前用于测试 Hunyuan v7 立绘还原模型。",
+    "worldX": 3.15,
+    "worldZ": 1.55,
+    "rotationY": -0.45,
+    "arc": "优雅试炼",
+    "role": "礼仪顾问",
+    "order": 99
+  },
+  {
     "id": "mira_voss",
     "name": "米拉",
     "gender": "女",
