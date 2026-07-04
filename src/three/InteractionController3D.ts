@@ -3,17 +3,26 @@ import type { InteractiveNPC } from './WorldTypes';
 
 export class InteractionController3D {
   private static readonly pointerRaycastIntervalMs = 50;
+  private static readonly nearestTargetIntervalMs = 120;
+  private static readonly nearestTargetMoveThresholdSq = 0.08 * 0.08;
   private readonly raycaster = new THREE.Raycaster();
   private readonly pointer = new THREE.Vector2();
   private readonly promptWorldPosition = new THREE.Vector3();
+  private readonly promptScreenPosition = new THREE.Vector2();
   private readonly prompt: HTMLDivElement;
   private readonly targetObjects: THREE.Object3D[];
   private readonly targetById = new Map<string, InteractiveNPC>();
   private readonly interactionRange = 1.55;
   private currentTarget: InteractiveNPC | null = null;
   private lastPointerTarget: InteractiveNPC | null = null;
+  private cachedNearestTarget: InteractiveNPC | null = null;
   private pointerDirty = false;
   private lastPointerRaycastAt = 0;
+  private lastNearestTargetAt = 0;
+  private lastNearestPlayerX = Number.NaN;
+  private lastNearestPlayerZ = Number.NaN;
+  private lastPromptHidden = true;
+  private lastPromptText = '';
 
   constructor(
     private readonly container: HTMLElement,
@@ -38,20 +47,20 @@ export class InteractionController3D {
 
   update(dialogueVisible: boolean): void {
     if (!dialogueVisible && this.pointerDirty) this.updatePointerTarget(false);
-    this.currentTarget = dialogueVisible ? null : this.findNearestTarget();
-    this.prompt.hidden = !this.currentTarget;
+    this.currentTarget = dialogueVisible ? null : this.findNearestTarget(false);
+    this.setPromptHidden(!this.currentTarget);
     if (this.currentTarget) {
-      this.prompt.textContent = `E 交谈 · ${this.currentTarget.name}`;
+      this.setPromptText(`E 交谈 · ${this.currentTarget.name}`);
       this.promptWorldPosition.copy(this.currentTarget.object.position);
       this.promptWorldPosition.y += 1.15;
-      const screen = this.worldToScreen(this.promptWorldPosition);
-      this.prompt.style.left = `${screen.x}px`;
-      this.prompt.style.top = `${screen.y}px`;
+      this.worldToScreen(this.promptWorldPosition, this.promptScreenPosition);
+      this.prompt.style.left = `${this.promptScreenPosition.x}px`;
+      this.prompt.style.top = `${this.promptScreenPosition.y}px`;
     }
   }
 
   tryInteract(): void {
-    const target = this.currentTarget ?? this.findNearestTarget();
+    const target = this.currentTarget ?? this.findNearestTarget(true);
     if (!target) return;
     this.onInteract(target);
   }
@@ -74,12 +83,27 @@ export class InteractionController3D {
   private readonly onClick = (): void => {
     if (this.pointerDirty) this.updatePointerTarget(true);
     if (!this.lastPointerTarget) return;
-    if (this.player.position.distanceTo(this.lastPointerTarget.object.position) > this.interactionRange) return;
+    if (this.player.position.distanceToSquared(this.lastPointerTarget.object.position) > this.interactionRange * this.interactionRange) return;
     this.currentTarget = this.lastPointerTarget;
     this.onInteract(this.lastPointerTarget);
   };
 
-  private findNearestTarget(): InteractiveNPC | null {
+  private findNearestTarget(force: boolean): InteractiveNPC | null {
+    const now = performance.now();
+    const movedX = this.player.position.x - this.lastNearestPlayerX;
+    const movedZ = this.player.position.z - this.lastNearestPlayerZ;
+    const movedSq = movedX * movedX + movedZ * movedZ;
+    if (!force
+      && now - this.lastNearestTargetAt < InteractionController3D.nearestTargetIntervalMs
+      && movedSq < InteractionController3D.nearestTargetMoveThresholdSq
+    ) {
+      return this.cachedNearestTarget;
+    }
+
+    this.lastNearestTargetAt = now;
+    this.lastNearestPlayerX = this.player.position.x;
+    this.lastNearestPlayerZ = this.player.position.z;
+
     let nearest: InteractiveNPC | null = null;
     let nearestDistanceSq = this.interactionRange * this.interactionRange;
     for (const target of this.targets) {
@@ -88,7 +112,8 @@ export class InteractionController3D {
       nearest = target;
       nearestDistanceSq = distanceSq;
     }
-    return nearest;
+    this.cachedNearestTarget = nearest;
+    return this.cachedNearestTarget;
   }
 
   private findTargetForObject(object: THREE.Object3D): InteractiveNPC | null {
@@ -114,12 +139,24 @@ export class InteractionController3D {
     this.renderer.domElement.style.cursor = this.lastPointerTarget ? 'pointer' : 'default';
   }
 
-  private worldToScreen(position: THREE.Vector3): { x: number; y: number } {
+  private worldToScreen(position: THREE.Vector3, target: THREE.Vector2): void {
     const projected = position.project(this.camera);
     const rect = this.renderer.domElement.getBoundingClientRect();
-    return {
-      x: (projected.x * 0.5 + 0.5) * rect.width + rect.left,
-      y: (-projected.y * 0.5 + 0.5) * rect.height + rect.top,
-    };
+    target.set(
+      (projected.x * 0.5 + 0.5) * rect.width + rect.left,
+      (-projected.y * 0.5 + 0.5) * rect.height + rect.top
+    );
+  }
+
+  private setPromptHidden(hidden: boolean): void {
+    if (hidden === this.lastPromptHidden) return;
+    this.lastPromptHidden = hidden;
+    this.prompt.hidden = hidden;
+  }
+
+  private setPromptText(text: string): void {
+    if (text === this.lastPromptText) return;
+    this.lastPromptText = text;
+    this.prompt.textContent = text;
   }
 }
