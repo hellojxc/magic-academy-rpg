@@ -468,11 +468,6 @@
     { "id": "atrium-bench-west", "sourceId": "ca-bench-02", "chunkId": "atrium", "position": [-6.2, 0.2, 4.3], "rotation": [0, 1.56, 0], "scale": 0.9 },
     { "id": "atrium-bench-east", "sourceId": "ca-bench-02", "chunkId": "atrium", "position": [6.4, 0.2, 4.0], "rotation": [0, -1.52, 0], "scale": 0.9 },
 
-    { "id": "library-left-shelf", "sourceId": "ca-shelf-01-a", "chunkId": "arcane-library", "position": [3.0, 0.18, -5.9], "rotation": [0, 0.04, 0], "scale": 1.04 },
-    { "id": "library-north-center-shelf", "sourceId": "ca-shelf-04-a", "chunkId": "arcane-library", "position": [5.35, 0.18, -5.9], "rotation": [0, -0.02, 0], "scale": 1.02 },
-    { "id": "library-north-east-shelf", "sourceId": "ca-shelf-01-a", "chunkId": "arcane-library", "position": [7.65, 0.18, -5.82], "rotation": [0, -0.04, 0], "scale": 1.0 },
-    { "id": "library-right-shelf", "sourceId": "ca-shelf-04-a", "chunkId": "arcane-library", "position": [9.2, 0.18, -4.8], "rotation": [0, 3.12, 0], "scale": 1.04 },
-    { "id": "library-east-wall-shelf", "sourceId": "ca-shelf-01-a", "chunkId": "arcane-library", "position": [9.18, 0.18, -2.95], "rotation": [0, -1.56, 0], "scale": 0.94 },
     { "id": "library-reading-table-main", "sourceId": "medieval-table-dinner", "chunkId": "arcane-library", "position": [5.25, 0.18, -1.35], "rotation": [0, 0.05, 0], "scale": 0.66 },
     { "id": "library-reading-lamp-main", "sourceId": "medieval-lamp", "chunkId": "arcane-library", "position": [5.1, 0.18, -1.28], "rotation": [0, 0.35, 0], "scale": 0.42 },
     { "id": "library-window-bench", "sourceId": "ca-bench-02", "chunkId": "arcane-library", "position": [3.45, 0.2, -3.28], "rotation": [0, 1.55, 0], "scale": 0.68 },

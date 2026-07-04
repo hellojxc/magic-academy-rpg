@@ -1930,18 +1930,19 @@ interface LibraryLightShaftInstance {
 function LibraryHeroLayer({ activeIds }: { readonly activeIds: ReadonlySet<WorldChunkId> }): React.ReactElement | null {
   const enabled = activeIds.has('arcane-library');
   const books = useMemo(() => createLibraryBooks(), []);
-  const pageBlocks = useMemo(() => createLibraryPageBlocks(books), [books]);
+  const pageBlocks = useMemo(() => createLibraryPageBlocks(), []);
   const papers = useMemo(() => createLibraryPapers(), []);
-  const bookmarks = useMemo(() => createLibraryBookmarks(books), [books]);
+  const bookmarks = useMemo(() => createLibraryBookmarks(), []);
   const lightShafts = useMemo(() => createLibraryLightShafts(), []);
   const bookMaterial = useMemo(() => {
-    const material = createPbrMaterial(
-      'runtime-library-book-cover-pbr',
-      createFilePbrSet('organic'),
-      { color: 0xffffff, roughness: 0.62, metalness: 0.02, envMapIntensity: 0.34, normalScale: 0.14 },
-    );
-    material.vertexColors = true;
-    return material;
+    return new THREE.MeshStandardMaterial({
+      name: 'runtime-library-readable-book-spines',
+      color: 0x5f4638,
+      roughness: 0.88,
+      metalness: 0.02,
+      envMapIntensity: 0.12,
+      vertexColors: true,
+    });
   }, []);
   const pageMaterial = useMemo(() => {
     const material = createPbrMaterial(
@@ -1978,10 +1979,10 @@ function LibraryHeroLayer({ activeIds }: { readonly activeIds: ReadonlySet<World
   }, []);
   const shaftMaterial = useMemo(() => new THREE.MeshBasicMaterial({
     name: 'runtime-library-dusty-window-light-shafts',
-    color: 0xffd8a5,
+    color: 0xc49a72,
     alphaMap: getBiomeSoftAlphaMap('library-dust-light-shaft-alpha'),
     transparent: true,
-    opacity: 0.115,
+    opacity: 0.028,
     depthWrite: false,
     side: THREE.DoubleSide,
     blending: THREE.AdditiveBlending,
@@ -1999,7 +2000,7 @@ function LibraryHeroLayer({ activeIds }: { readonly activeIds: ReadonlySet<World
 
   useFrame(({ clock }) => {
     if (!enabled) return;
-    shaftMaterial.opacity = 0.09 + Math.sin(clock.elapsedTime * 0.27) * 0.018;
+    shaftMaterial.opacity = 0.024 + Math.sin(clock.elapsedTime * 0.27) * 0.006;
     if (shaftMaterial.alphaMap) {
       shaftMaterial.alphaMap.offset.y = clock.elapsedTime * 0.012;
     }
@@ -2010,9 +2011,10 @@ function LibraryHeroLayer({ activeIds }: { readonly activeIds: ReadonlySet<World
   return (
     <group name="library-hero:arcane-library">
       <pointLight name="library-reading-table-warm-light" position={[5.35, 1.55, -1.45]} color="#ffd38a" intensity={8.6} distance={6.5} decay={2.25} />
-      <pointLight name="library-shelf-lantern-fill-light" position={[8.45, 1.8, -4.75]} color="#c98cff" intensity={3.4} distance={5.2} decay={2.3} />
+      <pointLight name="library-shelf-lantern-fill-light" position={[8.45, 1.8, -4.75]} color="#c98cff" intensity={1.35} distance={4.8} decay={2.4} />
       <LibraryProceduralFurniture />
       <LibraryReadingLampCluster />
+      <LibraryDeskObjectLayer />
       <LibraryLadderAndRails />
       <Instances name="instanced-library-book-covers" limit={books.length} range={books.length} material={bookMaterial} castShadow receiveShadow>
         <boxGeometry args={[1, 1, 1, 1, 1, 1]} />
@@ -2038,18 +2040,20 @@ function LibraryHeroLayer({ activeIds }: { readonly activeIds: ReadonlySet<World
           />
         ))}
       </Instances>
-      <Instances name="instanced-library-loose-parchments" limit={papers.length} range={papers.length} material={paperMaterial} receiveShadow renderOrder={7}>
-        <planeGeometry args={[1, 1, 2, 2]} />
-        {papers.map((paper) => (
-          <Instance
-            key={paper.key}
-            position={paper.position}
-            rotation={paper.rotation}
-            scale={paper.scale}
-            color={paper.color}
-          />
-        ))}
-      </Instances>
+      {papers.length > 0 ? (
+        <Instances name="instanced-library-loose-parchments" limit={papers.length} range={papers.length} material={paperMaterial} receiveShadow renderOrder={7}>
+          <planeGeometry args={[1, 1, 2, 2]} />
+          {papers.map((paper) => (
+            <Instance
+              key={paper.key}
+              position={paper.position}
+              rotation={paper.rotation}
+              scale={paper.scale}
+              color={paper.color}
+            />
+          ))}
+        </Instances>
+      ) : null}
       <Instances name="instanced-library-bookmark-ribbons" limit={bookmarks.length} range={bookmarks.length} material={bookmarkMaterial} castShadow receiveShadow>
         <boxGeometry args={[1, 1, 1, 1, 1, 1]} />
         {bookmarks.map((bookmark) => (
@@ -2062,18 +2066,20 @@ function LibraryHeroLayer({ activeIds }: { readonly activeIds: ReadonlySet<World
           />
         ))}
       </Instances>
-      <Instances name="instanced-library-window-dust-light-shafts" limit={lightShafts.length} range={lightShafts.length} material={shaftMaterial} renderOrder={12}>
-        <planeGeometry args={[1, 1, 1, 1]} />
-        {lightShafts.map((shaft) => (
-          <Instance
-            key={shaft.key}
-            position={shaft.position}
-            rotation={shaft.rotation}
-            scale={shaft.scale}
-            color={shaft.color}
-          />
-        ))}
-      </Instances>
+      {lightShafts.length > 0 ? (
+        <Instances name="instanced-library-window-dust-light-shafts" limit={lightShafts.length} range={lightShafts.length} material={shaftMaterial} renderOrder={12}>
+          <planeGeometry args={[1, 1, 1, 1]} />
+          {lightShafts.map((shaft) => (
+            <Instance
+              key={shaft.key}
+              position={shaft.position}
+              rotation={shaft.rotation}
+              scale={shaft.scale}
+              color={shaft.color}
+            />
+          ))}
+        </Instances>
+      ) : null}
       <Sparkles
         name="library-floating-dust-motes"
         count={58}
@@ -2140,21 +2146,32 @@ function LibraryReadingLampCluster(): React.ReactElement {
 }
 
 function LibraryProceduralFurniture(): React.ReactElement {
-  const darkWoodMaterial = useMemo(() => createPbrMaterial(
+  const shelfDarkWoodMaterial = useMemo(() => new THREE.MeshStandardMaterial({
+    name: 'runtime-library-procedural-shadowed-shelf-wood',
+    color: 0x21130d,
+    roughness: 0.97,
+    metalness: 0,
+    envMapIntensity: 0.03,
+  }), []);
+  const tableWoodMaterial = useMemo(() => createPbrMaterial(
     'runtime-library-procedural-dark-oiled-wood-pbr',
     createFilePbrSet('wood'),
     { color: 0x5b3421, roughness: 0.7, metalness: 0.02, envMapIntensity: 0.34, normalScale: 0.22 },
   ), []);
-  const edgeWoodMaterial = useMemo(() => createPbrMaterial(
-    'runtime-library-procedural-worn-wood-edges-pbr',
-    createFilePbrSet('wood'),
-    { color: 0x8a5a35, roughness: 0.64, metalness: 0.02, envMapIntensity: 0.42, normalScale: 0.2 },
-  ), []);
-  const brassMaterial = useMemo(() => createPbrMaterial(
-    'runtime-library-procedural-small-brass-fittings-pbr',
-    createFilePbrSet('metal'),
-    { color: 0xc59a52, roughness: 0.34, metalness: 0.56, envMapIntensity: 0.82, normalScale: 0.12 },
-  ), []);
+  const edgeWoodMaterial = useMemo(() => new THREE.MeshStandardMaterial({
+    name: 'runtime-library-procedural-dark-walnut-edge-wood',
+    color: 0x2b1810,
+    roughness: 0.94,
+    metalness: 0,
+    envMapIntensity: 0.04,
+  }), []);
+  const brassMaterial = useMemo(() => new THREE.MeshStandardMaterial({
+    name: 'runtime-library-procedural-aged-dim-brass-fittings',
+    color: 0x6f4a26,
+    roughness: 0.82,
+    metalness: 0.28,
+    envMapIntensity: 0.1,
+  }), []);
 
   return (
     <group name="library-procedural-furniture-foundation">
@@ -2165,7 +2182,7 @@ function LibraryProceduralFurniture(): React.ReactElement {
         width={1.56}
         height={2.08}
         depth={0.34}
-        darkWoodMaterial={darkWoodMaterial}
+        darkWoodMaterial={shelfDarkWoodMaterial}
         edgeWoodMaterial={edgeWoodMaterial}
         brassMaterial={brassMaterial}
       />
@@ -2176,7 +2193,7 @@ function LibraryProceduralFurniture(): React.ReactElement {
         width={1.68}
         height={2.12}
         depth={0.36}
-        darkWoodMaterial={darkWoodMaterial}
+        darkWoodMaterial={shelfDarkWoodMaterial}
         edgeWoodMaterial={edgeWoodMaterial}
         brassMaterial={brassMaterial}
       />
@@ -2187,7 +2204,7 @@ function LibraryProceduralFurniture(): React.ReactElement {
         width={1.56}
         height={2.08}
         depth={0.34}
-        darkWoodMaterial={darkWoodMaterial}
+        darkWoodMaterial={shelfDarkWoodMaterial}
         edgeWoodMaterial={edgeWoodMaterial}
         brassMaterial={brassMaterial}
       />
@@ -2198,12 +2215,12 @@ function LibraryProceduralFurniture(): React.ReactElement {
         width={1.78}
         height={1.95}
         depth={0.32}
-        darkWoodMaterial={darkWoodMaterial}
+        darkWoodMaterial={shelfDarkWoodMaterial}
         edgeWoodMaterial={edgeWoodMaterial}
         brassMaterial={brassMaterial}
       />
       <group name="library-procedural-reading-table" position={[5.25, 0.18, -1.35]} rotation={[0, 0.05, 0]}>
-        <mesh name="library-reading-table-worn-top" position={[0, 0.74, 0]} castShadow receiveShadow material={darkWoodMaterial}>
+        <mesh name="library-reading-table-worn-top" position={[0, 0.74, 0]} castShadow receiveShadow material={tableWoodMaterial}>
           <boxGeometry args={[2.15, 0.12, 1.08]} />
         </mesh>
         <mesh name="library-reading-table-polished-front-edge" position={[0, 0.82, -0.56]} castShadow receiveShadow material={edgeWoodMaterial}>
@@ -2219,11 +2236,72 @@ function LibraryProceduralFurniture(): React.ReactElement {
           <boxGeometry args={[0.055, 0.055, 1.1]} />
         </mesh>
         {[[-0.9, -0.4], [0.9, -0.4], [-0.9, 0.4], [0.9, 0.4]].map(([x, z]) => (
-          <mesh key={`${x}:${z}`} name="library-reading-table-turned-leg" position={[x, 0.36, z]} castShadow receiveShadow material={darkWoodMaterial}>
+          <mesh key={`${x}:${z}`} name="library-reading-table-turned-leg" position={[x, 0.36, z]} castShadow receiveShadow material={tableWoodMaterial}>
             <cylinderGeometry args={[0.055, 0.075, 0.72, 12]} />
           </mesh>
         ))}
       </group>
+    </group>
+  );
+}
+
+function LibraryDeskObjectLayer(): React.ReactElement {
+  const inkMaterial = useMemo(() => new THREE.MeshPhysicalMaterial({
+    name: 'runtime-library-ink-bottle-dark-glass',
+    color: 0x10131f,
+    emissive: 0x08040c,
+    emissiveIntensity: 0.04,
+    roughness: 0.12,
+    metalness: 0,
+    clearcoat: 1,
+    clearcoatRoughness: 0.08,
+    transmission: 0.12,
+    thickness: 0.34,
+    envMapIntensity: 1.1,
+  }), []);
+  const brassMaterial = useMemo(() => createPbrMaterial(
+    'runtime-library-desk-brass-trim-pbr',
+    createFilePbrSet('metal'),
+    { color: 0xc79a54, roughness: 0.32, metalness: 0.6, envMapIntensity: 0.9, normalScale: 0.08 },
+  ), []);
+  const quillMaterial = useMemo(() => createPbrMaterial(
+    'runtime-library-quill-feather-pbr',
+    createFilePbrSet('organic'),
+    { color: 0xd8d0bd, roughness: 0.82, metalness: 0, envMapIntensity: 0.18, normalScale: 0.08 },
+  ), []);
+  const waxMaterial = useMemo(() => createPbrMaterial(
+    'runtime-library-sealing-wax-pbr',
+    createFilePbrSet('organic'),
+    { color: 0x9b2e3a, roughness: 0.56, metalness: 0, envMapIntensity: 0.18, normalScale: 0.06 },
+  ), []);
+
+  return (
+    <group name="library-desk-object-layer" position={[5.25, 1.005, -1.35]} rotation={[0, 0.05, 0]}>
+      <group name="library-inkwell-and-cap" position={[-0.56, 0.075, -0.18]}>
+        <mesh name="library-inkwell-glass-body" castShadow receiveShadow material={inkMaterial}>
+          <cylinderGeometry args={[0.1, 0.13, 0.16, 20]} />
+        </mesh>
+        <mesh name="library-inkwell-brass-neck" position={[0, 0.1, 0]} castShadow material={brassMaterial}>
+          <cylinderGeometry args={[0.065, 0.07, 0.035, 18]} />
+        </mesh>
+      </group>
+      <group name="library-quill-resting-on-pages" position={[0.34, 0.084, 0.18]} rotation={[0.08, -0.7, -0.2]}>
+        <mesh name="library-quill-shaft" castShadow material={brassMaterial}>
+          <boxGeometry args={[0.56, 0.012, 0.012]} />
+        </mesh>
+        <mesh name="library-quill-feather-left" position={[-0.18, 0.018, 0.038]} rotation={[0, 0, 0.16]} castShadow material={quillMaterial}>
+          <planeGeometry args={[0.34, 0.09, 2, 1]} />
+        </mesh>
+        <mesh name="library-quill-feather-right" position={[-0.18, 0.018, -0.038]} rotation={[0, 0, -0.16]} castShadow material={quillMaterial}>
+          <planeGeometry args={[0.34, 0.09, 2, 1]} />
+        </mesh>
+      </group>
+      <mesh name="library-sealing-wax-drop" position={[0.72, 0.074, -0.28]} castShadow receiveShadow material={waxMaterial}>
+        <sphereGeometry args={[0.07, 14, 8]} />
+      </mesh>
+      <mesh name="library-small-brass-paperweight" position={[0.06, 0.082, 0.36]} castShadow receiveShadow material={brassMaterial}>
+        <cylinderGeometry args={[0.12, 0.14, 0.055, 20]} />
+      </mesh>
     </group>
   );
 }
@@ -2288,11 +2366,13 @@ function LibraryLadderAndRails(): React.ReactElement {
     createFilePbrSet('wood'),
     { color: 0x7a4b2a, roughness: 0.68, metalness: 0.02, envMapIntensity: 0.36, normalScale: 0.2 },
   ), []);
-  const brassMaterial = useMemo(() => createPbrMaterial(
-    'runtime-library-ladder-brass-rails-pbr',
-    createFilePbrSet('metal'),
-    { color: 0xc59a52, roughness: 0.32, metalness: 0.58, envMapIntensity: 0.9, normalScale: 0.12 },
-  ), []);
+  const brassMaterial = useMemo(() => new THREE.MeshStandardMaterial({
+    name: 'runtime-library-ladder-aged-dim-brass-rails',
+    color: 0x765127,
+    roughness: 0.84,
+    metalness: 0.3,
+    envMapIntensity: 0.1,
+  }), []);
 
   return (
     <group name="library-rolling-ladder-and-wall-rails">
@@ -2388,54 +2468,20 @@ function createLibraryBooks(): LibraryBookInstance[] {
   return books;
 }
 
-function createLibraryPageBlocks(books: readonly LibraryBookInstance[]): LibraryPaperInstance[] {
-  return books
-    .filter((book) => book.tableBook)
-    .map((book, index) => ({
-      key: `${book.key}:page-block`,
-      position: [
-        book.position[0] + Math.sin(book.rotation[1]) * book.scale[2] * 0.08,
-        book.position[1] + book.scale[1] * 0.62,
-        book.position[2] + Math.cos(book.rotation[1]) * book.scale[2] * 0.08,
-      ],
-      rotation: book.rotation,
-      scale: [book.scale[0] * 0.56, Math.max(0.01, book.scale[1] * 0.22), book.scale[2] * 0.58],
-      color: index % 2 === 0 ? 0xcdbb95 : 0xbfae87,
-    }));
+function createLibraryPageBlocks(): LibraryPaperInstance[] {
+  return [];
 }
 
 function createLibraryPapers(): LibraryPaperInstance[] {
-  return [
-    { key: 'library-open-notes-table-a', position: [5.08, 1.026, -1.03], rotation: [-Math.PI / 2, 0, 0.18], scale: [0.68, 0.44, 1], color: 0xf0dfbb },
-    { key: 'library-open-notes-table-b', position: [5.92, 1.024, -1.18], rotation: [-Math.PI / 2, 0, -0.2], scale: [0.54, 0.36, 1], color: 0xe3d1a9 },
-    { key: 'library-catalog-card-table', position: [4.7, 1.028, -1.86], rotation: [-Math.PI / 2, 0, 0.58], scale: [0.34, 0.22, 1], color: 0xd8c394 },
-    { key: 'library-fallen-page-floor-a', position: [7.88, 0.221, -2.85], rotation: [-Math.PI / 2, 0, -0.44], scale: [0.5, 0.32, 1], color: 0xdacba8 },
-    { key: 'library-fallen-page-floor-b', position: [3.64, 0.222, -3.42], rotation: [-Math.PI / 2, 0, 0.72], scale: [0.42, 0.28, 1], color: 0xe8d8b7 },
-  ];
+  return [];
 }
 
-function createLibraryBookmarks(books: readonly LibraryBookInstance[]): LibraryPaperInstance[] {
-  return books
-    .filter((book, index) => book.tableBook && index % 2 === 0)
-    .map((book, index) => ({
-      key: `${book.key}:bookmark`,
-      position: [
-        book.position[0] - Math.cos(book.rotation[1]) * book.scale[0] * 0.08,
-        book.position[1] + book.scale[1] * 1.2,
-        book.position[2] - Math.sin(book.rotation[1]) * book.scale[0] * 0.08,
-      ],
-      rotation: book.rotation,
-      scale: [0.018, 0.01, book.scale[2] * 0.84],
-      color: index % 2 === 0 ? 0xb5344f : 0xd1a14c,
-    }));
+function createLibraryBookmarks(): LibraryPaperInstance[] {
+  return [];
 }
 
 function createLibraryLightShafts(): LibraryLightShaftInstance[] {
-  return [
-    { key: 'library-window-shaft-west', position: [3.48, 1.72, -4.66], rotation: [0.18, -0.58, 0.08], scale: [1.1, 3.6, 1], color: 0xffd7a6 },
-    { key: 'library-window-shaft-center', position: [5.9, 1.84, -4.95], rotation: [0.12, -0.22, -0.04], scale: [1.25, 4.1, 1], color: 0xeecb9b },
-    { key: 'library-window-shaft-east', position: [8.1, 1.78, -4.28], rotation: [0.16, 0.42, 0.06], scale: [0.96, 3.25, 1], color: 0xd7b7ff },
-  ];
+  return [];
 }
 
 interface BiomeHeroInstance {
@@ -2470,6 +2516,7 @@ function BiomeHeroLayer({ activeIds }: { readonly activeIds: ReadonlySet<WorldCh
 }
 
 function MoonlitLawnBiome(): React.ReactElement {
+  const footpathPatches = useMemo(() => createMoonlitFootpathPatches(), []);
   const turfPatches = useMemo(() => createMoonlitTurfPatches(), []);
   const grass = useMemo(() => createMoonlitGrassBlades(), []);
   const flowers = useMemo(() => createMoonlitFlowers(), []);
@@ -2510,6 +2557,23 @@ function MoonlitLawnBiome(): React.ReactElement {
       polygonOffsetFactor: -7,
     });
     material.map!.colorSpace = THREE.SRGBColorSpace;
+    return material;
+  }, []);
+  const footpathMaterial = useMemo(() => {
+    const material = createPbrMaterial(
+      'runtime-moonlit-lawn-worn-footpath-pbr',
+      createFilePbrSet('ground'),
+      { color: 0xffffff, roughness: 0.92, metalness: 0, envMapIntensity: 0.18, normalScale: 0.2 },
+    );
+    material.transparent = true;
+    material.opacity = 0.74;
+    material.alphaMap = getBiomeSoftAlphaMap('moonlit-lawn-footpath-alpha');
+    material.alphaTest = 0.025;
+    material.depthWrite = false;
+    material.side = THREE.DoubleSide;
+    material.vertexColors = true;
+    material.polygonOffset = true;
+    material.polygonOffsetFactor = -9;
     return material;
   }, []);
   const grassMaterial = useMemo(() => {
@@ -2562,6 +2626,13 @@ function MoonlitLawnBiome(): React.ReactElement {
     }
   });
 
+  useEffect(() => {
+    window.__r3fChunkRenderState = {
+      ...(window.__r3fChunkRenderState ?? {}),
+      lawnFootpathPatches: String(footpathPatches.length),
+    };
+  }, [footpathPatches.length]);
+
   return (
     <group name="biome-hero:moonlit-lawn">
       <mesh
@@ -2578,6 +2649,12 @@ function MoonlitLawnBiome(): React.ReactElement {
       <Instances name="instanced-biome-moonlit-turf-patches" limit={turfPatches.length} range={turfPatches.length} material={turfMaterial} receiveShadow renderOrder={4}>
         <planeGeometry args={[1, 1, 1, 1]} />
         {turfPatches.map((patch) => (
+          <Instance key={patch.key} position={patch.position} rotation={patch.rotation} scale={patch.scale} color={patch.color} />
+        ))}
+      </Instances>
+      <Instances name="instanced-biome-moonlit-worn-footpath" limit={footpathPatches.length} range={footpathPatches.length} material={footpathMaterial} receiveShadow renderOrder={6}>
+        <planeGeometry args={[1, 1, 1, 1]} />
+        {footpathPatches.map((patch) => (
           <Instance key={patch.key} position={patch.position} rotation={patch.rotation} scale={patch.scale} color={patch.color} />
         ))}
       </Instances>
@@ -2868,6 +2945,76 @@ function createMoonlitTurfPatches(): BiomeHeroInstance[] {
       phase: seededNoise(seed, i + 2700),
     });
   }
+  return patches;
+}
+
+function createMoonlitFootpathPatches(): BiomeHeroInstance[] {
+  const seed = 'biome:moonlit-lawn:footpath';
+  const patches: BiomeHeroInstance[] = [];
+  const waypoints = [
+    [-11.8, 10.2],
+    [-7.2, 12.8],
+    [-3.1, 15.7],
+    [1.8, 17.8],
+    [6.6, 19.4],
+    [10.6, 22.2],
+  ] as const;
+
+  for (let segment = 0; segment < waypoints.length - 1; segment += 1) {
+    const start = waypoints[segment];
+    const end = waypoints[segment + 1];
+    const dx = end[0] - start[0];
+    const dz = end[1] - start[1];
+    const angle = Math.atan2(dx, dz);
+    const steps = 5;
+    for (let step = 0; step < steps; step += 1) {
+      const index = segment * steps + step;
+      const t = (step + 0.5) / steps;
+      const curve = Math.sin((segment + t) * Math.PI * 0.72) * 0.38;
+      const side = seededSigned(seed, index + 19) * 0.28;
+      patches.push({
+        key: `moonlit-footpath:${index}`,
+        position: [
+          start[0] + dx * t + Math.cos(angle) * side + curve,
+          0.181 + index * 0.00022,
+          start[1] + dz * t - Math.sin(angle) * side,
+        ],
+        rotation: [-Math.PI / 2, 0, angle + seededSigned(seed, index + 31) * 0.16],
+        scale: [
+          1.2 + seededNoise(seed, index + 43) * 1.0,
+          0.42 + seededNoise(seed, index + 47) * 0.38,
+          1,
+        ],
+        color: new THREE.Color(0x5b5941)
+          .lerp(new THREE.Color(0xa38f66), 0.28 + seededNoise(seed, index + 59) * 0.28)
+          .getHex(),
+        phase: seededNoise(seed, index + 67),
+      });
+    }
+  }
+
+  for (let i = 0; i < 10; i += 1) {
+    const angle = -0.42 + seededSigned(seed, i + 101) * 0.22;
+    patches.push({
+      key: `moonlit-lake-approach:${i}`,
+      position: [
+        -9.6 + seededNoise(seed, i + 113) * 5.2,
+        0.183 + i * 0.00022,
+        16.2 + seededNoise(seed, i + 127) * 4.4,
+      ],
+      rotation: [-Math.PI / 2, 0, angle],
+      scale: [
+        0.78 + seededNoise(seed, i + 131) * 0.92,
+        0.34 + seededNoise(seed, i + 137) * 0.34,
+        1,
+      ],
+      color: new THREE.Color(0x3f4d36)
+        .lerp(new THREE.Color(0x8b7b55), 0.22 + seededNoise(seed, i + 139) * 0.3)
+        .getHex(),
+      phase: seededNoise(seed, i + 149),
+    });
+  }
+
   return patches;
 }
 
@@ -7832,7 +7979,9 @@ function enhanceAuthoredWorldMaterial(
   lightmap?: THREE.Texture,
   lightmapKey = 'none',
 ): THREE.MeshStandardMaterial {
-  const surface = classifyWorldSurface(`${source.name} ${objectName}`);
+  const materialLabel = `${source.name} ${objectName} ${lightmapKey}`;
+  const surface = classifyWorldSurface(materialLabel);
+  const isThirdPartyShelfWood = /vendor:ca-shelf-|ca-shelf/.test(materialLabel.toLowerCase()) && surface === 'wood';
   const emissiveGroup = source.emissiveIntensity > 0.01 && source.emissive.getHex() !== 0
     ? source.emissive.getHexString()
     : 'none';
@@ -7843,6 +7992,7 @@ function enhanceAuthoredWorldMaterial(
     emissiveGroup,
     source.transparent ? 'transparent' : 'opaque',
     lightmapKey,
+    isThirdPartyShelfWood ? 'dark-shelf-wood' : 'default',
   ].join(':');
   const cached = enhancedMaterialCache.get(cacheKey);
   if (cached) return cached;
@@ -7878,10 +8028,19 @@ function enhanceAuthoredWorldMaterial(
       );
       break;
     case 'wood':
+      const woodColor = isThirdPartyShelfWood
+        ? new THREE.Color(color).multiplyScalar(0.34).lerp(new THREE.Color(0x3a2419), 0.62).getHex()
+        : color;
       material = createPbrMaterial(
         `${source.name || objectName}:wood-pbr`,
         createFilePbrSet('wood'),
-        { color, roughness: 0.62, metalness: 0.03, envMapIntensity: 0.82, normalScale: 0.52 },
+        {
+          color: woodColor,
+          roughness: isThirdPartyShelfWood ? 0.88 : 0.62,
+          metalness: isThirdPartyShelfWood ? 0.01 : 0.03,
+          envMapIntensity: isThirdPartyShelfWood ? 0.18 : 0.82,
+          normalScale: isThirdPartyShelfWood ? 0.34 : 0.52,
+        },
       );
       break;
     case 'metal':
