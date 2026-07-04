@@ -158,17 +158,20 @@ export class LawnLakeEnvironment {
       metalness: 0.02,
       depthWrite: false,
     });
+    const shelfMatrices: THREE.Matrix4[] = [];
+    const shelfDummy = new THREE.Object3D();
     for (let i = 0; i < 34; i += 1) {
       const angle = (i / 34) * Math.PI * 2;
       const x = LAKE_CENTER_X + Math.cos(angle) * (10.1 + Math.sin(i * 1.7) * 0.9);
       const z = LAKE_CENTER_Z + Math.sin(angle) * (7.2 + Math.cos(i * 1.3) * 0.7);
-      const patch = new THREE.Mesh(Geo.circle(0.48 + (i % 5) * 0.08, 18), shelfMat);
-      patch.rotation.x = -Math.PI / 2;
-      patch.rotation.z = angle * 0.7;
-      patch.scale.set(2.1 + (i % 4) * 0.3, 0.34 + (i % 3) * 0.08, 1);
-      patch.position.set(x, 0.043, z);
-      this.scene.add(patch);
+      const radius = 0.48 + (i % 5) * 0.08;
+      shelfDummy.position.set(x, 0.043, z);
+      shelfDummy.rotation.set(-Math.PI / 2, 0, angle * 0.7);
+      shelfDummy.scale.set(radius * (2.1 + (i % 4) * 0.3), radius * (0.34 + (i % 3) * 0.08), 1);
+      shelfDummy.updateMatrix();
+      shelfMatrices.push(shelfDummy.matrix.clone());
     }
+    this.addInstancedStaticMesh(Geo.circle(1, 18), shelfMat, shelfMatrices, false, false);
   }
 
   private addMeadowDecals(): void {
@@ -184,20 +187,23 @@ export class LawnLakeEnvironment {
       mat.polygonOffsetFactor = -2;
     }
 
+    const decalMatricesByMaterial = mats.map((): THREE.Matrix4[] => []);
+    const decalDummy = new THREE.Object3D();
     for (let i = 0; i < 96; i += 1) {
       const x = TERRAIN_MIN_X + 1.2 + seeded(i * 71) * (TERRAIN_MAX_X - TERRAIN_MIN_X - 2.4);
       const z = TERRAIN_MIN_Z + 0.9 + seeded(i * 97 + 3) * (TERRAIN_MAX_Z - TERRAIN_MIN_Z - 1.8);
       if (this.isInsideLake(x, z, 0.25) || this.isPath(x, z, 0.3) || this.isNearFeature(x, z, 0.35)) continue;
 
-      const mat = mats[i % mats.length];
-      const patch = new THREE.Mesh(Geo.circle(1, 18), mat);
-      patch.rotation.x = -Math.PI / 2;
-      patch.rotation.z = seeded(i * 37) * Math.PI * 2;
-      patch.scale.set(0.5 + seeded(i * 19) * 2.2, 0.18 + seeded(i * 23) * 0.62, 1);
-      patch.position.set(x, this.terrainHeight(x, z) + 0.018 + i * 0.00002, z);
-      patch.receiveShadow = true;
-      this.scene.add(patch);
+      decalDummy.position.set(x, this.terrainHeight(x, z) + 0.018 + i * 0.00002, z);
+      decalDummy.rotation.set(-Math.PI / 2, 0, seeded(i * 37) * Math.PI * 2);
+      decalDummy.scale.set(0.5 + seeded(i * 19) * 2.2, 0.18 + seeded(i * 23) * 0.62, 1);
+      decalDummy.updateMatrix();
+      decalMatricesByMaterial[i % mats.length].push(decalDummy.matrix.clone());
     }
+
+    decalMatricesByMaterial.forEach((matrices, index) => {
+      this.addInstancedStaticMesh(Geo.circle(1, 18), mats[index], matrices, false, true);
+    });
   }
 
   private addStonePaths(): void {
@@ -208,26 +214,34 @@ export class LawnLakeEnvironment {
       bumpMap: makeSharedSurfaceDetailTexture('outdoor-path-stone', 3, 3),
       bumpScale: 0.02,
     });
-    this.addSteppingStoneStrip({ from: new THREE.Vector2(0, 7.2), to: new THREE.Vector2(0, 22.2), count: 12, width: 0.92, mat: stoneMat });
-    this.addSteppingStoneStrip({ from: new THREE.Vector2(-15.5, 18), to: new THREE.Vector2(-1.8, 18), count: 10, width: 0.82, mat: stoneMat });
-    this.addSteppingStoneStrip({ from: new THREE.Vector2(1.8, 18), to: new THREE.Vector2(15.5, 18), count: 10, width: 0.82, mat: stoneMat });
-    this.addSteppingStoneStrip({ from: new THREE.Vector2(-4.2, 17.1), to: new THREE.Vector2(-7.1, 15.8), count: 4, width: 0.72, mat: stoneMat });
+    const pathStoneMatrices: THREE.Matrix4[] = [];
+    this.addSteppingStoneStrip({ from: new THREE.Vector2(0, 7.2), to: new THREE.Vector2(0, 22.2), count: 12, width: 0.92 }, pathStoneMatrices);
+    this.addSteppingStoneStrip({ from: new THREE.Vector2(-15.5, 18), to: new THREE.Vector2(-1.8, 18), count: 10, width: 0.82 }, pathStoneMatrices);
+    this.addSteppingStoneStrip({ from: new THREE.Vector2(1.8, 18), to: new THREE.Vector2(15.5, 18), count: 10, width: 0.82 }, pathStoneMatrices);
+    this.addSteppingStoneStrip({ from: new THREE.Vector2(-4.2, 17.1), to: new THREE.Vector2(-7.1, 15.8), count: 4, width: 0.72 }, pathStoneMatrices);
+    this.addInstancedStaticMesh(new THREE.DodecahedronGeometry(1, 0), stoneMat, pathStoneMatrices, true, true);
   }
 
-  private addSteppingStoneStrip(config: { from: THREE.Vector2; to: THREE.Vector2; count: number; width: number; mat: THREE.Material }): void {
+  private addSteppingStoneStrip(
+    config: { from: THREE.Vector2; to: THREE.Vector2; count: number; width: number },
+    matrices: THREE.Matrix4[]
+  ): void {
     const direction = config.to.clone().sub(config.from);
     const angle = Math.atan2(direction.y, direction.x);
+    const dummy = new THREE.Object3D();
     for (let i = 0; i < config.count; i += 1) {
       const t = config.count === 1 ? 0 : i / (config.count - 1);
       const x = THREE.MathUtils.lerp(config.from.x, config.to.x, t) + (seeded(i * 23 + config.count) - 0.5) * 0.22;
       const z = THREE.MathUtils.lerp(config.from.y, config.to.y, t) + (seeded(i * 31 + config.count) - 0.5) * 0.18;
-      const stone = new THREE.Mesh(new THREE.DodecahedronGeometry(config.width, 0), config.mat);
-      stone.scale.set(1.08 + seeded(i * 41) * 0.38, 0.055, 0.68 + seeded(i * 47) * 0.18);
-      stone.position.set(x, this.terrainHeight(x, z) + 0.045, z);
-      stone.rotation.set(0, -angle + (seeded(i * 53) - 0.5) * 0.35, 0);
-      stone.castShadow = true;
-      stone.receiveShadow = true;
-      this.scene.add(stone);
+      dummy.position.set(x, this.terrainHeight(x, z) + 0.045, z);
+      dummy.rotation.set(0, -angle + (seeded(i * 53) - 0.5) * 0.35, 0);
+      dummy.scale.set(
+        config.width * (1.08 + seeded(i * 41) * 0.38),
+        config.width * 0.055,
+        config.width * (0.68 + seeded(i * 47) * 0.18)
+      );
+      dummy.updateMatrix();
+      matrices.push(dummy.matrix.clone());
     }
   }
 
