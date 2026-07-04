@@ -5,7 +5,7 @@
   "accepted": true,
   "summary": {
     "file": "public/assets/models/lyra.glb",
-    "sizeKb": 1267.7,
+    "sizeKb": 1270.9,
     "nodes": 145,
     "meshes": 126,
     "primitives": 126,
@@ -78,5 +78,5 @@
     }
   ],
   "conclusion": "Runtime asset passes the current production gate.",
-  "generatedAt": "2026-07-04T02:18:22.000Z"
+  "generatedAt": "2026-07-04T02:50:20.644Z"
 }

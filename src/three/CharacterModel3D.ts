@@ -40,6 +40,24 @@ interface GLTFBoneBasePose {
   rotation: THREE.Euler;
 }
 
+interface GLTFTransformBase {
+  object: THREE.Object3D;
+  basePosition: THREE.Vector3;
+  baseRotation: THREE.Euler;
+}
+
+interface GLTFSecondaryMotionBinding extends GLTFTransformBase {
+  phase: number;
+  sway: number;
+  bob: number;
+  twist: number;
+}
+
+interface GLTFEyeFocusBinding {
+  object: THREE.Object3D;
+  basePosition: THREE.Vector3;
+}
+
 interface AssetLoadQueueEntry {
   priority: number;
   sequence: number;
@@ -67,12 +85,16 @@ export class CharacterModel3D {
   private gltfMixer?: THREE.AnimationMixer;
   private readonly gltfActions = new Map<string, THREE.AnimationAction>();
   private gltfMorphBindings: GLTFMorphBinding[] = [];
+  private gltfSecondaryBindings: GLTFSecondaryMotionBinding[] = [];
+  private gltfEyeFocusBindings: GLTFEyeFocusBinding[] = [];
   private readonly gltfBoneBasePoses = new Map<THREE.Object3D, GLTFBoneBasePose>();
   private activeGLTFAction?: THREE.AnimationAction;
   private buildPlan: CharacterBuildPlan;
   private moving = false;
   private blinkTimer = 0;
   private blinkDuration = 0;
+  private gltfLookYaw = 0;
+  private gltfLookPitch = 0;
   private assetState: CharacterAssetState = 'loading';
 
   constructor(private readonly spec: CharacterSpec) {
@@ -114,7 +136,7 @@ export class CharacterModel3D {
     }
 
     if (this.gltfMixer) {
-      this.updateGLTFAnimation(elapsedTime, delta);
+      this.updateGLTFAnimation(elapsedTime, delta, lookAtWorldPosition);
       return;
     }
 
@@ -238,6 +260,8 @@ export class CharacterModel3D {
   private installVRM(vrm: VRM, vrmModule: ThreeVRMModule): void {
     this.vrm = vrm;
     this.gltfMorphBindings = [];
+    this.gltfSecondaryBindings = [];
+    this.gltfEyeFocusBindings = [];
     this.gltfBoneBasePoses.clear();
     this.setAssetState('vrm');
     vrmModule.VRMUtils.rotateVRM0(vrm);
@@ -265,6 +289,8 @@ export class CharacterModel3D {
     this.setVRMShadows(scene);
     this.bones = this.collectNamedBones(scene);
     this.gltfMorphBindings = this.collectMorphTargets(scene);
+    this.gltfSecondaryBindings = this.collectSecondaryMotionObjects(scene);
+    this.gltfEyeFocusBindings = this.collectEyeFocusObjects(scene);
     this.captureGLTFBoneBasePoses();
 
     if (animations.length > 0) {
@@ -283,11 +309,14 @@ export class CharacterModel3D {
     }
   }
 
-  private updateGLTFAnimation(elapsedTime: number, delta: number): void {
+  private updateGLTFAnimation(elapsedTime: number, delta: number, lookAtWorldPosition?: THREE.Vector3): void {
     this.playGLTFAction(this.moving ? 'walk' : 'idle', 0.22);
     this.restoreGLTFBoneBasePoses();
     this.gltfMixer?.update(delta);
     this.applyGLTFPoseOverlay(elapsedTime);
+    this.applyGLTFLookAt(lookAtWorldPosition, elapsedTime, delta);
+    this.applyGLTFEyeFocus();
+    this.applyGLTFSecondaryMotion(elapsedTime);
     this.applyGLTFMorphExpressions(elapsedTime, delta);
   }
 
@@ -380,6 +409,70 @@ export class CharacterModel3D {
       });
     });
     return bindings;
+  }
+
+  private collectSecondaryMotionObjects(model: THREE.Object3D): GLTFSecondaryMotionBinding[] {
+    const bindings: GLTFSecondaryMotionBinding[] = [];
+    model.traverse((object) => {
+      const profile = this.getSecondaryMotionProfile(object.name);
+      if (!profile) return;
+      if (!this.hasCenteredRuntimePivot(object)) return;
+      bindings.push({
+        object,
+        basePosition: object.position.clone(),
+        baseRotation: object.rotation.clone(),
+        phase: bindings.length * 0.73 + object.name.length * 0.11,
+        ...profile,
+      });
+    });
+    return bindings;
+  }
+
+  private collectEyeFocusObjects(model: THREE.Object3D): GLTFEyeFocusBinding[] {
+    const bindings: GLTFEyeFocusBinding[] = [];
+    model.traverse((object) => {
+      const name = object.name.toLowerCase();
+      if (!name.includes('iris') && !name.includes('pupil') && !name.includes('catchlight')) return;
+      bindings.push({
+        object,
+        basePosition: object.position.clone(),
+      });
+    });
+    return bindings;
+  }
+
+  private getSecondaryMotionProfile(name: string): Omit<GLTFSecondaryMotionBinding, keyof GLTFTransformBase | 'phase'> | undefined {
+    const normalized = name.replace(/[^a-z0-9]/gi, '').toLowerCase();
+    if (!normalized) return undefined;
+    if (/(hair|bang|lock|braid|ponytail|cowlick)/.test(normalized)) {
+      const isLong = /(long|back|outer|tip|tail)/.test(normalized);
+      return {
+        sway: isLong ? 0.052 : 0.034,
+        bob: isLong ? 0.014 : 0.008,
+        twist: isLong ? 0.024 : 0.014,
+      };
+    }
+    if (/(cape|capelet|skirt|ruffle|sash|ribbon|tail)/.test(normalized)) {
+      return { sway: 0.038, bob: 0.01, twist: 0.018 };
+    }
+    if (/(sleeve|tie|strap)/.test(normalized)) {
+      return { sway: 0.018, bob: 0.004, twist: 0.008 };
+    }
+    return undefined;
+  }
+
+  private hasCenteredRuntimePivot(object: THREE.Object3D): boolean {
+    if (!(object instanceof THREE.Mesh || object instanceof THREE.SkinnedMesh)) return false;
+    const geometry = object.geometry;
+    if (!geometry) return false;
+    if (!geometry.boundingBox) geometry.computeBoundingBox();
+    if (!geometry.boundingBox) return false;
+
+    const center = new THREE.Vector3();
+    geometry.boundingBox.getCenter(center);
+    // Older generated panels had absolute vertices around the character body. Skip
+    // those so secondary motion only runs on assets with usable local pivots.
+    return center.length() < 0.18;
   }
 
   private captureGLTFBoneBasePoses(): void {
@@ -511,6 +604,65 @@ export class CharacterModel3D {
     if (this.bones.rightFoot) this.bones.rightFoot.rotation.x += Math.max(0, opposite) * 0.08;
     if (this.bones.leftLowerArm) this.bones.leftLowerArm.rotation.x += -0.05 - Math.max(0, walk) * 0.04;
     if (this.bones.rightLowerArm) this.bones.rightLowerArm.rotation.x += -0.05 - Math.max(0, opposite) * 0.04;
+  }
+
+  private applyGLTFLookAt(lookAtWorldPosition: THREE.Vector3 | undefined, elapsedTime: number, delta: number): void {
+    let targetYaw = Math.sin(elapsedTime * 0.42) * 0.08;
+    let targetPitch = Math.sin(elapsedTime * 0.31) * 0.025;
+
+    if (lookAtWorldPosition && this.bones.head) {
+      const headWorld = new THREE.Vector3();
+      const targetLocal = lookAtWorldPosition.clone();
+      const headLocal = headWorld;
+      this.bones.head.getWorldPosition(headWorld);
+      this.root.worldToLocal(targetLocal);
+      this.root.worldToLocal(headLocal);
+      const direction = targetLocal.sub(headLocal);
+      const flatDistance = Math.max(0.001, Math.hypot(direction.x, direction.z));
+      targetYaw = THREE.MathUtils.clamp(Math.atan2(direction.x, direction.z), -0.42, 0.42);
+      targetPitch = THREE.MathUtils.clamp(Math.atan2(direction.y + 0.18, flatDistance), -0.24, 0.24);
+    }
+
+    const smoothing = 1 - Math.exp(-delta * 8);
+    this.gltfLookYaw += (targetYaw - this.gltfLookYaw) * smoothing;
+    this.gltfLookPitch += (targetPitch - this.gltfLookPitch) * smoothing;
+
+    if (this.bones.head) {
+      this.bones.head.rotation.y += this.gltfLookYaw * 0.32;
+      this.bones.head.rotation.x += this.gltfLookPitch * 0.22;
+    }
+  }
+
+  private applyGLTFEyeFocus(): void {
+    if (this.gltfEyeFocusBindings.length === 0) return;
+
+    const horizontal = THREE.MathUtils.clamp(this.gltfLookYaw, -0.35, 0.35) * 0.014;
+    const vertical = THREE.MathUtils.clamp(this.gltfLookPitch, -0.22, 0.22) * 0.01;
+    for (const binding of this.gltfEyeFocusBindings) {
+      binding.object.position.copy(binding.basePosition);
+      binding.object.position.x += horizontal;
+      binding.object.position.z += vertical;
+    }
+  }
+
+  private applyGLTFSecondaryMotion(elapsedTime: number): void {
+    if (this.gltfSecondaryBindings.length === 0) return;
+
+    const movement = this.moving ? 1 : 0;
+    const idle = 1 - movement;
+    for (const binding of this.gltfSecondaryBindings) {
+      const stride = Math.sin(elapsedTime * 8.2 + binding.phase);
+      const settle = Math.sin(elapsedTime * 1.55 + binding.phase);
+      const flutter = Math.sin(elapsedTime * 2.35 + binding.phase * 0.7);
+      const moveScale = 0.45 + movement * 0.95;
+
+      binding.object.position.copy(binding.basePosition);
+      binding.object.rotation.copy(binding.baseRotation);
+      binding.object.rotation.x += binding.bob * (Math.abs(stride) * movement + settle * 0.45 * idle);
+      binding.object.rotation.y += binding.twist * (stride * movement + flutter * 0.35 * idle);
+      binding.object.rotation.z += binding.sway * moveScale * (stride * movement + settle * 0.55 * idle);
+      binding.object.position.y += binding.bob * 0.012 * flutter * idle;
+    }
   }
 
   private applyGLTFMorphExpressions(elapsedTime: number, delta: number): void {

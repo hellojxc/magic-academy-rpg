@@ -5,7 +5,7 @@
   "accepted": true,
   "summary": {
     "file": "public/assets/models/player.glb",
-    "sizeKb": 1253.5,
+    "sizeKb": 1254.1,
     "nodes": 150,
     "meshes": 131,
     "primitives": 131,
@@ -75,5 +75,5 @@
     }
   ],
   "conclusion": "Runtime asset passes the current production gate.",
-  "generatedAt": "2026-07-04T02:18:21.995Z"
+  "generatedAt": "2026-07-04T02:50:20.637Z"
 }
