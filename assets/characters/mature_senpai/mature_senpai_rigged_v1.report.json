@@ -1,0 +1,86 @@
+{
+  "source": "/home/dennisj/apps/magic-academy-rpg-preview/public/assets/models/mature_senpai_hunyuan_v7_web.glb",
+  "output": "/home/dennisj/apps/blender-mcp/outputs/mature_senpai_rigged_v1.glb",
+  "model": {
+    "meshCount": 1,
+    "triangleCount": 59922,
+    "vertexCount": 54186,
+    "boundsMin": [
+      -0.29577,
+      -0.22193,
+      0.2821
+    ],
+    "boundsMax": [
+      0.29541,
+      0.23511,
+      2.00214
+    ],
+    "size": [
+      0.59117,
+      0.45704,
+      1.72004
+    ]
+  },
+  "rig": {
+    "armature": "MatureSenpaiRig",
+    "bones": [
+      "Hips",
+      "Spine",
+      "Chest",
+      "Neck",
+      "Head",
+      "Secondary_Hair_Back",
+      "Secondary_Hair_Left",
+      "Secondary_Hair_Right",
+      "LeftUpperArm",
+      "LeftLowerArm",
+      "LeftHand",
+      "RightUpperArm",
+      "RightLowerArm",
+      "RightHand",
+      "LeftUpperLeg",
+      "LeftLowerLeg",
+      "LeftFoot",
+      "RightUpperLeg",
+      "RightLowerLeg",
+      "RightFoot",
+      "Secondary_Skirt_Left",
+      "Secondary_Skirt_Right"
+    ],
+    "weightedVertexAssignments": {
+      "Hips": 8915,
+      "Spine": 15485,
+      "Chest": 30501,
+      "Neck": 23518,
+      "Head": 23518,
+      "Secondary_Hair_Back": 3193,
+      "Secondary_Hair_Left": 3848,
+      "Secondary_Hair_Right": 3907,
+      "LeftUpperArm": 1759,
+      "LeftLowerArm": 950,
+      "LeftHand": 97,
+      "RightUpperArm": 1862,
+      "RightLowerArm": 1039,
+      "RightHand": 84,
+      "LeftUpperLeg": 3803,
+      "LeftLowerLeg": 3616,
+      "LeftFoot": 1931,
+      "RightUpperLeg": 3714,
+      "RightLowerLeg": 3450,
+      "RightFoot": 1933,
+      "Secondary_Skirt_Left": 3265,
+      "Secondary_Skirt_Right": 3181
+    }
+  },
+  "animations": [
+    "idle",
+    "walk",
+    "talk"
+  ],
+  "limitations": [
+    "single Hunyuan mesh, not hand-retopologized",
+    "coordinate-region weights, not final hand-painted skin weights",
+    "no facial morph targets yet",
+    "hair and skirt secondary motion is approximate"
+  ]
+}

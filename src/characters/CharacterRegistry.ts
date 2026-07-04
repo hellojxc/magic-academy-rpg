@@ -209,7 +209,7 @@ export const matureSenpaiSpec: CharacterSpec = {
   id: 'mature_senpai',
   displayName: 'Mature Senpai',
   designIntent:
-    'A mature big-sister academy NPC based on the v7 Hunyuan/illustration reference: burgundy long hair, elegant ivory camisole top, lavender double side-slit skirt, and Roman-style strappy high heels. Current runtime asset is a static visual-review mesh and must be retopologized and rigged before final gameplay use.',
+    'A mature big-sister academy NPC based on the v7 Hunyuan/illustration reference: burgundy long hair, elegant ivory camisole top, lavender double side-slit skirt, and Roman-style strappy high heels. Current runtime asset is an auto-rigged Hunyuan preview with basic idle, walk, and talk clips; final production still needs retopology, hand-painted weights, and facial morphs.',
   body: {
     heightMeters: 1.72,
     headToBodyRatio: 0.18,
@@ -259,14 +259,14 @@ export const matureSenpaiSpec: CharacterSpec = {
   },
   animation: {
     locomotionSet: 'academy-female-locomotion',
-    idleSet: 'mature-senpai-static-preview',
+    idleSet: 'mature-senpai-rigged-preview',
     interactionSet: 'conversation-female-confident',
     facialSet: 'anime-mature-basic',
     secondaryMotion: ['long-hair-sway', 'skirt-sway', 'strap-sway', 'pendant-sway'],
   },
   runtime: {
     role: 'supporting',
-    preferredAssetId: 'mature-senpai-hunyuan-v7-web-preview',
+    preferredAssetId: 'mature-senpai-rigged-v1',
     fallbackRigId: 'mature-senpai-procedural-rig',
     lodProfile: 'supporting-mid',
     maxVisibleDistanceMeters: 30,

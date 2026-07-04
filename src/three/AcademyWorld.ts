@@ -38,9 +38,12 @@ interface RegionUpdateGroup {
 }
 
 interface StoryNpcObject {
+  id: string;
   object: THREE.Object3D;
   rig?: CharacterModel3D;
   baseY: number;
+  homeX: number;
+  homeZ: number;
   phase: number;
   idleSpeed: number;
 }
@@ -739,9 +742,12 @@ export class AcademyWorld {
       this.scene.add(root);
       this.registerInteractiveNpc(npcData, root);
       this.storyNpcObjects.push({
+        id: npcData.id,
         object: root,
         rig,
         baseY: root.position.y,
+        homeX: root.position.x,
+        homeZ: root.position.z,
         phase: index * 0.63,
         idleSpeed: 0.85 + (index % 7) * 0.07,
       });
@@ -815,8 +821,11 @@ export class AcademyWorld {
     this.scene.add(root);
     this.registerInteractiveNpc(npcData, root);
     this.storyNpcObjects.push({
+      id: npcData.id,
       object: root,
       baseY: root.position.y,
+      homeX: root.position.x,
+      homeZ: root.position.z,
       phase: index * 0.63,
       idleSpeed: 0.85 + (index % 7) * 0.07,
     });
@@ -840,7 +849,8 @@ export class AcademyWorld {
 
   private updateStoryNpcs(elapsedTime: number, delta: number): void {
     for (const npc of this.storyNpcObjects) {
-      npc.rig?.setMoving(false);
+      const showcaseMoving = this.updateMatureSenpaiShowcaseWalk(npc, elapsedTime, delta);
+      npc.rig?.setMoving(showcaseMoving);
       npc.rig?.update(elapsedTime, delta, this.player.position);
       npc.object.position.y = npc.baseY + Math.sin(elapsedTime * npc.idleSpeed + npc.phase) * 0.025;
       const dx = this.player.position.x - npc.object.position.x;
@@ -851,6 +861,34 @@ export class AcademyWorld {
       const wrapped = THREE.MathUtils.euclideanModulo(targetYaw - npc.object.rotation.y + Math.PI, Math.PI * 2) - Math.PI;
       npc.object.rotation.y += wrapped * (1 - Math.exp(-7 * delta));
     }
+  }
+
+  private updateMatureSenpaiShowcaseWalk(npc: StoryNpcObject, elapsedTime: number, delta: number): boolean {
+    if (npc.id !== 'mature_senpai') return false;
+
+    const playerDx = this.player.position.x - npc.object.position.x;
+    const playerDz = this.player.position.z - npc.object.position.z;
+    const playerDistanceSq = playerDx * playerDx + playerDz * playerDz;
+    if (playerDistanceSq < 16) return false;
+
+    const phase = elapsedTime * 0.36 + npc.phase;
+    const targetX = npc.homeX + Math.sin(phase * 0.72) * 0.18;
+    const targetZ = npc.homeZ + Math.sin(phase) * 0.42;
+    const prevX = npc.object.position.x;
+    const prevZ = npc.object.position.z;
+    const smoothing = 1 - Math.exp(-delta * 2.4);
+    npc.object.position.x += (targetX - npc.object.position.x) * smoothing;
+    npc.object.position.z += (targetZ - npc.object.position.z) * smoothing;
+
+    const moveX = npc.object.position.x - prevX;
+    const moveZ = npc.object.position.z - prevZ;
+    const moving = moveX * moveX + moveZ * moveZ > 0.000002;
+    if (moving) {
+      const targetYaw = Math.atan2(moveX, moveZ);
+      const wrapped = THREE.MathUtils.euclideanModulo(targetYaw - npc.object.rotation.y + Math.PI, Math.PI * 2) - Math.PI;
+      npc.object.rotation.y += wrapped * (1 - Math.exp(-6 * delta));
+    }
+    return moving;
   }
 
   private parseNpcColor(color: number | string): number {
