@@ -179,21 +179,26 @@ export class DiningHall {
     const cupMat = MatLib.cup;
     const plateGeo = Geo.cylinder(0.12, 0.1, 0.02, 16);
     const cupGeo = Geo.cylinder(0.04, 0.035, 0.08, 12);
+    const plateMatrices: THREE.Matrix4[] = [];
+    const cupMatrices: THREE.Matrix4[] = [];
+    const dummy = new THREE.Object3D();
     for (let i = 0; i < 6; i++) {
       const dx = -length / 2 + 1 + i * (length - 2) / 5;
       for (const dz of [-0.3, 0.3]) {
-        const plate = new THREE.Mesh(plateGeo, plateMat);
-        plate.position.set(centerX + dx, 0.81, centerZ + dz);
-        plate.castShadow = true;
-        this.scene.add(plate);
+        dummy.position.set(centerX + dx, 0.81, centerZ + dz);
+        dummy.rotation.set(0, 0, 0);
+        dummy.scale.set(1, 1, 1);
+        dummy.updateMatrix();
+        plateMatrices.push(dummy.matrix.clone());
 
-        // 杯子
-        const cup = new THREE.Mesh(cupGeo, cupMat);
-        cup.position.set(centerX + dx + 0.16, 0.84, centerZ + dz);
-        cup.castShadow = true;
-        this.scene.add(cup);
+        dummy.position.set(centerX + dx + 0.16, 0.84, centerZ + dz);
+        dummy.updateMatrix();
+        cupMatrices.push(dummy.matrix.clone());
       }
     }
+
+    this.addInstancedStaticMesh(plateGeo, plateMat, plateMatrices, true, false);
+    this.addInstancedStaticMesh(cupGeo, cupMat, cupMatrices, true, false);
   }
 
   private addFoodCounter(x: number, z: number, woodMat: THREE.Material, goldMat: THREE.Material): void {
@@ -230,6 +235,24 @@ export class DiningHall {
         this.scene.add(fruit);
       }
     }
+  }
+
+  private addInstancedStaticMesh(
+    geometry: THREE.BufferGeometry,
+    material: THREE.Material,
+    matrices: THREE.Matrix4[],
+    castShadow: boolean,
+    receiveShadow: boolean
+  ): void {
+    if (matrices.length === 0) return;
+    const mesh = new THREE.InstancedMesh(geometry, material, matrices.length);
+    mesh.instanceMatrix.setUsage(THREE.StaticDrawUsage);
+    matrices.forEach((matrix, index) => mesh.setMatrixAt(index, matrix));
+    mesh.instanceMatrix.needsUpdate = true;
+    mesh.castShadow = castShadow;
+    mesh.receiveShadow = receiveShadow;
+    mesh.computeBoundingSphere();
+    this.scene.add(mesh);
   }
 
   private addFireplace(x: number, z: number): void {
