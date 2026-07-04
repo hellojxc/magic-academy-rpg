@@ -215,19 +215,19 @@ The current `player.glb` and `lyra.glb` are runtime prototypes. The
 `*.blender-template.glb` files are technical pipeline probes. The latest player
 source pass is generated from
 `assets/characters/player/source/player.blend` and exports to
-`public/assets/models/player.glb` with 24,528 runtime triangles, 17 bones, 11
+`public/assets/models/player.glb` with 24,933 runtime triangles, 17 bones, 11
 morph-target primitives, and `idle`, `walk`, and `talk` clips. The latest pass
 replaces the old ellipsoid-plus-face-patches head with a single deformed anime
 head mesh: a pulled-forward face plane, tapered jaw, broader cranium, ears, more
-readable eyes, upper-eye shadow morph meshes, and individual gloved fingers. It
-also replaces the old player torso/chest/pelvis sphere stack with a higher
-resolution closed academy-jacket body shell, tailored lapel panels, and
-front-aligned uniform details. The current limb pass replaces the old stretched
-sphere limbs with stable tapered cone limb sections and adds sleeve/trouser cloth
-folds for readable joints and fabric breaks. The runtime audit accepts it as a
-web-ready prototype, and the manifest now marks player facial morph support as
-enabled. It is still template-quality compared with a commercial Japanese RPG
-character.
+readable eyes, upper-eye shadow morph meshes, layered prism-mesh short hair, and
+individual gloved fingers. It also replaces the old player torso/chest/pelvis
+sphere stack with a higher resolution closed academy-jacket body shell, tailored
+lapel panels, front-aligned uniform details, and a curved short cape mesh. The
+current limb pass replaces the old stretched sphere limbs with stable tapered
+cone limb sections, shortened hand details, and sleeve/trouser cloth folds for
+readable joints and fabric breaks. The runtime audit accepts it as a web-ready
+prototype, and the manifest now marks player facial morph support as enabled. It
+is still template-quality compared with a commercial Japanese RPG character.
 
 Mira Voss has the first NPC runtime candidate at
 `public/assets/models/mira_voss.glb`. It is a Blender-generated skinned GLB with

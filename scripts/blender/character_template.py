@@ -344,6 +344,59 @@ def add_hair_panel(
     return obj
 
 
+def add_hair_lock_mesh(
+    name: str,
+    mat: bpy.types.Material,
+    points: list[tuple[float, float, float, float, float]],
+    collection: bpy.types.Collection,
+) -> bpy.types.Object:
+    verts: list[tuple[float, float, float]] = []
+    faces: list[tuple[int, ...]] = []
+
+    for index, point in enumerate(points):
+        x, y, z, width, depth = point
+        prev_point = points[max(0, index - 1)]
+        next_point = points[min(len(points) - 1, index + 1)]
+        dx = next_point[0] - prev_point[0]
+        dz = next_point[2] - prev_point[2]
+        length = math.sqrt(dx * dx + dz * dz)
+        if length < 0.0001:
+            nx, nz = 1.0, 0.0
+        else:
+            nx, nz = -dz / length, dx / length
+        half_width = width * 0.5
+        half_depth = depth * 0.5
+        verts.extend(
+            [
+                (x + nx * half_width, y - half_depth, z + nz * half_width),
+                (x - nx * half_width, y - half_depth, z - nz * half_width),
+                (x - nx * half_width, y + half_depth, z - nz * half_width),
+                (x + nx * half_width, y + half_depth, z + nz * half_width),
+            ]
+        )
+
+    if len(points) >= 2:
+        faces.append((0, 1, 2, 3))
+        last = (len(points) - 1) * 4
+        faces.append((last + 3, last + 2, last + 1, last))
+        for index in range(len(points) - 1):
+            current = index * 4
+            following = (index + 1) * 4
+            faces.extend(
+                [
+                    (current + 0, following + 0, following + 1, current + 1),
+                    (current + 1, following + 1, following + 2, current + 2),
+                    (current + 2, following + 2, following + 3, current + 3),
+                    (current + 3, following + 3, following + 0, current + 0),
+                ]
+            )
+
+    obj = add_plane_mesh(name, mat, verts, faces, collection)
+    shade_smooth(obj)
+    add_modifier_if_possible(obj, "hair soft bevel", "BEVEL", width=0.0015, segments=1)
+    return obj
+
+
 def make_armature(character_id: str, collection: bpy.types.Collection, root: bpy.types.Object) -> bpy.types.Object:
     bpy.ops.object.armature_add(enter_editmode=True, location=(0, 0, 0))
     armature = bpy.context.object
@@ -429,6 +482,9 @@ def build_character(spec: dict[str, Any], out_dir: Path, save_blend: bool) -> Pa
 
     if save_blend:
         bpy.ops.wm.save_as_mainfile(filepath=str(out_dir / f"{character_id}.blender-template.blend"))
+        source_path = Path("assets") / "characters" / character_id / "source" / f"{character_id}.blend"
+        source_path.parent.mkdir(parents=True, exist_ok=True)
+        bpy.ops.wm.save_as_mainfile(filepath=str(source_path))
 
     print(f"[character-template] exported {output}")
     return output
@@ -439,8 +495,8 @@ def make_materials(spec: dict[str, Any]) -> dict[str, bpy.types.Material]:
     face = spec["face"]
     hair = spec["hair"]
     is_player = spec["id"] == "player"
-    hair_color = "#121018" if is_player else hair["color"]
-    hair_highlight_color = "#27202e" if is_player else hair["highlightColor"]
+    hair_color = "#09070c" if is_player else hair["color"]
+    hair_highlight_color = "#17121e" if is_player else hair["highlightColor"]
     hair_emission = 0.0 if is_player else 0.04
     hair_highlight_emission = 0.0 if is_player else 0.06
     return {
@@ -647,13 +703,13 @@ def add_player_body_shell(
     for index in range(16):
         t = index / 15
         z = 0.83 + 0.48 * t
-        shoulder = math.sin(t * math.pi / 2) ** 0.9
+        shoulder = math.sin(t * math.pi / 2) ** 1.35
         chest = math.sin(t * math.pi)
         rings.append(ring(
             z,
-            0.142 + 0.064 * shoulder,
-            0.108 + 0.028 * chest,
-            0.068 + 0.016 * chest,
+            0.122 + 0.044 * chest + 0.032 * shoulder,
+            0.096 + 0.024 * chest,
+            0.056 + 0.014 * chest,
         ))
     verts = [point for current in rings for point in current]
     faces: list[tuple[int, ...]] = []
@@ -952,8 +1008,8 @@ def add_player_hand_details(
     palm_z = 0.652 * scale
     finger_mat = mats["shoe"]
     for index, offset in enumerate((-0.018, -0.006, 0.006, 0.018)):
-        length = (0.063 - abs(offset) * 0.42) * scale
-        radius = (0.0048 if index in (1, 2) else 0.0042) * scale
+        length = (0.046 - abs(offset) * 0.28) * scale
+        radius = (0.0052 if index in (1, 2) else 0.0046) * scale
         finger = add_cylinder(
             f"{side}GlovedFinger_{index}",
             finger_mat,
@@ -982,8 +1038,8 @@ def add_player_hand_details(
         f"{side}GlovedThumb",
         finger_mat,
         (palm_x - sx * 0.03 * scale, -0.041 * scale, 0.649 * scale),
-        0.0052 * scale,
-        0.053 * scale,
+        0.0054 * scale,
+        0.042 * scale,
         collection,
         vertices=10,
         rotation=(0.3, sx * 0.86, 0.18),
@@ -1277,9 +1333,9 @@ def add_hair(
         mats["hair"],
         (0, (0.018 if is_player else 0.025) * scale, (1.662 if is_player else 1.655) * scale),
         (
-            (0.156 if is_player else 0.168) * scale * volume,
-            (0.078 if is_player else 0.09) * scale * volume,
-            (0.062 if is_player else 0.074) * scale,
+            (0.142 if is_player else 0.168) * scale * volume,
+            (0.074 if is_player else 0.09) * scale * volume,
+            (0.058 if is_player else 0.074) * scale,
         ),
         collection,
         segments=64,
@@ -1292,9 +1348,9 @@ def add_hair(
         mats["hair"],
         (0, (0.095 if is_player else 0.115) * scale, (1.515 if is_player else 1.475) * scale),
         (
-            (0.148 if is_player else 0.158) * scale * volume,
-            (0.062 if is_player else 0.072) * scale,
-            (0.145 if is_player else 0.19) * scale,
+            (0.124 if is_player else 0.158) * scale * volume,
+            (0.056 if is_player else 0.072) * scale,
+            (0.13 if is_player else 0.19) * scale,
         ),
         collection,
         segments=56,
@@ -1317,49 +1373,182 @@ def add_short_hair(
 ) -> None:
     scale = m["scale"]
     if spec["id"] == "player":
-        bangs = [
-            ("HeroFrontHairLock_Left", mats["hair"], [(-0.145, -0.178, 1.668), (-0.055, -0.2, 1.705), (-0.104, -0.212, 1.60)]),
-            ("HeroFrontHairLock_Center", mats["hair_highlight"], [(-0.048, -0.204, 1.705), (0.045, -0.207, 1.705), (0.0, -0.218, 1.605)]),
-            ("HeroFrontHairLock_Right", mats["hair"], [(0.045, -0.202, 1.695), (0.145, -0.178, 1.665), (0.102, -0.212, 1.592)]),
-            ("HeroSideSweptBang", mats["hair_highlight"], [(-0.018, -0.212, 1.70), (0.158, -0.195, 1.642), (0.056, -0.222, 1.605)]),
-            ("HeroLongAsymmetricBang", mats["hair"], [(0.02, -0.218, 1.672), (0.148, -0.202, 1.615), (0.07, -0.224, 1.505)]),
-            ("HeroLeftTempleLock", mats["hair"], [(-0.18, -0.115, 1.60), (-0.14, -0.185, 1.555), (-0.157, -0.16, 1.47), (-0.212, -0.055, 1.48)]),
-            ("HeroRightTempleLock", mats["hair"], [(0.14, -0.185, 1.555), (0.18, -0.115, 1.60), (0.212, -0.055, 1.48), (0.157, -0.16, 1.47)]),
-        ]
-    else:
-        bangs = [
-            ("FrontHairLock_Left", mats["hair"], [(-0.17, -0.205, 1.67), (-0.055, -0.218, 1.69), (-0.105, -0.232, 1.50)]),
-            ("FrontHairLock_Center", mats["hair_highlight"], [(-0.065, -0.222, 1.695), (0.056, -0.226, 1.695), (0.0, -0.238, 1.49)]),
-            ("FrontHairLock_Right", mats["hair"], [(0.045, -0.222, 1.685), (0.17, -0.205, 1.65), (0.115, -0.232, 1.50)]),
-            ("SideSweptBang", mats["hair_highlight"], [(-0.025, -0.236, 1.69), (0.19, -0.218, 1.625), (0.045, -0.244, 1.515)]),
-            ("LongAsymmetricBang", mats["hair"], [(0.02, -0.24, 1.66), (0.16, -0.228, 1.60), (0.065, -0.246, 1.43)]),
-            ("LeftTempleLock", mats["hair"], [(-0.18, -0.175, 1.60), (-0.13, -0.218, 1.55), (-0.15, -0.205, 1.40), (-0.205, -0.12, 1.42)]),
-            ("RightTempleLock", mats["hair"], [(0.13, -0.218, 1.55), (0.18, -0.175, 1.60), (0.205, -0.12, 1.42), (0.15, -0.205, 1.40)]),
-        ]
+        add_player_layered_short_hair(m, mats, armature, collection)
+        return
+
+    bangs = [
+        ("FrontHairLock_Left", mats["hair"], [(-0.17, -0.205, 1.67), (-0.055, -0.218, 1.69), (-0.105, -0.232, 1.50)]),
+        ("FrontHairLock_Center", mats["hair_highlight"], [(-0.065, -0.222, 1.695), (0.056, -0.226, 1.695), (0.0, -0.238, 1.49)]),
+        ("FrontHairLock_Right", mats["hair"], [(0.045, -0.222, 1.685), (0.17, -0.205, 1.65), (0.115, -0.232, 1.50)]),
+        ("SideSweptBang", mats["hair_highlight"], [(-0.025, -0.236, 1.69), (0.19, -0.218, 1.625), (0.045, -0.244, 1.515)]),
+        ("LongAsymmetricBang", mats["hair"], [(0.02, -0.24, 1.66), (0.16, -0.228, 1.60), (0.065, -0.246, 1.43)]),
+        ("LeftTempleLock", mats["hair"], [(-0.18, -0.175, 1.60), (-0.13, -0.218, 1.55), (-0.15, -0.205, 1.40), (-0.205, -0.12, 1.42)]),
+        ("RightTempleLock", mats["hair"], [(0.13, -0.218, 1.55), (0.18, -0.175, 1.60), (0.205, -0.12, 1.42), (0.15, -0.205, 1.40)]),
+    ]
     for name, mat, verts in bangs:
-        lock = add_hair_panel(name, mat, [(x * scale, y * scale, z * scale) for x, y, z in verts], collection, (0.006 if spec["id"] == "player" else 0.008) * scale)
+        lock = add_hair_panel(name, mat, [(x * scale, y * scale, z * scale) for x, y, z in verts], collection, 0.008 * scale)
         parent_to_bone(lock, armature, "Head")
 
-    if spec["id"] == "player":
-        side_panels = [
-            ("HeroLeftSideHairLayer", mats["hair"], [(-0.195, -0.025, 1.615), (-0.155, -0.128, 1.585), (-0.212, 0.01, 1.49)]),
-            ("HeroRightSideHairLayer", mats["hair"], [(0.155, -0.128, 1.585), (0.195, -0.025, 1.615), (0.212, 0.01, 1.49)]),
-            ("HeroBackHairNape", mats["hair"], [(-0.15, 0.09, 1.60), (0.15, 0.09, 1.60), (0.12, 0.14, 1.455), (-0.12, 0.14, 1.455)]),
-            ("HeroLeftBackSpike", mats["hair"], [(-0.17, 0.06, 1.64), (-0.075, 0.125, 1.625), (-0.126, 0.145, 1.50)]),
-            ("HeroRightBackSpike", mats["hair"], [(0.075, 0.125, 1.625), (0.17, 0.06, 1.64), (0.126, 0.145, 1.50)]),
-            ("HeroTopCowlick", mats["hair_highlight"], [(-0.014, -0.002, 1.71), (0.034, 0.0, 1.744), (0.012, -0.014, 1.66)]),
-        ]
-    else:
-        side_panels = [
-            ("LeftSideHairLayer", mats["hair"], [(-0.205, -0.055, 1.62), (-0.15, -0.17, 1.58), (-0.17, -0.14, 1.35), (-0.235, 0.025, 1.36)]),
-            ("RightSideHairLayer", mats["hair"], [(0.15, -0.17, 1.58), (0.205, -0.055, 1.62), (0.235, 0.025, 1.36), (0.17, -0.14, 1.35)]),
-            ("BackHairNape", mats["hair_highlight"], [(-0.16, 0.115, 1.56), (0.16, 0.115, 1.56), (0.13, 0.15, 1.31), (-0.13, 0.15, 1.31)]),
-            ("LeftBackSpike", mats["hair"], [(-0.17, 0.11, 1.59), (-0.08, 0.135, 1.58), (-0.12, 0.16, 1.38)]),
-            ("RightBackSpike", mats["hair"], [(0.08, 0.135, 1.58), (0.17, 0.11, 1.59), (0.12, 0.16, 1.38)]),
-        ]
+    side_panels = [
+        ("LeftSideHairLayer", mats["hair"], [(-0.205, -0.055, 1.62), (-0.15, -0.17, 1.58), (-0.17, -0.14, 1.35), (-0.235, 0.025, 1.36)]),
+        ("RightSideHairLayer", mats["hair"], [(0.15, -0.17, 1.58), (0.205, -0.055, 1.62), (0.235, 0.025, 1.36), (0.17, -0.14, 1.35)]),
+        ("BackHairNape", mats["hair_highlight"], [(-0.16, 0.115, 1.56), (0.16, 0.115, 1.56), (0.13, 0.15, 1.31), (-0.13, 0.15, 1.31)]),
+        ("LeftBackSpike", mats["hair"], [(-0.17, 0.11, 1.59), (-0.08, 0.135, 1.58), (-0.12, 0.16, 1.38)]),
+        ("RightBackSpike", mats["hair"], [(0.08, 0.135, 1.58), (0.17, 0.11, 1.59), (0.12, 0.16, 1.38)]),
+    ]
     for name, mat, verts in side_panels:
         panel = add_hair_panel(name, mat, [(x * scale, y * scale, z * scale) for x, y, z in verts], collection, 0.01 * scale)
         parent_to_bone(panel, armature, "Head")
+
+
+def add_player_layered_short_hair(
+    m: dict[str, float],
+    mats: dict[str, bpy.types.Material],
+    armature: bpy.types.Object,
+    collection: bpy.types.Collection,
+) -> None:
+    scale = m["scale"]
+
+    def lock(
+        name: str,
+        mat: bpy.types.Material,
+        points: list[tuple[float, float, float, float, float]],
+    ) -> None:
+        obj = add_hair_lock_mesh(
+            name,
+            mat,
+            [(x * scale, y * scale, z * scale, w * scale, d * scale) for x, y, z, w, d in points],
+            collection,
+        )
+        parent_to_bone(obj, armature, "Head")
+
+    front_locks = [
+        (
+            "HeroBangLeftLayer",
+            mats["hair"],
+            [(-0.125, -0.172, 1.69, 0.078, 0.032), (-0.16, -0.205, 1.63, 0.063, 0.028), (-0.128, -0.226, 1.545, 0.012, 0.014)],
+        ),
+        (
+            "HeroBangLeftInner",
+            mats["hair"],
+            [(-0.045, -0.19, 1.71, 0.07, 0.03), (-0.085, -0.218, 1.655, 0.055, 0.026), (-0.07, -0.236, 1.565, 0.01, 0.012)],
+        ),
+        (
+            "HeroBangCenterPoint",
+            mats["hair"],
+            [(0.02, -0.198, 1.71, 0.078, 0.032), (0.0, -0.226, 1.642, 0.056, 0.026), (0.013, -0.238, 1.555, 0.012, 0.012)],
+        ),
+        (
+            "HeroBangRightSweep",
+            mats["hair"],
+            [(0.07, -0.19, 1.70, 0.082, 0.032), (0.135, -0.214, 1.625, 0.066, 0.028), (0.094, -0.236, 1.52, 0.012, 0.014)],
+        ),
+        (
+            "HeroLongRightFringe",
+            mats["hair"],
+            [(0.02, -0.206, 1.685, 0.058, 0.026), (0.128, -0.226, 1.612, 0.044, 0.022), (0.078, -0.238, 1.492, 0.01, 0.012)],
+        ),
+        (
+            "HeroSideSweepShadow",
+            mats["hair"],
+            [(-0.055, -0.205, 1.688, 0.052, 0.024), (0.09, -0.219, 1.646, 0.038, 0.02), (0.165, -0.212, 1.59, 0.012, 0.012)],
+        ),
+    ]
+    for name, mat, points in front_locks:
+        lock(name, mat, points)
+
+    side_locks = [
+        (
+            "HeroLeftTempleVolume",
+            mats["hair"],
+            [(-0.13, -0.118, 1.61, 0.032, 0.02), (-0.145, -0.13, 1.545, 0.024, 0.018), (-0.14, -0.09, 1.49, 0.008, 0.008)],
+        ),
+        (
+            "HeroRightTempleVolume",
+            mats["hair"],
+            [(0.13, -0.118, 1.61, 0.032, 0.02), (0.145, -0.13, 1.545, 0.024, 0.018), (0.14, -0.09, 1.49, 0.008, 0.008)],
+        ),
+        (
+            "HeroLeftEarLayer",
+            mats["hair"],
+            [(-0.158, 0.004, 1.6, 0.03, 0.018), (-0.172, 0.018, 1.535, 0.022, 0.016), (-0.162, 0.038, 1.48, 0.008, 0.008)],
+        ),
+        (
+            "HeroRightEarLayer",
+            mats["hair"],
+            [(0.158, 0.004, 1.6, 0.03, 0.018), (0.172, 0.018, 1.535, 0.022, 0.016), (0.162, 0.038, 1.48, 0.008, 0.008)],
+        ),
+    ]
+    for name, mat, points in side_locks:
+        lock(name, mat, points)
+
+    back_locks = [
+        (
+            "HeroBackLeftCluster",
+            mats["hair"],
+            [(-0.095, 0.105, 1.625, 0.04, 0.022), (-0.122, 0.135, 1.565, 0.03, 0.018), (-0.108, 0.15, 1.49, 0.008, 0.008)],
+        ),
+        (
+            "HeroBackCenterCluster",
+            mats["hair"],
+            [(0.0, 0.116, 1.625, 0.064, 0.028), (0.0, 0.15, 1.558, 0.048, 0.024), (0.0, 0.16, 1.47, 0.01, 0.01)],
+        ),
+        (
+            "HeroBackRightCluster",
+            mats["hair"],
+            [(0.095, 0.105, 1.625, 0.04, 0.022), (0.122, 0.135, 1.565, 0.03, 0.018), (0.108, 0.15, 1.49, 0.008, 0.008)],
+        ),
+        (
+            "HeroLeftRearSpike",
+            mats["hair"],
+            [(-0.128, 0.055, 1.64, 0.032, 0.018), (-0.162, 0.088, 1.585, 0.024, 0.016), (-0.152, 0.112, 1.525, 0.008, 0.008)],
+        ),
+        (
+            "HeroRightRearSpike",
+            mats["hair"],
+            [(0.128, 0.055, 1.64, 0.032, 0.018), (0.162, 0.088, 1.585, 0.024, 0.016), (0.152, 0.112, 1.525, 0.008, 0.008)],
+        ),
+    ]
+    for name, mat, points in back_locks:
+        lock(name, mat, points)
+
+    highlight_locks = [
+        (
+            "HeroBangNarrowHighlight",
+            mats["hair_highlight"],
+            [(-0.026, -0.212, 1.696, 0.018, 0.011), (0.06, -0.225, 1.64, 0.014, 0.009), (0.09, -0.229, 1.59, 0.004, 0.006)],
+        ),
+        (
+            "HeroLeftCrownHighlight",
+            mats["hair_highlight"],
+            [(-0.1, -0.025, 1.715, 0.018, 0.011), (-0.16, -0.055, 1.66, 0.014, 0.009), (-0.185, -0.055, 1.61, 0.004, 0.006)],
+        ),
+        (
+            "HeroRightCrownHighlight",
+            mats["hair_highlight"],
+            [(0.09, -0.02, 1.715, 0.018, 0.011), (0.15, -0.048, 1.665, 0.014, 0.009), (0.18, -0.04, 1.615, 0.004, 0.006)],
+        ),
+    ]
+    for name, mat, points in highlight_locks:
+        lock(name, mat, points)
+
+    cowlick = add_hair_panel(
+        "HeroTopCowlickFine",
+        mats["hair"],
+        [(x * scale, y * scale, z * scale) for x, y, z in [(-0.018, 0.004, 1.705), (0.026, 0.01, 1.758), (0.008, -0.015, 1.684)]],
+        collection,
+        0.006 * scale,
+    )
+    parent_to_bone(cowlick, armature, "Head")
+
+    nape_shadow = add_hair_panel(
+        "HeroNapeShadowLayer",
+        mats["hair"],
+        [(x * scale, y * scale, z * scale) for x, y, z in [(-0.14, 0.13, 1.56), (0.14, 0.13, 1.56), (0.1, 0.158, 1.43), (-0.1, 0.158, 1.43)]],
+        collection,
+        0.012 * scale,
+    )
+    parent_to_bone(nape_shadow, armature, "Head")
 
 
 def add_long_hair(
@@ -1498,10 +1687,10 @@ def add_outfit(
             trim = add_cube(
                 f"{side}HeroCapeGoldTrim",
                 mats["trim"],
-                (sx * 0.255 * scale, 0.2 * scale, 1.035 * scale),
-                (0.008 * scale, 0.006 * scale, 0.235 * scale),
+                (sx * (0.215 if is_player else 0.255) * scale, (0.178 if is_player else 0.2) * scale, (1.045 if is_player else 1.035) * scale),
+                (0.007 * scale, 0.006 * scale, (0.185 if is_player else 0.235) * scale),
                 collection,
-                rotation=(0, 0, sx * 0.22),
+                rotation=(0, 0, sx * (0.14 if is_player else 0.22)),
                 bevel=0.0015 * scale,
             )
             parent_to_bone(trim, armature, "Chest")
@@ -1721,7 +1910,11 @@ def add_cape(
     collection: bpy.types.Collection,
 ) -> bpy.types.Object:
     scale = m["scale"]
+    is_player = spec["id"] == "player"
     is_masculine = is_masculine_uniform(spec)
+    if is_player and is_masculine:
+        return add_player_short_cape(m, mats, collection)
+
     width_top = 0.31 * scale if is_masculine else 0.27 * scale
     width_bottom = 0.5 * scale if is_masculine else 0.42 * scale
     top_z = 1.3 * scale
@@ -1736,6 +1929,40 @@ def add_cape(
     cape_mat = mats["outfit_dark"] if is_masculine else mats["outfit_primary"]
     cape = add_plane_mesh("MageCape" if is_masculine else "Capelet", cape_mat, verts, [(0, 1, 2, 3)], collection)
     add_modifier_if_possible(cape, "cloth thickness", "SOLIDIFY", thickness=0.006 * scale)
+    return cape
+
+
+def add_player_short_cape(
+    m: dict[str, float],
+    mats: dict[str, bpy.types.Material],
+    collection: bpy.types.Collection,
+) -> bpy.types.Object:
+    scale = m["scale"]
+    columns = 7
+    rows = 6
+    verts: list[tuple[float, float, float]] = []
+    for row in range(rows):
+        v = row / (rows - 1)
+        width = (0.23 + 0.13 * v) * scale
+        z = (1.29 - 0.47 * v) * scale
+        base_y = (0.148 + 0.036 * v) * scale
+        for column in range(columns):
+            u = (column / (columns - 1)) * 2.0 - 1.0
+            side = abs(u)
+            x = u * width * (0.92 + 0.08 * v)
+            y = base_y + (side ** 1.7) * (0.035 + 0.03 * v) * scale
+            hem_drop = (side ** 1.4) * 0.035 * v * scale
+            verts.append((x, y, z - hem_drop))
+
+    faces: list[tuple[int, int, int, int]] = []
+    for row in range(rows - 1):
+        for column in range(columns - 1):
+            start = row * columns + column
+            faces.append((start, start + 1, start + columns + 1, start + columns))
+
+    cape = add_plane_mesh("MageCape", mats["outfit_dark"], verts, faces, collection)
+    shade_smooth(cape)
+    add_modifier_if_possible(cape, "cloth thickness", "SOLIDIFY", thickness=0.005 * scale)
     return cape
 
 

@@ -5,10 +5,10 @@
   "accepted": true,
   "summary": {
     "file": "public/assets/models/player.glb",
-    "sizeKb": 1198.4,
-    "nodes": 141,
-    "meshes": 122,
-    "primitives": 122,
+    "sizeKb": 1214.7,
+    "nodes": 148,
+    "meshes": 129,
+    "primitives": 129,
     "materials": 18,
     "skins": 1,
     "bones": 17,
@@ -18,7 +18,7 @@
       "walk"
     ],
     "morphTargetPrimitiveCount": 11,
-    "triangleCount": 24528
+    "triangleCount": 24933
   },
   "requirements": {
     "triangleBudgetHero": [
@@ -51,7 +51,7 @@
     {
       "name": "triangle budget",
       "passed": true,
-      "detail": "24528 triangles, target 24000-42000"
+      "detail": "24933 triangles, target 24000-42000"
     },
     {
       "name": "humanoid skin",
@@ -75,5 +75,5 @@
     }
   ],
   "conclusion": "Runtime asset passes the current production gate.",
-  "generatedAt": "2026-07-04T00:23:27.270Z"
+  "generatedAt": "2026-07-04T01:14:50.902Z"
 }
