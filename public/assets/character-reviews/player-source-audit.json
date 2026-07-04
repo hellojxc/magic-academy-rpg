@@ -1,9 +1,9 @@
 {
   "characterId": "player",
-  "meshes": 129,
+  "meshes": 131,
   "materials": 19,
   "armatures": 1,
-  "maxBones": 17,
+  "maxBones": 45,
   "actions": [
     "idle",
     "talk",
@@ -16,13 +16,15 @@
     "LeftEyeUpperShadow",
     "LeftPupil",
     "LeftEyeHighlight",
+    "LeftEyeLowerCatchlight",
     "RightEyeWhite",
     "RightIris",
     "RightEyeUpperShadow",
     "RightPupil",
-    "RightEyeHighlight"
+    "RightEyeHighlight",
+    "RightEyeLowerCatchlight"
   ],
-  "estimatedTriangles": 32948,
+  "estimatedTriangles": 33228,
   "source": "/home/dennisj/apps/magic-academy-rpg-preview/assets/characters/player/source/player.blend",
   "output": "/home/dennisj/apps/magic-academy-rpg-preview/public/assets/models/player.glb",
   "preview": "/home/dennisj/apps/magic-academy-rpg-preview/public/assets/character-reviews/player-source-preview.png"

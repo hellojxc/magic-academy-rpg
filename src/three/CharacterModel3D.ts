@@ -51,7 +51,17 @@ interface GLTFSecondaryMotionBinding extends GLTFTransformBase {
   sway: number;
   bob: number;
   twist: number;
+  stiffness: number;
+  damping: number;
+  currentX: number;
+  currentY: number;
+  currentZ: number;
+  velocityX: number;
+  velocityY: number;
+  velocityZ: number;
 }
+
+type GLTFSecondaryMotionProfile = Pick<GLTFSecondaryMotionBinding, 'sway' | 'bob' | 'twist' | 'stiffness' | 'damping'>;
 
 interface GLTFEyeFocusBinding {
   object: THREE.Object3D;
@@ -316,7 +326,7 @@ export class CharacterModel3D {
     this.applyGLTFPoseOverlay(elapsedTime);
     this.applyGLTFLookAt(lookAtWorldPosition, elapsedTime, delta);
     this.applyGLTFEyeFocus();
-    this.applyGLTFSecondaryMotion(elapsedTime);
+    this.applyGLTFSecondaryMotion(elapsedTime, delta);
     this.applyGLTFMorphExpressions(elapsedTime, delta);
   }
 
@@ -417,13 +427,7 @@ export class CharacterModel3D {
       if (!this.isSecondaryMotionBone(object)) return;
       const profile = this.getSecondaryMotionProfile(object.name);
       if (!profile) return;
-      bindings.push({
-        object,
-        basePosition: object.position.clone(),
-        baseRotation: object.rotation.clone(),
-        phase: bindings.length * 0.73 + object.name.length * 0.11,
-        ...profile,
-      });
+      bindings.push(this.createSecondaryMotionBinding(object, profile, bindings.length));
     });
     if (bindings.length > 0) return bindings;
 
@@ -431,15 +435,29 @@ export class CharacterModel3D {
       const profile = this.getSecondaryMotionProfile(object.name);
       if (!profile) return;
       if (!this.hasCenteredRuntimePivot(object)) return;
-      bindings.push({
-        object,
-        basePosition: object.position.clone(),
-        baseRotation: object.rotation.clone(),
-        phase: bindings.length * 0.73 + object.name.length * 0.11,
-        ...profile,
-      });
+      bindings.push(this.createSecondaryMotionBinding(object, profile, bindings.length));
     });
     return bindings;
+  }
+
+  private createSecondaryMotionBinding(
+    object: THREE.Object3D,
+    profile: GLTFSecondaryMotionProfile,
+    index: number,
+  ): GLTFSecondaryMotionBinding {
+    return {
+      object,
+      basePosition: object.position.clone(),
+      baseRotation: object.rotation.clone(),
+      phase: index * 0.73 + object.name.length * 0.11,
+      currentX: 0,
+      currentY: 0,
+      currentZ: 0,
+      velocityX: 0,
+      velocityY: 0,
+      velocityZ: 0,
+      ...profile,
+    };
   }
 
   private collectEyeFocusObjects(model: THREE.Object3D): GLTFEyeFocusBinding[] {
@@ -455,22 +473,40 @@ export class CharacterModel3D {
     return bindings;
   }
 
-  private getSecondaryMotionProfile(name: string): Omit<GLTFSecondaryMotionBinding, keyof GLTFTransformBase | 'phase'> | undefined {
+  private getSecondaryMotionProfile(name: string): GLTFSecondaryMotionProfile | undefined {
     const normalized = name.replace(/[^a-z0-9]/gi, '').toLowerCase();
     if (!normalized) return undefined;
+    const isTip = normalized.includes('tip');
     if (/(hair|bang|lock|braid|ponytail|cowlick)/.test(normalized)) {
       const isLong = /(long|back|outer|tip|tail)/.test(normalized);
+      const tipScale = isTip ? 1.35 : 1;
       return {
-        sway: isLong ? 0.052 : 0.034,
-        bob: isLong ? 0.014 : 0.008,
-        twist: isLong ? 0.024 : 0.014,
+        sway: (isLong ? 0.052 : 0.034) * tipScale,
+        bob: (isLong ? 0.014 : 0.008) * tipScale,
+        twist: (isLong ? 0.024 : 0.014) * tipScale,
+        stiffness: isTip ? 28 : 42,
+        damping: isTip ? 6.6 : 8.4,
       };
     }
     if (/(cape|capelet|skirt|ruffle|sash|ribbon|tail)/.test(normalized)) {
-      return { sway: 0.038, bob: 0.01, twist: 0.018 };
+      const tipScale = isTip ? 1.3 : 1;
+      return {
+        sway: 0.038 * tipScale,
+        bob: 0.01 * tipScale,
+        twist: 0.018 * tipScale,
+        stiffness: isTip ? 24 : 36,
+        damping: isTip ? 5.8 : 7.2,
+      };
     }
     if (/(sleeve|tie|strap)/.test(normalized)) {
-      return { sway: 0.018, bob: 0.004, twist: 0.008 };
+      const tipScale = isTip ? 1.25 : 1;
+      return {
+        sway: 0.018 * tipScale,
+        bob: 0.004 * tipScale,
+        twist: 0.008 * tipScale,
+        stiffness: isTip ? 30 : 42,
+        damping: isTip ? 6.4 : 8.2,
+      };
     }
     return undefined;
   }
@@ -664,9 +700,10 @@ export class CharacterModel3D {
     }
   }
 
-  private applyGLTFSecondaryMotion(elapsedTime: number): void {
+  private applyGLTFSecondaryMotion(elapsedTime: number, delta: number): void {
     if (this.gltfSecondaryBindings.length === 0) return;
 
+    const step = THREE.MathUtils.clamp(delta, 0.001, 0.05);
     const movement = this.moving ? 1 : 0;
     const idle = 1 - movement;
     for (const binding of this.gltfSecondaryBindings) {
@@ -674,13 +711,27 @@ export class CharacterModel3D {
       const settle = Math.sin(elapsedTime * 1.55 + binding.phase);
       const flutter = Math.sin(elapsedTime * 2.35 + binding.phase * 0.7);
       const moveScale = 0.45 + movement * 0.95;
+      const targetX = binding.bob * (Math.abs(stride) * movement + settle * 0.45 * idle);
+      const targetY = binding.twist * (stride * movement + flutter * 0.35 * idle);
+      const targetZ = binding.sway * moveScale * (stride * movement + settle * 0.55 * idle);
+      const damping = Math.exp(-binding.damping * step);
+
+      binding.velocityX += (targetX - binding.currentX) * binding.stiffness * step;
+      binding.velocityY += (targetY - binding.currentY) * binding.stiffness * step;
+      binding.velocityZ += (targetZ - binding.currentZ) * binding.stiffness * step;
+      binding.velocityX *= damping;
+      binding.velocityY *= damping;
+      binding.velocityZ *= damping;
+      binding.currentX = THREE.MathUtils.clamp(binding.currentX + binding.velocityX * step, -0.18, 0.18);
+      binding.currentY = THREE.MathUtils.clamp(binding.currentY + binding.velocityY * step, -0.18, 0.18);
+      binding.currentZ = THREE.MathUtils.clamp(binding.currentZ + binding.velocityZ * step, -0.22, 0.22);
 
       binding.object.position.copy(binding.basePosition);
       binding.object.rotation.copy(binding.baseRotation);
-      binding.object.rotation.x += binding.bob * (Math.abs(stride) * movement + settle * 0.45 * idle);
-      binding.object.rotation.y += binding.twist * (stride * movement + flutter * 0.35 * idle);
-      binding.object.rotation.z += binding.sway * moveScale * (stride * movement + settle * 0.55 * idle);
-      binding.object.position.y += binding.bob * 0.012 * flutter * idle;
+      binding.object.rotation.x += binding.currentX;
+      binding.object.rotation.y += binding.currentY;
+      binding.object.rotation.z += binding.currentZ;
+      binding.object.position.y += binding.bob * 0.012 * flutter * idle + binding.currentX * 0.006;
     }
   }
 

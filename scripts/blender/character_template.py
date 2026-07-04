@@ -207,37 +207,42 @@ def secondary_bone_for_object(obj_name: str, fallback_bone: str) -> str:
         if normalized in {"haircap"}:
             return fallback_bone
         if any(token in normalized for token in ("bang", "fringe", "forehead", "cowlick")):
+            if any(token in normalized for token in ("point", "tip", "long", "fine")):
+                return "SecondaryHairFrontTip"
             return "SecondaryHairFront"
         if any(token in normalized for token in ("hair", "lock", "nape", "rear", "temple")):
+            tip_suffix = "Tip" if any(token in normalized for token in ("tip", "outer", "long", "thin", "face", "layered", "spine", "curl", "lock")) else ""
             if "left" in normalized:
-                return "SecondaryHairLeft"
+                return f"SecondaryHairLeft{tip_suffix}"
             if "right" in normalized:
-                return "SecondaryHairRight"
-            return "SecondaryHairBack"
+                return f"SecondaryHairRight{tip_suffix}"
+            return f"SecondaryHairBack{tip_suffix}"
 
     if fallback_bone == "Chest":
         if "cape" in normalized:
+            tip_suffix = "Tip" if any(token in normalized for token in ("trim", "tail", "edge")) else ""
             if "left" in normalized:
-                return "SecondaryCapeLeft"
+                return f"SecondaryCapeLeft{tip_suffix}"
             if "right" in normalized:
-                return "SecondaryCapeRight"
-            return "SecondaryCapeBack"
+                return f"SecondaryCapeRight{tip_suffix}"
+            return f"SecondaryCapeBack{tip_suffix}"
         if "ribbon" in normalized:
-            return "SecondaryRibbonLeft" if "left" in normalized else "SecondaryRibbonRight"
+            return "SecondaryRibbonLeftTip" if "left" in normalized else "SecondaryRibbonRightTip"
         if any(token in normalized for token in ("necktie", "tie", "sash")):
-            return "SecondaryTie"
+            return "SecondaryTieTip" if any(token in normalized for token in ("tip", "tail", "end", "lower")) else "SecondaryTie"
 
     if fallback_bone == "Hips":
         if any(token in normalized for token in ("skirt", "ruffle", "pleat", "apron")):
+            tip_suffix = "Tip" if any(token in normalized for token in ("ruffle", "pleat", "panel", "apron")) else ""
             if "back" in normalized:
-                return "SecondarySkirtBack"
+                return f"SecondarySkirtBack{tip_suffix}"
             if "left" in normalized:
-                return "SecondarySkirtLeft"
+                return f"SecondarySkirtLeft{tip_suffix}"
             if "right" in normalized:
-                return "SecondarySkirtRight"
-            return "SecondarySkirtFront"
+                return f"SecondarySkirtRight{tip_suffix}"
+            return f"SecondarySkirtFront{tip_suffix}"
         if "jackettail" in normalized:
-            return "SecondarySkirtLeft" if "left" in normalized else "SecondarySkirtRight"
+            return "SecondarySkirtLeftTip" if "left" in normalized else "SecondarySkirtRightTip"
 
     return fallback_bone
 
@@ -482,16 +487,30 @@ def make_armature(character_id: str, collection: bpy.types.Collection, root: bpy
     add_bone("SecondaryHairBack", (0, 0.13, 1.56), (0, 0.20, 1.02), "Head")
     add_bone("SecondaryHairLeft", (-0.16, -0.02, 1.54), (-0.25, -0.01, 1.03), "Head")
     add_bone("SecondaryHairRight", (0.16, -0.02, 1.54), (0.25, -0.01, 1.03), "Head")
+    add_bone("SecondaryHairFrontTip", (0, -0.26, 1.47), (0, -0.31, 1.36), "SecondaryHairFront")
+    add_bone("SecondaryHairBackTip", (0, 0.20, 1.02), (0, 0.22, 0.82), "SecondaryHairBack")
+    add_bone("SecondaryHairLeftTip", (-0.25, -0.01, 1.03), (-0.30, 0.01, 0.84), "SecondaryHairLeft")
+    add_bone("SecondaryHairRightTip", (0.25, -0.01, 1.03), (0.30, 0.01, 0.84), "SecondaryHairRight")
     add_bone("SecondaryCapeBack", (0, 0.18, 1.25), (0, 0.24, 0.74), "Chest")
     add_bone("SecondaryCapeLeft", (-0.20, 0.17, 1.18), (-0.28, 0.22, 0.82), "Chest")
     add_bone("SecondaryCapeRight", (0.20, 0.17, 1.18), (0.28, 0.22, 0.82), "Chest")
+    add_bone("SecondaryCapeBackTip", (0, 0.24, 0.74), (0, 0.27, 0.58), "SecondaryCapeBack")
+    add_bone("SecondaryCapeLeftTip", (-0.28, 0.22, 0.82), (-0.34, 0.24, 0.66), "SecondaryCapeLeft")
+    add_bone("SecondaryCapeRightTip", (0.28, 0.22, 0.82), (0.34, 0.24, 0.66), "SecondaryCapeRight")
     add_bone("SecondaryRibbonLeft", (-0.05, -0.22, 1.30), (-0.08, -0.25, 1.14), "Chest")
     add_bone("SecondaryRibbonRight", (0.05, -0.22, 1.30), (0.08, -0.25, 1.14), "Chest")
     add_bone("SecondaryTie", (0, -0.19, 1.31), (0, -0.22, 1.06), "Chest")
+    add_bone("SecondaryRibbonLeftTip", (-0.08, -0.25, 1.14), (-0.10, -0.27, 1.04), "SecondaryRibbonLeft")
+    add_bone("SecondaryRibbonRightTip", (0.08, -0.25, 1.14), (0.10, -0.27, 1.04), "SecondaryRibbonRight")
+    add_bone("SecondaryTieTip", (0, -0.22, 1.06), (0, -0.23, 0.95), "SecondaryTie")
     add_bone("SecondarySkirtFront", (0, -0.16, 0.88), (0, -0.23, 0.58), "Hips")
     add_bone("SecondarySkirtBack", (0, 0.10, 0.88), (0, 0.15, 0.56), "Hips")
     add_bone("SecondarySkirtLeft", (-0.16, -0.02, 0.88), (-0.25, -0.02, 0.58), "Hips")
     add_bone("SecondarySkirtRight", (0.16, -0.02, 0.88), (0.25, -0.02, 0.58), "Hips")
+    add_bone("SecondarySkirtFrontTip", (0, -0.23, 0.58), (0, -0.25, 0.48), "SecondarySkirtFront")
+    add_bone("SecondarySkirtBackTip", (0, 0.15, 0.56), (0, 0.16, 0.46), "SecondarySkirtBack")
+    add_bone("SecondarySkirtLeftTip", (-0.25, -0.02, 0.58), (-0.31, -0.02, 0.48), "SecondarySkirtLeft")
+    add_bone("SecondarySkirtRightTip", (0.25, -0.02, 0.58), (0.31, -0.02, 0.48), "SecondarySkirtRight")
 
     for side in ("Left", "Right"):
         sx = -1 if side == "Left" else 1

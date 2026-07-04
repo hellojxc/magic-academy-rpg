@@ -5,13 +5,13 @@
   "accepted": true,
   "summary": {
     "file": "public/assets/models/lyra.glb",
-    "sizeKb": 1300.3,
-    "nodes": 159,
+    "sizeKb": 1332.8,
+    "nodes": 173,
     "meshes": 126,
     "primitives": 126,
     "materials": 18,
     "skins": 1,
-    "bones": 31,
+    "bones": 45,
     "animations": [
       "idle",
       "talk",
@@ -59,7 +59,7 @@
     {
       "name": "humanoid skin",
       "passed": true,
-      "detail": "1 skins, 31 bones"
+      "detail": "1 skins, 45 bones"
     },
     {
       "name": "facial morph targets",
@@ -78,5 +78,5 @@
     }
   ],
   "conclusion": "Runtime asset passes the current production gate.",
-  "generatedAt": "2026-07-04T03:08:26.494Z"
+  "generatedAt": "2026-07-04T03:26:38.324Z"
 }
