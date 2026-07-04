@@ -1,19 +1,21 @@
 import * as THREE from 'three';
+import type { InteractiveNPC } from './WorldTypes';
 
 export class InteractionController3D {
   private readonly raycaster = new THREE.Raycaster();
   private readonly pointer = new THREE.Vector2();
   private readonly prompt: HTMLDivElement;
   private readonly interactionRange = 1.55;
-  private lastPointerObject: THREE.Object3D | null = null;
+  private currentTarget: InteractiveNPC | null = null;
+  private lastPointerTarget: InteractiveNPC | null = null;
 
   constructor(
     private readonly container: HTMLElement,
     private readonly renderer: THREE.WebGLRenderer,
     private readonly camera: THREE.PerspectiveCamera,
     private readonly player: THREE.Object3D,
-    private readonly target: THREE.Object3D,
-    private readonly onInteract: () => void
+    private readonly targets: readonly InteractiveNPC[],
+    private readonly onInteract: (npc: InteractiveNPC) => void
   ) {
     this.prompt = document.createElement('div');
     this.prompt.className = 'interaction-prompt';
@@ -26,19 +28,20 @@ export class InteractionController3D {
   }
 
   update(dialogueVisible: boolean): void {
-    const distance = this.player.position.distanceTo(this.target.position);
-    const near = distance <= this.interactionRange && !dialogueVisible;
-    this.prompt.hidden = !near;
-    if (near) {
-      const screen = this.worldToScreen(this.target.position.clone().add(new THREE.Vector3(0, 1.15, 0)));
+    this.currentTarget = dialogueVisible ? null : this.findNearestTarget();
+    this.prompt.hidden = !this.currentTarget;
+    if (this.currentTarget) {
+      this.prompt.textContent = `E 交谈 · ${this.currentTarget.name}`;
+      const screen = this.worldToScreen(this.currentTarget.object.position.clone().add(new THREE.Vector3(0, 1.15, 0)));
       this.prompt.style.left = `${screen.x}px`;
       this.prompt.style.top = `${screen.y}px`;
     }
   }
 
   tryInteract(): void {
-    if (this.player.position.distanceTo(this.target.position) > this.interactionRange) return;
-    this.onInteract();
+    const target = this.currentTarget ?? this.findNearestTarget();
+    if (!target) return;
+    this.onInteract(target);
   }
 
   destroy(): void {
@@ -53,14 +56,41 @@ export class InteractionController3D {
     this.pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
     this.pointer.y = -(((event.clientY - rect.top) / rect.height) * 2 - 1);
     this.raycaster.setFromCamera(this.pointer, this.camera);
-    const hits = this.raycaster.intersectObject(this.target, true);
-    this.lastPointerObject = hits.length > 0 ? this.target : null;
-    this.renderer.domElement.style.cursor = this.lastPointerObject ? 'pointer' : 'default';
+    const hits = this.raycaster.intersectObjects(this.targets.map((target) => target.object), true);
+    this.lastPointerTarget = hits.length > 0 ? this.findTargetForObject(hits[0].object) : null;
+    this.renderer.domElement.style.cursor = this.lastPointerTarget ? 'pointer' : 'default';
   };
 
   private readonly onClick = (): void => {
-    if (this.lastPointerObject === this.target) this.tryInteract();
+    if (!this.lastPointerTarget) return;
+    if (this.player.position.distanceTo(this.lastPointerTarget.object.position) > this.interactionRange) return;
+    this.currentTarget = this.lastPointerTarget;
+    this.onInteract(this.lastPointerTarget);
   };
+
+  private findNearestTarget(): InteractiveNPC | null {
+    let nearest: InteractiveNPC | null = null;
+    let nearestDistanceSq = this.interactionRange * this.interactionRange;
+    for (const target of this.targets) {
+      const distanceSq = this.player.position.distanceToSquared(target.object.position);
+      if (distanceSq > nearestDistanceSq) continue;
+      nearest = target;
+      nearestDistanceSq = distanceSq;
+    }
+    return nearest;
+  }
+
+  private findTargetForObject(object: THREE.Object3D): InteractiveNPC | null {
+    let cursor: THREE.Object3D | null = object;
+    while (cursor) {
+      const npcId = cursor.userData.npcId;
+      if (typeof npcId === 'string') {
+        return this.targets.find((target) => target.id === npcId) ?? null;
+      }
+      cursor = cursor.parent;
+    }
+    return null;
+  }
 
   private worldToScreen(position: THREE.Vector3): { x: number; y: number } {
     const projected = position.project(this.camera);

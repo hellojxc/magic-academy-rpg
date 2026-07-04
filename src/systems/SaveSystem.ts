@@ -7,6 +7,7 @@ const SAVE_KEY = 'magic_academy_save';
 
 const DEFAULT_SAVE: SaveData = {
   affection: 0,
+  npcAffection: {},
   completedEvents: [],
   currentDialogueId: null,
   lastInteractTimestamp: 0,
@@ -23,6 +24,7 @@ export class SaveSystem {
       return {
         ...DEFAULT_SAVE,
         ...parsed,
+        npcAffection: parsed.npcAffection ?? {},
         completedEvents: parsed.completedEvents ?? [],
       };
     } catch {
@@ -45,11 +47,19 @@ export class SaveSystem {
     localStorage.removeItem(SAVE_KEY);
   }
 
+  /** 读取指定 NPC 的好感度，兼容旧版 Lyra 全局存档。 */
+  static getAffection(save: SaveData, npcId = 'lyra'): number {
+    return save.npcAffection?.[npcId] ?? (npcId === 'lyra' ? save.affection : 0);
+  }
+
   /** 更新好感度并保存 */
-  static updateAffection(save: SaveData, delta: number): number {
-    save.affection = Math.max(-10, Math.min(100, save.affection + delta));
+  static updateAffection(save: SaveData, delta: number, npcId = 'lyra'): number {
+    const next = Math.max(-10, Math.min(100, SaveSystem.getAffection(save, npcId) + delta));
+    if (!save.npcAffection) save.npcAffection = {};
+    save.npcAffection[npcId] = next;
+    if (npcId === 'lyra') save.affection = next;
     SaveSystem.save(save);
-    return save.affection;
+    return next;
   }
 
   /** 标记完成事件 */

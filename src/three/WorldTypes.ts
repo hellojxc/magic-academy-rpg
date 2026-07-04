@@ -7,9 +7,18 @@ export interface Obstacle {
   maxZ: number;
 }
 
+export interface InteractiveNPC {
+  id: string;
+  name: string;
+  title: string;
+  area: string;
+  object: THREE.Object3D;
+}
+
 export interface AcademyWorldObjects {
   player: THREE.Object3D;
   lyra: THREE.Object3D;
+  npcs: readonly InteractiveNPC[];
   obstacles: readonly Obstacle[];
 }
 
@@ -25,8 +34,8 @@ export interface RegionDef {
 
 /** 全局世界边界 */
 export const WORLD_BOUNDS = {
-  minX: -28,
+  minX: -43,
   maxX: 28,
   minZ: -24,
-  maxZ: 30,
+  maxZ: 41,
 };

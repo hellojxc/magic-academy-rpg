@@ -33,6 +33,24 @@ export const REGIONS = [
     bounds: { minX: -26, maxX: -4, minZ: 10, maxZ: 28 },
     color: 0x4a9ec9,
   },
+  {
+    id: 'greenhouse',
+    label: '水晶温室',
+    bounds: { minX: -25, maxX: -9, minZ: -6, maxZ: 8 },
+    color: 0x72c18a,
+  },
+  {
+    id: 'training_ground',
+    label: '训练场',
+    bounds: { minX: 7, maxX: 27, minZ: 22, maxZ: 40 },
+    color: 0xc58f62,
+  },
+  {
+    id: 'moonstone_grotto',
+    label: '月石洞窟',
+    bounds: { minX: -42, maxX: -26, minZ: 12, maxZ: 31 },
+    color: 0x6d8ed8,
+  },
 ] as const;
 
 export interface RegionEntry {

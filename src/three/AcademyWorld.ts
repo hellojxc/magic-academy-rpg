@@ -1,7 +1,9 @@
 import * as THREE from 'three';
-import { getCharacterSpec } from '../characters';
+import { getCharacterSpec, hasCharacterSpec } from '../characters';
 import { CharacterModel3D } from './CharacterModel3D';
-import type { AcademyWorldObjects, Obstacle } from './WorldTypes';
+import npcsData from '../data/npcs.json';
+import type { NPCData } from '../types';
+import type { AcademyWorldObjects, InteractiveNPC, Obstacle } from './WorldTypes';
 import { REGIONS } from './WorldHelpers';
 import { GrandHall } from './GrandHall';
 import { DiningHall } from './DiningHall';
@@ -35,8 +37,18 @@ interface RegionUpdateGroup {
   update: (elapsedTime: number, delta: number) => void;
 }
 
+interface StoryNpcObject {
+  object: THREE.Object3D;
+  rig?: CharacterModel3D;
+  baseY: number;
+  phase: number;
+  idleSpeed: number;
+}
+
 export class AcademyWorld {
   private readonly obstacles: Obstacle[] = [];
+  private readonly npcs: InteractiveNPC[] = [];
+  private readonly storyNpcObjects: StoryNpcObject[] = [];
   private readonly animatedObjects: AnimatedObject[] = [];
   private readonly lightGroups: LightGroup[] = [];
   private readonly regionUpdateGroups: RegionUpdateGroup[] = [];
@@ -91,6 +103,7 @@ export class AcademyWorld {
     return {
       player: this.player,
       lyra: this.lyra,
+      npcs: this.npcs,
       obstacles: this.obstacles,
     };
   }
@@ -100,6 +113,7 @@ export class AcademyWorld {
     this.playerRig.update(elapsedTime, delta);
     this.lyraRig.setMoving(false);
     this.lyraRig.update(elapsedTime, delta, this.player.position);
+    this.updateStoryNpcs(elapsedTime, delta);
 
     // 阴影相机跟随玩家
     this.sunTarget.position.copy(this.player.position);
@@ -112,6 +126,10 @@ export class AcademyWorld {
 
   getPlayerPosition(): THREE.Object3D {
     return this.player;
+  }
+
+  getInteractiveNpcCount(): number {
+    return this.npcs.length;
   }
 
   /**
@@ -678,6 +696,11 @@ export class AcademyWorld {
   }
 
   private addCharacters(): void {
+    this.npcs.length = 0;
+    this.storyNpcObjects.length = 0;
+    const npcEntries = npcsData as NPCData[];
+    const lyraData = npcEntries.find((npc) => npc.id === 'lyra');
+
     this.playerRig = new CharacterModel3D(getCharacterSpec('player'));
     this.player = this.playerRig.root;
     this.player.position.set(-5.1, 0, 2.5);
@@ -686,9 +709,156 @@ export class AcademyWorld {
 
     this.lyraRig = new CharacterModel3D(getCharacterSpec('lyra'));
     this.lyra = this.lyraRig.root;
-    this.lyra.position.set(5.35, 0, -1.35);
-    this.lyra.rotation.y = -Math.PI * 0.18;
+    this.lyra.position.set(lyraData?.worldX ?? 5.35, 0, lyraData?.worldZ ?? -1.35);
+    this.lyra.rotation.y = lyraData?.rotationY ?? -Math.PI * 0.18;
     this.scene.add(this.lyra);
+    this.registerInteractiveNpc(lyraData ?? {
+      id: 'lyra',
+      name: '莉娅',
+      title: '星辉图书馆管理员',
+      x: 970,
+      y: 390,
+      color: 0x7c4dff,
+      radius: 16,
+      area: 'library',
+      description: '星辉图书馆管理员。',
+    }, this.lyra);
+
+    for (const [index, npcData] of npcEntries.entries()) {
+      if (npcData.id === 'lyra') continue;
+      this.addStoryNpc(npcData, index);
+    }
+  }
+
+  private addStoryNpc(npcData: NPCData, index: number): void {
+    if (hasCharacterSpec(npcData.id)) {
+      const rig = new CharacterModel3D(getCharacterSpec(npcData.id));
+      const root = rig.root;
+      root.position.set(npcData.worldX ?? 0, 0, npcData.worldZ ?? 0);
+      root.rotation.y = npcData.rotationY ?? (Math.PI + index * 0.37);
+      this.scene.add(root);
+      this.registerInteractiveNpc(npcData, root);
+      this.storyNpcObjects.push({
+        object: root,
+        rig,
+        baseY: root.position.y,
+        phase: index * 0.63,
+        idleSpeed: 0.85 + (index % 7) * 0.07,
+      });
+      return;
+    }
+
+    const root = new THREE.Group();
+    const primary = this.parseNpcColor(npcData.color);
+    const accent = new THREE.Color(primary).offsetHSL(0.08, 0.08, 0.18).getHex();
+    const dark = new THREE.Color(primary).offsetHSL(-0.04, -0.08, -0.22).getHex();
+    const skin = [0xf1c8a8, 0xe8b892, 0xdba278, 0xf0d2b5][index % 4];
+    const robeMat = getStandardMaterial({ color: primary, roughness: 0.58, metalness: 0.04 });
+    const trimMat = getStandardMaterial({ color: accent, emissive: accent, emissiveIntensity: 0.12, roughness: 0.34, metalness: 0.18 });
+    const darkMat = getStandardMaterial({ color: dark, roughness: 0.62, metalness: 0.04 });
+    const skinMat = getStandardMaterial({ color: skin, roughness: 0.5, metalness: 0.02 });
+
+    const robe = new THREE.Mesh(Geo.cylinder(0.23, 0.34, 0.9, 14), robeMat);
+    robe.position.y = 0.62;
+    robe.castShadow = true;
+    robe.receiveShadow = true;
+    root.add(robe);
+
+    const sash = new THREE.Mesh(Geo.box(0.48, 0.055, 0.08), trimMat);
+    sash.position.set(0, 0.82, 0.235);
+    sash.rotation.z = (index % 2 === 0 ? 1 : -1) * 0.18;
+    sash.castShadow = true;
+    root.add(sash);
+
+    const head = new THREE.Mesh(Geo.sphere(0.205, 18, 14), skinMat);
+    head.position.y = 1.22;
+    head.castShadow = true;
+    root.add(head);
+
+    const hair = new THREE.Mesh(Geo.sphere(0.215, 18, 10), darkMat);
+    hair.position.set(0, 1.31, -0.025);
+    hair.scale.set(1.04, 0.62, 1.0);
+    hair.castShadow = true;
+    root.add(hair);
+
+    const hat = new THREE.Mesh(Geo.cone(0.19, 0.32, 16), trimMat);
+    hat.position.set(0.03, 1.54, 0);
+    hat.rotation.z = (index % 3 - 1) * 0.08;
+    hat.castShadow = true;
+    root.add(hat);
+
+    const leftArm = new THREE.Mesh(Geo.cylinder(0.035, 0.045, 0.52, 8), robeMat);
+    leftArm.position.set(-0.31, 0.77, 0.02);
+    leftArm.rotation.z = 0.42;
+    leftArm.castShadow = true;
+    root.add(leftArm);
+
+    const rightArm = new THREE.Mesh(Geo.cylinder(0.035, 0.045, 0.52, 8), robeMat);
+    rightArm.position.set(0.31, 0.77, 0.02);
+    rightArm.rotation.z = -0.42;
+    rightArm.castShadow = true;
+    root.add(rightArm);
+
+    const focus = new THREE.Mesh(Geo.octahedron(0.085, 0), trimMat);
+    focus.position.set(index % 2 === 0 ? 0.42 : -0.42, 1.04, 0.1);
+    focus.castShadow = true;
+    root.add(focus);
+
+    const marker = new THREE.Mesh(Geo.torus(0.43, 0.012, 8, 32), trimMat);
+    marker.position.y = 0.045;
+    marker.rotation.x = Math.PI / 2;
+    root.add(marker);
+
+    root.position.set(npcData.worldX ?? 0, 0, npcData.worldZ ?? 0);
+    root.rotation.y = npcData.rotationY ?? (Math.PI + index * 0.37);
+    root.scale.setScalar(0.95 + (index % 5) * 0.035);
+    this.scene.add(root);
+    this.registerInteractiveNpc(npcData, root);
+    this.storyNpcObjects.push({
+      object: root,
+      baseY: root.position.y,
+      phase: index * 0.63,
+      idleSpeed: 0.85 + (index % 7) * 0.07,
+    });
+  }
+
+  private registerInteractiveNpc(npcData: NPCData, object: THREE.Object3D): void {
+    object.userData.npcId = npcData.id;
+    object.userData.npcName = npcData.name;
+    object.traverse((child) => {
+      child.userData.npcId = npcData.id;
+      child.userData.npcName = npcData.name;
+    });
+    this.npcs.push({
+      id: npcData.id,
+      name: npcData.name,
+      title: npcData.title,
+      area: npcData.area,
+      object,
+    });
+  }
+
+  private updateStoryNpcs(elapsedTime: number, delta: number): void {
+    for (const npc of this.storyNpcObjects) {
+      npc.rig?.setMoving(false);
+      npc.rig?.update(elapsedTime, delta, this.player.position);
+      npc.object.position.y = npc.baseY + Math.sin(elapsedTime * npc.idleSpeed + npc.phase) * 0.025;
+      const dx = this.player.position.x - npc.object.position.x;
+      const dz = this.player.position.z - npc.object.position.z;
+      const distanceSq = dx * dx + dz * dz;
+      if (distanceSq > 16) continue;
+      const targetYaw = Math.atan2(dx, dz);
+      const wrapped = THREE.MathUtils.euclideanModulo(targetYaw - npc.object.rotation.y + Math.PI, Math.PI * 2) - Math.PI;
+      npc.object.rotation.y += wrapped * (1 - Math.exp(-7 * delta));
+    }
+  }
+
+  private parseNpcColor(color: number | string): number {
+    if (typeof color === 'number') return color;
+    if (color.startsWith('0x')) return Number.parseInt(color.slice(2), 16);
+    if (color.startsWith('#')) return Number.parseInt(color.slice(1), 16);
+    const parsed = Number.parseInt(color, 10);
+    return Number.isFinite(parsed) ? parsed : 0x7c4dff;
   }
 
   private addBookshelf(position: THREE.Vector3, rotationY: number): void {

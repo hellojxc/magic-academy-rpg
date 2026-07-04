@@ -7,13 +7,21 @@ export type AffectionLevel = 'cold' | 'neutral' | 'warm' | 'close';
 export interface NPCData {
   id: string;
   name: string;
+  gender?: string;
+  personality?: string;
   title: string;
   x: number;
   y: number;
-  color: number;
+  color: number | string;
   radius: number;
   area: string;
   description: string;
+  worldX?: number;
+  worldZ?: number;
+  rotationY?: number;
+  arc?: string;
+  role?: string;
+  order?: number;
 }
 
 /** 对话选项 */
@@ -54,6 +62,7 @@ export interface DialogueTree {
 /** 存档数据 */
 export interface SaveData {
   affection: number;
+  npcAffection?: Record<string, number>;
   completedEvents: string[];
   currentDialogueId: string | null;
   lastInteractTimestamp: number;

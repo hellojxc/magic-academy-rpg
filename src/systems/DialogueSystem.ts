@@ -37,13 +37,14 @@ export class DialogueSystem {
   selectDialogue(npcId: string, save: SaveData): DialogueTree | null {
     const trees = this.dialogueData[npcId];
     if (!trees || trees.length === 0) return null;
+    const affection = this.saveSystem.getAffection(save, npcId);
 
     // 1. 检查事件触发（满足好感度 + 前置事件）
     for (const tree of trees) {
       if (tree.trigger !== 'event') continue;
       if (tree.requiredEvent && !save.completedEvents.includes(tree.requiredEvent)) continue;
-      if (tree.minAffection !== undefined && save.affection < tree.minAffection) continue;
-      if (tree.maxAffection !== undefined && save.affection > tree.maxAffection) continue;
+      if (tree.minAffection !== undefined && affection < tree.minAffection) continue;
+      if (tree.maxAffection !== undefined && affection > tree.maxAffection) continue;
       // 尚未完成此事件
       if (tree.completesEvent && save.completedEvents.includes(tree.completesEvent)) continue;
       return tree;
@@ -52,8 +53,8 @@ export class DialogueSystem {
     // 2. 检查首次接近触发
     for (const tree of trees) {
       if (tree.trigger !== 'proximity') continue;
-      if (tree.minAffection !== undefined && save.affection < tree.minAffection) continue;
-      if (tree.maxAffection !== undefined && save.affection > tree.maxAffection) continue;
+      if (tree.minAffection !== undefined && affection < tree.minAffection) continue;
+      if (tree.maxAffection !== undefined && affection > tree.maxAffection) continue;
       if (tree.completesEvent && save.completedEvents.includes(tree.completesEvent)) continue;
       return tree;
     }
@@ -61,8 +62,8 @@ export class DialogueSystem {
     // 3. 重复对话（按好感度分层）
     for (const tree of trees) {
       if (tree.trigger !== 'repeat') continue;
-      if (tree.minAffection !== undefined && save.affection < tree.minAffection) continue;
-      if (tree.maxAffection !== undefined && save.affection > tree.maxAffection) continue;
+      if (tree.minAffection !== undefined && affection < tree.minAffection) continue;
+      if (tree.maxAffection !== undefined && affection > tree.maxAffection) continue;
       return tree;
     }
 
@@ -134,18 +135,18 @@ export class DialogueSystem {
    * 玩家选择了一个选项。
    * 返回选项的 response 文本，并更新好感度。
    */
-  selectChoice(choiceIndex: number, save: SaveData): { response: string; affectionChange: number; newAffection: number } {
+  selectChoice(choiceIndex: number, save: SaveData, npcId = 'lyra'): { response: string; affectionChange: number; newAffection: number } {
     if (this.state.phase !== 'page' || !this.state.page.choices) {
-      return { response: '', affectionChange: 0, newAffection: save.affection };
+      return { response: '', affectionChange: 0, newAffection: this.saveSystem.getAffection(save, npcId) };
     }
 
     const choice = this.state.page.choices[choiceIndex];
     if (!choice) {
-      return { response: '', affectionChange: 0, newAffection: save.affection };
+      return { response: '', affectionChange: 0, newAffection: this.saveSystem.getAffection(save, npcId) };
     }
 
     // 更新好感度
-    const newAffection = this.saveSystem.updateAffection(save, choice.affectionChange);
+    const newAffection = this.saveSystem.updateAffection(save, choice.affectionChange, npcId);
 
     // 进入回复阶段
     this.state = { phase: 'choice_response', choice, tree: this.state.tree };

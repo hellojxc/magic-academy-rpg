@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import type { Obstacle } from './WorldTypes';
+import { WORLD_BOUNDS, type Obstacle } from './WorldTypes';
 
 export class PlayerController3D {
   private readonly speed = 2.9;
@@ -45,8 +45,8 @@ export class PlayerController3D {
       : this.moving && speedSq > 0.0004;
     if (!this.moving) return;
 
-    const nextX = THREE.MathUtils.clamp(this.player.position.x + this.velocity.x * delta, -25, 23);
-    const nextZ = THREE.MathUtils.clamp(this.player.position.z + this.velocity.z * delta, -21, 27);
+    const nextX = THREE.MathUtils.clamp(this.player.position.x + this.velocity.x * delta, WORLD_BOUNDS.minX + 1.5, WORLD_BOUNDS.maxX - 1.4);
+    const nextZ = THREE.MathUtils.clamp(this.player.position.z + this.velocity.z * delta, WORLD_BOUNDS.minZ + 3, WORLD_BOUNDS.maxZ - 1.6);
     if (!this.collides(nextX, nextZ)) {
       this.player.position.x = nextX;
       this.player.position.z = nextZ;

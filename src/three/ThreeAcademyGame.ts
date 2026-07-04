@@ -10,7 +10,7 @@ import { ThreeGameView } from './ThreeGameView';
 import { Minimap } from './Minimap';
 import dialoguesData from '../data/dialogues.json';
 import type { DialogueTree, SaveData } from '../types';
-import type { AcademyWorldObjects } from './WorldTypes';
+import type { AcademyWorldObjects, InteractiveNPC } from './WorldTypes';
 
 export class ThreeAcademyGame {
   private readonly view: ThreeGameView;
@@ -29,6 +29,7 @@ export class ThreeAcademyGame {
   private elapsedTime = 0;
   private lastFrameTime = performance.now();
   private lastCharacterModelState = '';
+  private currentNpc: InteractiveNPC | null = null;
 
   constructor(private readonly container: HTMLElement) {
     this.container.classList.add('three-game');
@@ -64,9 +65,9 @@ export class ThreeAcademyGame {
       this.view.renderer,
       this.view.camera,
       worldObjects.player,
-      worldObjects.lyra,
-      () => {
-        if (!this.dialogueBox.isVisible()) this.startLyraDialogue();
+      worldObjects.npcs,
+      (npc) => {
+        if (!this.dialogueBox.isVisible()) this.startNpcDialogue(npc);
       }
     );
 
@@ -157,9 +158,11 @@ export class ThreeAcademyGame {
     this.keys.delete(event.code);
   };
 
-  private startLyraDialogue(): void {
-    const tree = this.dialogueSystem.selectDialogue('lyra', this.save);
+  private startNpcDialogue(npc: InteractiveNPC): void {
+    const tree = this.dialogueSystem.selectDialogue(npc.id, this.save);
     if (!tree) return;
+    this.currentNpc = npc;
+    this.updateHud();
 
     const state = this.dialogueSystem.startDialogue(tree);
     if (state.phase === 'page') {
@@ -168,9 +171,11 @@ export class ThreeAcademyGame {
   }
 
   private onSelectChoice(index: number): void {
-    const result = this.dialogueSystem.selectChoice(index, this.save);
+    const npc = this.currentNpc;
+    if (!npc) return;
+    const result = this.dialogueSystem.selectChoice(index, this.save, npc.id);
     if (!result.response) return;
-    this.dialogueBox.showResponse('Lyra', result.response);
+    this.dialogueBox.showResponse(npc.name, result.response);
     this.updateHud();
   }
 
@@ -182,6 +187,7 @@ export class ThreeAcademyGame {
     if (state.phase === 'ended') {
       if (tree?.completesEvent) this.saveSystem.markEventComplete(this.save, tree.completesEvent);
       this.dialogueBox.hide();
+      this.currentNpc = null;
       this.updateHud();
       return;
     }
@@ -192,15 +198,18 @@ export class ThreeAcademyGame {
   }
 
   private updateHud(): void {
-    this.hud.update(this.save);
+    this.hud.update(this.save, this.currentNpc ?? undefined);
   }
 
   private applyShowcaseSpawn(worldObjects: AcademyWorldObjects): void {
-    if (new URLSearchParams(window.location.search).get('showcase') !== 'lyra') return;
+    const showcase = new URLSearchParams(window.location.search).get('showcase');
+    if (!showcase) return;
+    const npc = worldObjects.npcs.find((entry) => entry.id === showcase);
+    if (!npc) return;
     worldObjects.player.position.set(
-      worldObjects.lyra.position.x - 0.75,
+      npc.object.position.x - 0.75,
       0,
-      worldObjects.lyra.position.z + 1.05
+      npc.object.position.z + 1.05
     );
     worldObjects.player.rotation.y = Math.PI * 0.82;
   }
@@ -218,11 +227,13 @@ export class ThreeAcademyGame {
 
   getDebugState(): {
     characters: Record<'player' | 'lyra', string>;
+    npcCount: number;
     playerPosition: { x: number; y: number; z: number };
   } {
     const { x, y, z } = this.world.getPlayerPosition().position;
     return {
       characters: this.world.getCharacterModelStates(),
+      npcCount: this.world.getInteractiveNpcCount(),
       playerPosition: { x, y, z },
     };
   }
