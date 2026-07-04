@@ -4,7 +4,7 @@
   "displayName": "Ren Shio",
   "portraitUrl": "/assets/portraits/ren_shio-concept.png",
   "currentRuntimeModelUrl": "/assets/models/ren_shio.glb",
-  "currentPreviewUrl": "/assets/portraits/story-npc-placeholder.svg",
+  "currentPreviewUrl": "/assets/models/ren_shio.blender-template.png",
   "runtimeAuditUrl": "/assets/character-reviews/ren_shio-runtime-audit.json",
   "sourceModelPath": "assets/characters/ren_shio/source/ren_shio.blend",
   "targetRuntimeFile": "public/assets/models/ren_shio.glb",

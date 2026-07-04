@@ -4,7 +4,7 @@
   "displayName": "Aria Frost",
   "portraitUrl": "/assets/portraits/aria_frost-concept.png",
   "currentRuntimeModelUrl": "/assets/models/aria_frost.glb",
-  "currentPreviewUrl": "/assets/portraits/story-npc-placeholder.svg",
+  "currentPreviewUrl": "/assets/models/aria_frost.blender-template.png",
   "runtimeAuditUrl": "/assets/character-reviews/aria_frost-runtime-audit.json",
   "sourceModelPath": "assets/characters/aria_frost/source/aria_frost.blend",
   "targetRuntimeFile": "public/assets/models/aria_frost.glb",

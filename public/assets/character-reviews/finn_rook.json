@@ -4,7 +4,7 @@
   "displayName": "Finn Rook",
   "portraitUrl": "/assets/portraits/finn_rook-concept.png",
   "currentRuntimeModelUrl": "/assets/models/finn_rook.glb",
-  "currentPreviewUrl": "/assets/portraits/story-npc-placeholder.svg",
+  "currentPreviewUrl": "/assets/models/finn_rook.blender-template.png",
   "runtimeAuditUrl": "/assets/character-reviews/finn_rook-runtime-audit.json",
   "sourceModelPath": "assets/characters/finn_rook/source/finn_rook.blend",
   "targetRuntimeFile": "public/assets/models/finn_rook.glb",

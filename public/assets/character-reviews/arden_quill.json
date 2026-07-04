@@ -4,7 +4,7 @@
   "displayName": "Arden Quill",
   "portraitUrl": "/assets/portraits/arden_quill-concept.png",
   "currentRuntimeModelUrl": "/assets/models/arden_quill.glb",
-  "currentPreviewUrl": "/assets/portraits/story-npc-placeholder.svg",
+  "currentPreviewUrl": "/assets/models/arden_quill.blender-template.png",
   "runtimeAuditUrl": "/assets/character-reviews/arden_quill-runtime-audit.json",
   "sourceModelPath": "assets/characters/arden_quill/source/arden_quill.blend",
   "targetRuntimeFile": "public/assets/models/arden_quill.glb",

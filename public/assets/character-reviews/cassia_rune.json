@@ -4,7 +4,7 @@
   "displayName": "Cassia Rune",
   "portraitUrl": "/assets/portraits/cassia_rune-concept.png",
   "currentRuntimeModelUrl": "/assets/models/cassia_rune.glb",
-  "currentPreviewUrl": "/assets/portraits/story-npc-placeholder.svg",
+  "currentPreviewUrl": "/assets/models/cassia_rune.blender-template.png",
   "runtimeAuditUrl": "/assets/character-reviews/cassia_rune-runtime-audit.json",
   "sourceModelPath": "assets/characters/cassia_rune/source/cassia_rune.blend",
   "targetRuntimeFile": "public/assets/models/cassia_rune.glb",

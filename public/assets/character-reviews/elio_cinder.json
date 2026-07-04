@@ -4,7 +4,7 @@
   "displayName": "Elio Cinder",
   "portraitUrl": "/assets/portraits/elio_cinder-concept.png",
   "currentRuntimeModelUrl": "/assets/models/elio_cinder.glb",
-  "currentPreviewUrl": "/assets/portraits/story-npc-placeholder.svg",
+  "currentPreviewUrl": "/assets/models/elio_cinder.blender-template.png",
   "runtimeAuditUrl": "/assets/character-reviews/elio_cinder-runtime-audit.json",
   "sourceModelPath": "assets/characters/elio_cinder/source/elio_cinder.blend",
   "targetRuntimeFile": "public/assets/models/elio_cinder.glb",

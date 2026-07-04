@@ -4,7 +4,7 @@
   "displayName": "Yuna Spark",
   "portraitUrl": "/assets/portraits/yuna_spark-concept.png",
   "currentRuntimeModelUrl": "/assets/models/yuna_spark.glb",
-  "currentPreviewUrl": "/assets/portraits/story-npc-placeholder.svg",
+  "currentPreviewUrl": "/assets/models/yuna_spark.blender-template.png",
   "runtimeAuditUrl": "/assets/character-reviews/yuna_spark-runtime-audit.json",
   "sourceModelPath": "assets/characters/yuna_spark/source/yuna_spark.blend",
   "targetRuntimeFile": "public/assets/models/yuna_spark.glb",

@@ -4,7 +4,7 @@
   "displayName": "Orin Bell",
   "portraitUrl": "/assets/portraits/orin_bell-concept.png",
   "currentRuntimeModelUrl": "/assets/models/orin_bell.glb",
-  "currentPreviewUrl": "/assets/portraits/story-npc-placeholder.svg",
+  "currentPreviewUrl": "/assets/models/orin_bell.blender-template.png",
   "runtimeAuditUrl": "/assets/character-reviews/orin_bell-runtime-audit.json",
   "sourceModelPath": "assets/characters/orin_bell/source/orin_bell.blend",
   "targetRuntimeFile": "public/assets/models/orin_bell.glb",

@@ -4,7 +4,7 @@
   "displayName": "Evelyn Crow",
   "portraitUrl": "/assets/portraits/evelyn_crow-concept.png",
   "currentRuntimeModelUrl": "/assets/models/evelyn_crow.glb",
-  "currentPreviewUrl": "/assets/portraits/story-npc-placeholder.svg",
+  "currentPreviewUrl": "/assets/models/evelyn_crow.blender-template.png",
   "runtimeAuditUrl": "/assets/character-reviews/evelyn_crow-runtime-audit.json",
   "sourceModelPath": "assets/characters/evelyn_crow/source/evelyn_crow.blend",
   "targetRuntimeFile": "public/assets/models/evelyn_crow.glb",

@@ -4,7 +4,7 @@
   "displayName": "Selene Moon",
   "portraitUrl": "/assets/portraits/selene_moon-concept.png",
   "currentRuntimeModelUrl": "/assets/models/selene_moon.glb",
-  "currentPreviewUrl": "/assets/portraits/story-npc-placeholder.svg",
+  "currentPreviewUrl": "/assets/models/selene_moon.blender-template.png",
   "runtimeAuditUrl": "/assets/character-reviews/selene_moon-runtime-audit.json",
   "sourceModelPath": "assets/characters/selene_moon/source/selene_moon.blend",
   "targetRuntimeFile": "public/assets/models/selene_moon.glb",

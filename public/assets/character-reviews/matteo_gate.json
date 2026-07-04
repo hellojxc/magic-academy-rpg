@@ -4,7 +4,7 @@
   "displayName": "Matteo Gate",
   "portraitUrl": "/assets/portraits/matteo_gate-concept.png",
   "currentRuntimeModelUrl": "/assets/models/matteo_gate.glb",
-  "currentPreviewUrl": "/assets/portraits/story-npc-placeholder.svg",
+  "currentPreviewUrl": "/assets/models/matteo_gate.blender-template.png",
   "runtimeAuditUrl": "/assets/character-reviews/matteo_gate-runtime-audit.json",
   "sourceModelPath": "assets/characters/matteo_gate/source/matteo_gate.blend",
   "targetRuntimeFile": "public/assets/models/matteo_gate.glb",

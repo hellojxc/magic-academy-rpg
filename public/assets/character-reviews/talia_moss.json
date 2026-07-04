@@ -4,7 +4,7 @@
   "displayName": "Talia Moss",
   "portraitUrl": "/assets/portraits/talia_moss-concept.png",
   "currentRuntimeModelUrl": "/assets/models/talia_moss.glb",
-  "currentPreviewUrl": "/assets/portraits/story-npc-placeholder.svg",
+  "currentPreviewUrl": "/assets/models/talia_moss.blender-template.png",
   "runtimeAuditUrl": "/assets/character-reviews/talia_moss-runtime-audit.json",
   "sourceModelPath": "assets/characters/talia_moss/source/talia_moss.blend",
   "targetRuntimeFile": "public/assets/models/talia_moss.glb",

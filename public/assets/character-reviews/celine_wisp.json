@@ -4,7 +4,7 @@
   "displayName": "Celine Wisp",
   "portraitUrl": "/assets/portraits/celine_wisp-concept.png",
   "currentRuntimeModelUrl": "/assets/models/celine_wisp.glb",
-  "currentPreviewUrl": "/assets/portraits/story-npc-placeholder.svg",
+  "currentPreviewUrl": "/assets/models/celine_wisp.blender-template.png",
   "runtimeAuditUrl": "/assets/character-reviews/celine_wisp-runtime-audit.json",
   "sourceModelPath": "assets/characters/celine_wisp/source/celine_wisp.blend",
   "targetRuntimeFile": "public/assets/models/celine_wisp.glb",

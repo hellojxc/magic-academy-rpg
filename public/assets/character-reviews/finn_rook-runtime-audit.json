@@ -2,7 +2,24 @@
   "version": "runtime-character-audit-v1",
   "characterId": "finn_rook",
   "displayName": "Finn Rook",
-  "accepted": false,
+  "accepted": true,
+  "summary": {
+    "file": "public/assets/models/finn_rook.glb",
+    "sizeKb": 1096.1,
+    "nodes": 107,
+    "meshes": 88,
+    "primitives": 88,
+    "materials": 17,
+    "skins": 1,
+    "bones": 17,
+    "animations": [
+      "idle",
+      "talk",
+      "walk"
+    ],
+    "morphTargetPrimitiveCount": 9,
+    "triangleCount": 24027
+  },
   "requirements": {
     "triangleBudgetHero": [
       14000,
@@ -29,35 +46,35 @@
   "checks": [
     {
       "name": "runtime model exists",
-      "passed": false,
+      "passed": true,
       "detail": "public/assets/models/finn_rook.glb"
     },
     {
       "name": "triangle budget",
-      "passed": false,
-      "detail": "missing model"
+      "passed": true,
+      "detail": "24027 triangles, target 14000-26000"
     },
     {
       "name": "humanoid skin",
-      "passed": false,
-      "detail": "missing model"
+      "passed": true,
+      "detail": "1 skins, 17 bones"
     },
     {
       "name": "facial morph targets",
-      "passed": false,
-      "detail": "missing model"
+      "passed": true,
+      "detail": "9 primitives with morph targets"
     },
     {
       "name": "required animation clips",
-      "passed": false,
-      "detail": "missing model"
+      "passed": true,
+      "detail": "has [idle, talk, walk], requires [idle, walk, talk]"
     },
     {
       "name": "material count",
-      "passed": false,
-      "detail": "missing model"
+      "passed": true,
+      "detail": "17 materials, target <= 32"
     }
   ],
-  "conclusion": "Runtime asset is not yet a production-quality RPG character model.",
-  "generatedAt": "2026-07-03T21:48:44.367Z"
+  "conclusion": "Runtime asset passes the current production gate.",
+  "generatedAt": "2026-07-04T01:38:21.345Z"
 }

@@ -302,6 +302,1156 @@
         "walkPersonality": "calm",
         "talkPersonality": "confident"
       }
+    },
+    {
+      "id": "elio_cinder",
+      "displayName": "Elio Cinder",
+      "heightMeters": 1.7,
+      "body": {
+        "presentation": "male",
+        "headScale": [
+          0.9,
+          1.03,
+          0.78
+        ],
+        "shoulderWidth": 0.42,
+        "torsoLength": 0.54,
+        "waistWidth": 0.31,
+        "hipWidth": 0.34,
+        "armLength": 0.61,
+        "legLength": 0.83,
+        "handScale": 0.96,
+        "footScale": 1
+      },
+      "face": {
+        "eyeScale": 1.06,
+        "eyeColor": "#b84659",
+        "browColor": "#211b24",
+        "cheekTint": "#e4aa98"
+      },
+      "hair": {
+        "style": "short copper hair",
+        "length": "short",
+        "color": "#211b24",
+        "highlightColor": "#b84659",
+        "volume": 0.78
+      },
+      "outfit": {
+        "style": "academy-uniform-male",
+        "primaryColor": "#132b68",
+        "secondaryColor": "#b84659",
+        "darkColor": "#18204c",
+        "accentColor": "#b84659",
+        "trimColor": "#d9c47a",
+        "shoeColor": "#16131c",
+        "cape": "short-mage-cape",
+        "heldItem": "practice-wand"
+      },
+      "animation": {
+        "idlePersonality": "reserved",
+        "walkPersonality": "calm",
+        "talkPersonality": "confident"
+      }
+    },
+    {
+      "id": "evelyn_crow",
+      "displayName": "Evelyn Crow",
+      "heightMeters": 1.68,
+      "body": {
+        "presentation": "female",
+        "headScale": [
+          0.92,
+          1.06,
+          0.79
+        ],
+        "shoulderWidth": 0.34,
+        "torsoLength": 0.49,
+        "waistWidth": 0.25,
+        "hipWidth": 0.34,
+        "armLength": 0.56,
+        "legLength": 0.77,
+        "handScale": 0.9,
+        "footScale": 0.9
+      },
+      "face": {
+        "eyeScale": 1.13,
+        "eyeColor": "#b84659",
+        "browColor": "#9fc8df",
+        "cheekTint": "#d7a9be"
+      },
+      "hair": {
+        "style": "long black hair",
+        "length": "long",
+        "color": "#9fc8df",
+        "highlightColor": "#b84659",
+        "volume": 0.9
+      },
+      "outfit": {
+        "style": "academy-uniform-heroine",
+        "primaryColor": "#eef9ff",
+        "secondaryColor": "#b84659",
+        "darkColor": "#24436f",
+        "accentColor": "#b84659",
+        "trimColor": "#d9c47a",
+        "shoeColor": "#e8eff7",
+        "cape": "short-capelet",
+        "heldItem": "spellbook"
+      },
+      "animation": {
+        "idlePersonality": "gentle",
+        "walkPersonality": "light",
+        "talkPersonality": "warm"
+      }
+    },
+    {
+      "id": "finn_rook",
+      "displayName": "Finn Rook",
+      "heightMeters": 1.6300000000000001,
+      "body": {
+        "presentation": "male",
+        "headScale": [
+          0.9,
+          1.03,
+          0.78
+        ],
+        "shoulderWidth": 0.42,
+        "torsoLength": 0.54,
+        "waistWidth": 0.31,
+        "hipWidth": 0.34,
+        "armLength": 0.61,
+        "legLength": 0.83,
+        "handScale": 0.96,
+        "footScale": 1
+      },
+      "face": {
+        "eyeScale": 1.06,
+        "eyeColor": "#b84659",
+        "browColor": "#2a1d17",
+        "cheekTint": "#e4aa98"
+      },
+      "hair": {
+        "style": "distinct silhouette hair matching the role",
+        "length": "short",
+        "color": "#2a1d17",
+        "highlightColor": "#b84659",
+        "volume": 0.78
+      },
+      "outfit": {
+        "style": "academy-uniform-male",
+        "primaryColor": "#132b68",
+        "secondaryColor": "#b84659",
+        "darkColor": "#18204c",
+        "accentColor": "#b84659",
+        "trimColor": "#d9c47a",
+        "shoeColor": "#16131c",
+        "cape": "short-mage-cape",
+        "heldItem": "practice-wand"
+      },
+      "animation": {
+        "idlePersonality": "reserved",
+        "walkPersonality": "calm",
+        "talkPersonality": "confident"
+      }
+    },
+    {
+      "id": "ilya_glass",
+      "displayName": "Ilya Glass",
+      "heightMeters": 1.73,
+      "body": {
+        "presentation": "female",
+        "headScale": [
+          0.92,
+          1.06,
+          0.79
+        ],
+        "shoulderWidth": 0.34,
+        "torsoLength": 0.49,
+        "waistWidth": 0.25,
+        "hipWidth": 0.34,
+        "armLength": 0.56,
+        "legLength": 0.77,
+        "handScale": 0.9,
+        "footScale": 0.9
+      },
+      "face": {
+        "eyeScale": 1.13,
+        "eyeColor": "#7b66ff",
+        "browColor": "#7d6f95",
+        "cheekTint": "#d7a9be"
+      },
+      "hair": {
+        "style": "distinct silhouette hair matching the role",
+        "length": "short",
+        "color": "#7d6f95",
+        "highlightColor": "#7d56d9",
+        "volume": 0.9
+      },
+      "outfit": {
+        "style": "academy-uniform-heroine",
+        "primaryColor": "#eef9ff",
+        "secondaryColor": "#7d56d9",
+        "darkColor": "#24436f",
+        "accentColor": "#7d56d9",
+        "trimColor": "#d9c47a",
+        "shoeColor": "#e8eff7",
+        "cape": "short-capelet",
+        "heldItem": "spellbook"
+      },
+      "animation": {
+        "idlePersonality": "gentle",
+        "walkPersonality": "light",
+        "talkPersonality": "warm"
+      }
+    },
+    {
+      "id": "iris_vale",
+      "displayName": "Iris Vale",
+      "heightMeters": 1.705,
+      "body": {
+        "presentation": "female",
+        "headScale": [
+          0.92,
+          1.06,
+          0.79
+        ],
+        "shoulderWidth": 0.34,
+        "torsoLength": 0.49,
+        "waistWidth": 0.25,
+        "hipWidth": 0.34,
+        "armLength": 0.56,
+        "legLength": 0.77,
+        "handScale": 0.9,
+        "footScale": 0.9
+      },
+      "face": {
+        "eyeScale": 1.13,
+        "eyeColor": "#7b66ff",
+        "browColor": "#7d6f95",
+        "cheekTint": "#d7a9be"
+      },
+      "hair": {
+        "style": "distinct silhouette hair matching the role",
+        "length": "short",
+        "color": "#7d6f95",
+        "highlightColor": "#7d56d9",
+        "volume": 0.9
+      },
+      "outfit": {
+        "style": "academy-uniform-heroine",
+        "primaryColor": "#eef9ff",
+        "secondaryColor": "#7d56d9",
+        "darkColor": "#24436f",
+        "accentColor": "#7d56d9",
+        "trimColor": "#d9c47a",
+        "shoeColor": "#e8eff7",
+        "cape": "short-capelet",
+        "heldItem": "spellbook"
+      },
+      "animation": {
+        "idlePersonality": "gentle",
+        "walkPersonality": "light",
+        "talkPersonality": "warm"
+      }
+    },
+    {
+      "id": "jun_pearl",
+      "displayName": "Jun Pearl",
+      "heightMeters": 1.6300000000000001,
+      "body": {
+        "presentation": "male",
+        "headScale": [
+          0.9,
+          1.03,
+          0.78
+        ],
+        "shoulderWidth": 0.42,
+        "torsoLength": 0.54,
+        "waistWidth": 0.31,
+        "hipWidth": 0.34,
+        "armLength": 0.61,
+        "legLength": 0.83,
+        "handScale": 0.96,
+        "footScale": 1
+      },
+      "face": {
+        "eyeScale": 1.06,
+        "eyeColor": "#7b66ff",
+        "browColor": "#2a1d17",
+        "cheekTint": "#e4aa98"
+      },
+      "hair": {
+        "style": "distinct silhouette hair matching the role",
+        "length": "short",
+        "color": "#2a1d17",
+        "highlightColor": "#7d56d9",
+        "volume": 0.78
+      },
+      "outfit": {
+        "style": "academy-uniform-male",
+        "primaryColor": "#132b68",
+        "secondaryColor": "#7d56d9",
+        "darkColor": "#18204c",
+        "accentColor": "#7d56d9",
+        "trimColor": "#d9c47a",
+        "shoeColor": "#16131c",
+        "cape": "short-mage-cape",
+        "heldItem": "practice-wand"
+      },
+      "animation": {
+        "idlePersonality": "reserved",
+        "walkPersonality": "calm",
+        "talkPersonality": "confident"
+      }
+    },
+    {
+      "id": "kael_thorn",
+      "displayName": "Kael Thorn",
+      "heightMeters": 1.655,
+      "body": {
+        "presentation": "male",
+        "headScale": [
+          0.9,
+          1.03,
+          0.78
+        ],
+        "shoulderWidth": 0.42,
+        "torsoLength": 0.54,
+        "waistWidth": 0.31,
+        "hipWidth": 0.34,
+        "armLength": 0.61,
+        "legLength": 0.83,
+        "handScale": 0.96,
+        "footScale": 1
+      },
+      "face": {
+        "eyeScale": 1.06,
+        "eyeColor": "#b84659",
+        "browColor": "#2a1d17",
+        "cheekTint": "#e4aa98"
+      },
+      "hair": {
+        "style": "distinct silhouette hair matching the role",
+        "length": "short",
+        "color": "#2a1d17",
+        "highlightColor": "#b84659",
+        "volume": 0.78
+      },
+      "outfit": {
+        "style": "academy-uniform-male",
+        "primaryColor": "#132b68",
+        "secondaryColor": "#b84659",
+        "darkColor": "#18204c",
+        "accentColor": "#b84659",
+        "trimColor": "#d9c47a",
+        "shoeColor": "#16131c",
+        "cape": "short-mage-cape",
+        "heldItem": "practice-wand"
+      },
+      "animation": {
+        "idlePersonality": "reserved",
+        "walkPersonality": "calm",
+        "talkPersonality": "confident"
+      }
+    },
+    {
+      "id": "lina_clock",
+      "displayName": "Lina Clock",
+      "heightMeters": 1.7550000000000001,
+      "body": {
+        "presentation": "female",
+        "headScale": [
+          0.92,
+          1.06,
+          0.79
+        ],
+        "shoulderWidth": 0.34,
+        "torsoLength": 0.49,
+        "waistWidth": 0.25,
+        "hipWidth": 0.34,
+        "armLength": 0.56,
+        "legLength": 0.77,
+        "handScale": 0.9,
+        "footScale": 0.9
+      },
+      "face": {
+        "eyeScale": 1.13,
+        "eyeColor": "#7b66ff",
+        "browColor": "#7d6f95",
+        "cheekTint": "#d7a9be"
+      },
+      "hair": {
+        "style": "distinct silhouette hair matching the role",
+        "length": "short",
+        "color": "#7d6f95",
+        "highlightColor": "#7d56d9",
+        "volume": 0.9
+      },
+      "outfit": {
+        "style": "academy-uniform-heroine",
+        "primaryColor": "#eef9ff",
+        "secondaryColor": "#7d56d9",
+        "darkColor": "#24436f",
+        "accentColor": "#7d56d9",
+        "trimColor": "#d9c47a",
+        "shoeColor": "#e8eff7",
+        "cape": "short-capelet",
+        "heldItem": "spellbook"
+      },
+      "animation": {
+        "idlePersonality": "gentle",
+        "walkPersonality": "light",
+        "talkPersonality": "warm"
+      }
+    },
+    {
+      "id": "maes_dew",
+      "displayName": "Maes Dew",
+      "heightMeters": 1.6800000000000002,
+      "body": {
+        "presentation": "male",
+        "headScale": [
+          0.9,
+          1.03,
+          0.78
+        ],
+        "shoulderWidth": 0.42,
+        "torsoLength": 0.54,
+        "waistWidth": 0.31,
+        "hipWidth": 0.34,
+        "armLength": 0.61,
+        "legLength": 0.83,
+        "handScale": 0.96,
+        "footScale": 1
+      },
+      "face": {
+        "eyeScale": 1.06,
+        "eyeColor": "#7b66ff",
+        "browColor": "#2a1d17",
+        "cheekTint": "#e4aa98"
+      },
+      "hair": {
+        "style": "distinct silhouette hair matching the role",
+        "length": "short",
+        "color": "#2a1d17",
+        "highlightColor": "#7d56d9",
+        "volume": 0.78
+      },
+      "outfit": {
+        "style": "academy-uniform-male",
+        "primaryColor": "#132b68",
+        "secondaryColor": "#7d56d9",
+        "darkColor": "#18204c",
+        "accentColor": "#7d56d9",
+        "trimColor": "#d9c47a",
+        "shoeColor": "#16131c",
+        "cape": "short-mage-cape",
+        "heldItem": "practice-wand"
+      },
+      "animation": {
+        "idlePersonality": "reserved",
+        "walkPersonality": "calm",
+        "talkPersonality": "confident"
+      }
+    },
+    {
+      "id": "matteo_gate",
+      "displayName": "Matteo Gate",
+      "heightMeters": 1.6800000000000002,
+      "body": {
+        "presentation": "male",
+        "headScale": [
+          0.9,
+          1.03,
+          0.78
+        ],
+        "shoulderWidth": 0.42,
+        "torsoLength": 0.54,
+        "waistWidth": 0.31,
+        "hipWidth": 0.34,
+        "armLength": 0.61,
+        "legLength": 0.83,
+        "handScale": 0.96,
+        "footScale": 1
+      },
+      "face": {
+        "eyeScale": 1.06,
+        "eyeColor": "#7b66ff",
+        "browColor": "#2a1d17",
+        "cheekTint": "#e4aa98"
+      },
+      "hair": {
+        "style": "distinct silhouette hair matching the role",
+        "length": "short",
+        "color": "#2a1d17",
+        "highlightColor": "#7d56d9",
+        "volume": 0.78
+      },
+      "outfit": {
+        "style": "academy-uniform-male",
+        "primaryColor": "#132b68",
+        "secondaryColor": "#7d56d9",
+        "darkColor": "#18204c",
+        "accentColor": "#7d56d9",
+        "trimColor": "#d9c47a",
+        "shoeColor": "#16131c",
+        "cape": "short-mage-cape",
+        "heldItem": "practice-wand"
+      },
+      "animation": {
+        "idlePersonality": "reserved",
+        "walkPersonality": "calm",
+        "talkPersonality": "confident"
+      }
+    },
+    {
+      "id": "nara_veil",
+      "displayName": "Nara Veil",
+      "heightMeters": 1.64,
+      "body": {
+        "presentation": "female",
+        "headScale": [
+          0.92,
+          1.06,
+          0.79
+        ],
+        "shoulderWidth": 0.34,
+        "torsoLength": 0.49,
+        "waistWidth": 0.25,
+        "hipWidth": 0.34,
+        "armLength": 0.56,
+        "legLength": 0.77,
+        "handScale": 0.9,
+        "footScale": 0.9
+      },
+      "face": {
+        "eyeScale": 1.13,
+        "eyeColor": "#c45ab2",
+        "browColor": "#211b24",
+        "cheekTint": "#d7a9be"
+      },
+      "hair": {
+        "style": "dark plum hair",
+        "length": "long",
+        "color": "#211b24",
+        "highlightColor": "#c45ab2",
+        "volume": 0.9
+      },
+      "outfit": {
+        "style": "academy-uniform-heroine",
+        "primaryColor": "#eef9ff",
+        "secondaryColor": "#c45ab2",
+        "darkColor": "#24436f",
+        "accentColor": "#c45ab2",
+        "trimColor": "#d9c47a",
+        "shoeColor": "#e8eff7",
+        "cape": "short-capelet",
+        "heldItem": "spellbook"
+      },
+      "animation": {
+        "idlePersonality": "gentle",
+        "walkPersonality": "light",
+        "talkPersonality": "warm"
+      }
+    },
+    {
+      "id": "noel_pike",
+      "displayName": "Noel Pike",
+      "heightMeters": 1.6800000000000002,
+      "body": {
+        "presentation": "male",
+        "headScale": [
+          0.9,
+          1.03,
+          0.78
+        ],
+        "shoulderWidth": 0.42,
+        "torsoLength": 0.54,
+        "waistWidth": 0.31,
+        "hipWidth": 0.34,
+        "armLength": 0.61,
+        "legLength": 0.83,
+        "handScale": 0.96,
+        "footScale": 1
+      },
+      "face": {
+        "eyeScale": 1.06,
+        "eyeColor": "#7b66ff",
+        "browColor": "#2a1d17",
+        "cheekTint": "#e4aa98"
+      },
+      "hair": {
+        "style": "distinct silhouette hair matching the role",
+        "length": "short",
+        "color": "#2a1d17",
+        "highlightColor": "#7d56d9",
+        "volume": 0.78
+      },
+      "outfit": {
+        "style": "academy-uniform-male",
+        "primaryColor": "#132b68",
+        "secondaryColor": "#7d56d9",
+        "darkColor": "#18204c",
+        "accentColor": "#7d56d9",
+        "trimColor": "#d9c47a",
+        "shoeColor": "#16131c",
+        "cape": "short-mage-cape",
+        "heldItem": "practice-wand"
+      },
+      "animation": {
+        "idlePersonality": "reserved",
+        "walkPersonality": "calm",
+        "talkPersonality": "confident"
+      }
+    },
+    {
+      "id": "orin_bell",
+      "displayName": "Orin Bell",
+      "heightMeters": 1.65,
+      "body": {
+        "presentation": "male",
+        "headScale": [
+          0.9,
+          1.03,
+          0.78
+        ],
+        "shoulderWidth": 0.42,
+        "torsoLength": 0.54,
+        "waistWidth": 0.31,
+        "hipWidth": 0.34,
+        "armLength": 0.61,
+        "legLength": 0.83,
+        "handScale": 0.96,
+        "footScale": 1
+      },
+      "face": {
+        "eyeScale": 1.06,
+        "eyeColor": "#9a6a42",
+        "browColor": "#211b24",
+        "cheekTint": "#e4aa98"
+      },
+      "hair": {
+        "style": "short sandy hair",
+        "length": "short",
+        "color": "#211b24",
+        "highlightColor": "#b84659",
+        "volume": 0.78
+      },
+      "outfit": {
+        "style": "academy-uniform-male",
+        "primaryColor": "#132b68",
+        "secondaryColor": "#b84659",
+        "darkColor": "#18204c",
+        "accentColor": "#b84659",
+        "trimColor": "#d9c47a",
+        "shoeColor": "#16131c",
+        "cape": "short-mage-cape",
+        "heldItem": "practice-wand"
+      },
+      "animation": {
+        "idlePersonality": "reserved",
+        "walkPersonality": "calm",
+        "talkPersonality": "confident"
+      }
+    },
+    {
+      "id": "owen_grove",
+      "displayName": "Owen Grove",
+      "heightMeters": 1.705,
+      "body": {
+        "presentation": "male",
+        "headScale": [
+          0.9,
+          1.03,
+          0.78
+        ],
+        "shoulderWidth": 0.42,
+        "torsoLength": 0.54,
+        "waistWidth": 0.31,
+        "hipWidth": 0.34,
+        "armLength": 0.61,
+        "legLength": 0.83,
+        "handScale": 0.96,
+        "footScale": 1
+      },
+      "face": {
+        "eyeScale": 1.06,
+        "eyeColor": "#b84659",
+        "browColor": "#2a1d17",
+        "cheekTint": "#e4aa98"
+      },
+      "hair": {
+        "style": "distinct silhouette hair matching the role",
+        "length": "short",
+        "color": "#2a1d17",
+        "highlightColor": "#b84659",
+        "volume": 0.78
+      },
+      "outfit": {
+        "style": "academy-uniform-male",
+        "primaryColor": "#132b68",
+        "secondaryColor": "#b84659",
+        "darkColor": "#18204c",
+        "accentColor": "#b84659",
+        "trimColor": "#d9c47a",
+        "shoeColor": "#16131c",
+        "cape": "short-mage-cape",
+        "heldItem": "practice-wand"
+      },
+      "animation": {
+        "idlePersonality": "reserved",
+        "walkPersonality": "calm",
+        "talkPersonality": "confident"
+      }
+    },
+    {
+      "id": "ren_shio",
+      "displayName": "Ren Shio",
+      "heightMeters": 1.74,
+      "body": {
+        "presentation": "male",
+        "headScale": [
+          0.9,
+          1.03,
+          0.78
+        ],
+        "shoulderWidth": 0.42,
+        "torsoLength": 0.54,
+        "waistWidth": 0.31,
+        "hipWidth": 0.34,
+        "armLength": 0.61,
+        "legLength": 0.83,
+        "handScale": 0.96,
+        "footScale": 1
+      },
+      "face": {
+        "eyeScale": 1.06,
+        "eyeColor": "#4f8ed9",
+        "browColor": "#16131c",
+        "cheekTint": "#e4aa98"
+      },
+      "hair": {
+        "style": "dark indigo tied-back hair",
+        "length": "long",
+        "color": "#16131c",
+        "highlightColor": "#b84659",
+        "volume": 0.78
+      },
+      "outfit": {
+        "style": "academy-uniform-male",
+        "primaryColor": "#132b68",
+        "secondaryColor": "#b84659",
+        "darkColor": "#18204c",
+        "accentColor": "#b84659",
+        "trimColor": "#d9c47a",
+        "shoeColor": "#16131c",
+        "cape": "short-mage-cape",
+        "heldItem": "practice-wand"
+      },
+      "animation": {
+        "idlePersonality": "reserved",
+        "walkPersonality": "calm",
+        "talkPersonality": "confident"
+      }
+    },
+    {
+      "id": "rowan_mint",
+      "displayName": "Rowan Mint",
+      "heightMeters": 1.73,
+      "body": {
+        "presentation": "male",
+        "headScale": [
+          0.9,
+          1.03,
+          0.78
+        ],
+        "shoulderWidth": 0.42,
+        "torsoLength": 0.54,
+        "waistWidth": 0.31,
+        "hipWidth": 0.34,
+        "armLength": 0.61,
+        "legLength": 0.83,
+        "handScale": 0.96,
+        "footScale": 1
+      },
+      "face": {
+        "eyeScale": 1.06,
+        "eyeColor": "#7b66ff",
+        "browColor": "#2a1d17",
+        "cheekTint": "#e4aa98"
+      },
+      "hair": {
+        "style": "distinct silhouette hair matching the role",
+        "length": "short",
+        "color": "#2a1d17",
+        "highlightColor": "#7d56d9",
+        "volume": 0.78
+      },
+      "outfit": {
+        "style": "academy-uniform-male",
+        "primaryColor": "#132b68",
+        "secondaryColor": "#7d56d9",
+        "darkColor": "#18204c",
+        "accentColor": "#7d56d9",
+        "trimColor": "#d9c47a",
+        "shoeColor": "#16131c",
+        "cape": "short-mage-cape",
+        "heldItem": "practice-wand"
+      },
+      "animation": {
+        "idlePersonality": "reserved",
+        "walkPersonality": "calm",
+        "talkPersonality": "confident"
+      }
+    },
+    {
+      "id": "selene_moon",
+      "displayName": "Selene Moon",
+      "heightMeters": 1.66,
+      "body": {
+        "presentation": "female",
+        "headScale": [
+          0.92,
+          1.06,
+          0.79
+        ],
+        "shoulderWidth": 0.34,
+        "torsoLength": 0.49,
+        "waistWidth": 0.25,
+        "hipWidth": 0.34,
+        "armLength": 0.56,
+        "legLength": 0.77,
+        "handScale": 0.9,
+        "footScale": 0.9
+      },
+      "face": {
+        "eyeScale": 1.13,
+        "eyeColor": "#8d72ff",
+        "browColor": "#dce5f4",
+        "cheekTint": "#d7a9be"
+      },
+      "hair": {
+        "style": "waist-length white-lavender hair",
+        "length": "long",
+        "color": "#dce5f4",
+        "highlightColor": "#8d72ff",
+        "volume": 0.9
+      },
+      "outfit": {
+        "style": "academy-uniform-heroine",
+        "primaryColor": "#eef9ff",
+        "secondaryColor": "#8d72ff",
+        "darkColor": "#24436f",
+        "accentColor": "#8d72ff",
+        "trimColor": "#d9c47a",
+        "shoeColor": "#e8eff7",
+        "cape": "short-capelet",
+        "heldItem": "spellbook"
+      },
+      "animation": {
+        "idlePersonality": "gentle",
+        "walkPersonality": "light",
+        "talkPersonality": "warm"
+      }
+    },
+    {
+      "id": "sera_lumen",
+      "displayName": "Sera Lumen",
+      "heightMeters": 1.58,
+      "body": {
+        "presentation": "female",
+        "headScale": [
+          0.92,
+          1.06,
+          0.79
+        ],
+        "shoulderWidth": 0.34,
+        "torsoLength": 0.49,
+        "waistWidth": 0.25,
+        "hipWidth": 0.34,
+        "armLength": 0.56,
+        "legLength": 0.77,
+        "handScale": 0.9,
+        "footScale": 0.9
+      },
+      "face": {
+        "eyeScale": 1.13,
+        "eyeColor": "#b84659",
+        "browColor": "#7d6f95",
+        "cheekTint": "#d7a9be"
+      },
+      "hair": {
+        "style": "distinct silhouette hair matching the role",
+        "length": "short",
+        "color": "#7d6f95",
+        "highlightColor": "#b84659",
+        "volume": 0.9
+      },
+      "outfit": {
+        "style": "academy-uniform-heroine",
+        "primaryColor": "#eef9ff",
+        "secondaryColor": "#b84659",
+        "darkColor": "#24436f",
+        "accentColor": "#b84659",
+        "trimColor": "#d9c47a",
+        "shoeColor": "#e8eff7",
+        "cape": "short-capelet",
+        "heldItem": "spellbook"
+      },
+      "animation": {
+        "idlePersonality": "gentle",
+        "walkPersonality": "light",
+        "talkPersonality": "warm"
+      }
+    },
+    {
+      "id": "silas_ink",
+      "displayName": "Silas Ink",
+      "heightMeters": 1.58,
+      "body": {
+        "presentation": "male",
+        "headScale": [
+          0.9,
+          1.03,
+          0.78
+        ],
+        "shoulderWidth": 0.42,
+        "torsoLength": 0.54,
+        "waistWidth": 0.31,
+        "hipWidth": 0.34,
+        "armLength": 0.61,
+        "legLength": 0.83,
+        "handScale": 0.96,
+        "footScale": 1
+      },
+      "face": {
+        "eyeScale": 1.06,
+        "eyeColor": "#7b66ff",
+        "browColor": "#2a1d17",
+        "cheekTint": "#e4aa98"
+      },
+      "hair": {
+        "style": "distinct silhouette hair matching the role",
+        "length": "short",
+        "color": "#2a1d17",
+        "highlightColor": "#7d56d9",
+        "volume": 0.78
+      },
+      "outfit": {
+        "style": "academy-uniform-male",
+        "primaryColor": "#132b68",
+        "secondaryColor": "#7d56d9",
+        "darkColor": "#18204c",
+        "accentColor": "#7d56d9",
+        "trimColor": "#d9c47a",
+        "shoeColor": "#16131c",
+        "cape": "short-mage-cape",
+        "heldItem": "practice-wand"
+      },
+      "animation": {
+        "idlePersonality": "reserved",
+        "walkPersonality": "calm",
+        "talkPersonality": "confident"
+      }
+    },
+    {
+      "id": "talia_moss",
+      "displayName": "Talia Moss",
+      "heightMeters": 1.57,
+      "body": {
+        "presentation": "female",
+        "headScale": [
+          0.92,
+          1.06,
+          0.79
+        ],
+        "shoulderWidth": 0.34,
+        "torsoLength": 0.49,
+        "waistWidth": 0.25,
+        "hipWidth": 0.34,
+        "armLength": 0.56,
+        "legLength": 0.77,
+        "handScale": 0.9,
+        "footScale": 0.9
+      },
+      "face": {
+        "eyeScale": 1.13,
+        "eyeColor": "#79c98a",
+        "browColor": "#6b4a2f",
+        "cheekTint": "#d7a9be"
+      },
+      "hair": {
+        "style": "wavy moss-brown hair",
+        "length": "short",
+        "color": "#6b4a2f",
+        "highlightColor": "#6fbf82",
+        "volume": 0.9
+      },
+      "outfit": {
+        "style": "academy-uniform-heroine",
+        "primaryColor": "#eef9ff",
+        "secondaryColor": "#6fbf82",
+        "darkColor": "#24436f",
+        "accentColor": "#6fbf82",
+        "trimColor": "#d9c47a",
+        "shoeColor": "#e8eff7",
+        "cape": "short-capelet",
+        "heldItem": "spellbook"
+      },
+      "animation": {
+        "idlePersonality": "gentle",
+        "walkPersonality": "light",
+        "talkPersonality": "warm"
+      }
+    },
+    {
+      "id": "theo_wake",
+      "displayName": "Theo Wake",
+      "heightMeters": 1.7550000000000001,
+      "body": {
+        "presentation": "male",
+        "headScale": [
+          0.9,
+          1.03,
+          0.78
+        ],
+        "shoulderWidth": 0.42,
+        "torsoLength": 0.54,
+        "waistWidth": 0.31,
+        "hipWidth": 0.34,
+        "armLength": 0.61,
+        "legLength": 0.83,
+        "handScale": 0.96,
+        "footScale": 1
+      },
+      "face": {
+        "eyeScale": 1.06,
+        "eyeColor": "#7b66ff",
+        "browColor": "#2a1d17",
+        "cheekTint": "#e4aa98"
+      },
+      "hair": {
+        "style": "distinct silhouette hair matching the role",
+        "length": "short",
+        "color": "#2a1d17",
+        "highlightColor": "#b8a6e8",
+        "volume": 0.78
+      },
+      "outfit": {
+        "style": "academy-uniform-male",
+        "primaryColor": "#132b68",
+        "secondaryColor": "#b8a6e8",
+        "darkColor": "#18204c",
+        "accentColor": "#b8a6e8",
+        "trimColor": "#d9c47a",
+        "shoeColor": "#16131c",
+        "cape": "short-mage-cape",
+        "heldItem": "practice-wand"
+      },
+      "animation": {
+        "idlePersonality": "reserved",
+        "walkPersonality": "calm",
+        "talkPersonality": "confident"
+      }
+    },
+    {
+      "id": "vera_night",
+      "displayName": "Vera Night",
+      "heightMeters": 1.61,
+      "body": {
+        "presentation": "female",
+        "headScale": [
+          0.92,
+          1.06,
+          0.79
+        ],
+        "shoulderWidth": 0.34,
+        "torsoLength": 0.49,
+        "waistWidth": 0.25,
+        "hipWidth": 0.34,
+        "armLength": 0.56,
+        "legLength": 0.77,
+        "handScale": 0.9,
+        "footScale": 0.9
+      },
+      "face": {
+        "eyeScale": 1.13,
+        "eyeColor": "#4f8ed9",
+        "browColor": "#9fc8df",
+        "cheekTint": "#d7a9be"
+      },
+      "hair": {
+        "style": "long midnight-blue hair",
+        "length": "long",
+        "color": "#9fc8df",
+        "highlightColor": "#8d72ff",
+        "volume": 0.9
+      },
+      "outfit": {
+        "style": "academy-uniform-heroine",
+        "primaryColor": "#eef9ff",
+        "secondaryColor": "#8d72ff",
+        "darkColor": "#24436f",
+        "accentColor": "#8d72ff",
+        "trimColor": "#d9c47a",
+        "shoeColor": "#e8eff7",
+        "cape": "short-capelet",
+        "heldItem": "spellbook"
+      },
+      "animation": {
+        "idlePersonality": "gentle",
+        "walkPersonality": "light",
+        "talkPersonality": "warm"
+      }
+    },
+    {
+      "id": "yuna_spark",
+      "displayName": "Yuna Spark",
+      "heightMeters": 1.54,
+      "body": {
+        "presentation": "female",
+        "headScale": [
+          0.92,
+          1.06,
+          0.79
+        ],
+        "shoulderWidth": 0.34,
+        "torsoLength": 0.49,
+        "waistWidth": 0.25,
+        "hipWidth": 0.34,
+        "armLength": 0.56,
+        "legLength": 0.77,
+        "handScale": 0.9,
+        "footScale": 0.9
+      },
+      "face": {
+        "eyeScale": 1.13,
+        "eyeColor": "#f1c84d",
+        "browColor": "#d9b84f",
+        "cheekTint": "#d7a9be"
+      },
+      "hair": {
+        "style": "short fluffy yellow hair",
+        "length": "short",
+        "color": "#d9b84f",
+        "highlightColor": "#f1c84d",
+        "volume": 0.9
+      },
+      "outfit": {
+        "style": "academy-uniform-heroine",
+        "primaryColor": "#eef9ff",
+        "secondaryColor": "#f1c84d",
+        "darkColor": "#24436f",
+        "accentColor": "#f1c84d",
+        "trimColor": "#d9c47a",
+        "shoeColor": "#e8eff7",
+        "cape": "short-capelet",
+        "heldItem": "spellbook"
+      },
+      "animation": {
+        "idlePersonality": "gentle",
+        "walkPersonality": "light",
+        "talkPersonality": "warm"
+      }
     }
   ]
 }

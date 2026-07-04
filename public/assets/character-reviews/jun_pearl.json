@@ -4,7 +4,7 @@
   "displayName": "Jun Pearl",
   "portraitUrl": "/assets/portraits/jun_pearl-concept.png",
   "currentRuntimeModelUrl": "/assets/models/jun_pearl.glb",
-  "currentPreviewUrl": "/assets/portraits/story-npc-placeholder.svg",
+  "currentPreviewUrl": "/assets/models/jun_pearl.blender-template.png",
   "runtimeAuditUrl": "/assets/character-reviews/jun_pearl-runtime-audit.json",
   "sourceModelPath": "assets/characters/jun_pearl/source/jun_pearl.blend",
   "targetRuntimeFile": "public/assets/models/jun_pearl.glb",

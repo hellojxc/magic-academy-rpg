@@ -20,112 +20,112 @@
       "displayName": "Arden Quill",
       "reviewUrl": "/assets/character-reviews/arden_quill.json",
       "runtimeModelUrl": "/assets/models/arden_quill.glb",
-      "hasRuntimeModel": false
+      "hasRuntimeModel": true
     },
     {
       "id": "aria_frost",
       "displayName": "Aria Frost",
       "reviewUrl": "/assets/character-reviews/aria_frost.json",
       "runtimeModelUrl": "/assets/models/aria_frost.glb",
-      "hasRuntimeModel": false
+      "hasRuntimeModel": true
     },
     {
       "id": "bram_iron",
       "displayName": "Bram Iron",
       "reviewUrl": "/assets/character-reviews/bram_iron.json",
       "runtimeModelUrl": "/assets/models/bram_iron.glb",
-      "hasRuntimeModel": false
+      "hasRuntimeModel": true
     },
     {
       "id": "cassia_rune",
       "displayName": "Cassia Rune",
       "reviewUrl": "/assets/character-reviews/cassia_rune.json",
       "runtimeModelUrl": "/assets/models/cassia_rune.glb",
-      "hasRuntimeModel": false
+      "hasRuntimeModel": true
     },
     {
       "id": "celine_wisp",
       "displayName": "Celine Wisp",
       "reviewUrl": "/assets/character-reviews/celine_wisp.json",
       "runtimeModelUrl": "/assets/models/celine_wisp.glb",
-      "hasRuntimeModel": false
+      "hasRuntimeModel": true
     },
     {
       "id": "corin_ash",
       "displayName": "Corin Ash",
       "reviewUrl": "/assets/character-reviews/corin_ash.json",
       "runtimeModelUrl": "/assets/models/corin_ash.glb",
-      "hasRuntimeModel": false
+      "hasRuntimeModel": true
     },
     {
       "id": "elio_cinder",
       "displayName": "Elio Cinder",
       "reviewUrl": "/assets/character-reviews/elio_cinder.json",
       "runtimeModelUrl": "/assets/models/elio_cinder.glb",
-      "hasRuntimeModel": false
+      "hasRuntimeModel": true
     },
     {
       "id": "evelyn_crow",
       "displayName": "Evelyn Crow",
       "reviewUrl": "/assets/character-reviews/evelyn_crow.json",
       "runtimeModelUrl": "/assets/models/evelyn_crow.glb",
-      "hasRuntimeModel": false
+      "hasRuntimeModel": true
     },
     {
       "id": "finn_rook",
       "displayName": "Finn Rook",
       "reviewUrl": "/assets/character-reviews/finn_rook.json",
       "runtimeModelUrl": "/assets/models/finn_rook.glb",
-      "hasRuntimeModel": false
+      "hasRuntimeModel": true
     },
     {
       "id": "ilya_glass",
       "displayName": "Ilya Glass",
       "reviewUrl": "/assets/character-reviews/ilya_glass.json",
       "runtimeModelUrl": "/assets/models/ilya_glass.glb",
-      "hasRuntimeModel": false
+      "hasRuntimeModel": true
     },
     {
       "id": "iris_vale",
       "displayName": "Iris Vale",
       "reviewUrl": "/assets/character-reviews/iris_vale.json",
       "runtimeModelUrl": "/assets/models/iris_vale.glb",
-      "hasRuntimeModel": false
+      "hasRuntimeModel": true
     },
     {
       "id": "jun_pearl",
       "displayName": "Jun Pearl",
       "reviewUrl": "/assets/character-reviews/jun_pearl.json",
       "runtimeModelUrl": "/assets/models/jun_pearl.glb",
-      "hasRuntimeModel": false
+      "hasRuntimeModel": true
     },
     {
       "id": "kael_thorn",
       "displayName": "Kael Thorn",
       "reviewUrl": "/assets/character-reviews/kael_thorn.json",
       "runtimeModelUrl": "/assets/models/kael_thorn.glb",
-      "hasRuntimeModel": false
+      "hasRuntimeModel": true
     },
     {
       "id": "lina_clock",
       "displayName": "Lina Clock",
       "reviewUrl": "/assets/character-reviews/lina_clock.json",
       "runtimeModelUrl": "/assets/models/lina_clock.glb",
-      "hasRuntimeModel": false
+      "hasRuntimeModel": true
     },
     {
       "id": "maes_dew",
       "displayName": "Maes Dew",
       "reviewUrl": "/assets/character-reviews/maes_dew.json",
       "runtimeModelUrl": "/assets/models/maes_dew.glb",
-      "hasRuntimeModel": false
+      "hasRuntimeModel": true
     },
     {
       "id": "matteo_gate",
       "displayName": "Matteo Gate",
       "reviewUrl": "/assets/character-reviews/matteo_gate.json",
       "runtimeModelUrl": "/assets/models/matteo_gate.glb",
-      "hasRuntimeModel": false
+      "hasRuntimeModel": true
     },
     {
       "id": "mira_voss",
@@ -139,91 +139,91 @@
       "displayName": "Nara Veil",
       "reviewUrl": "/assets/character-reviews/nara_veil.json",
       "runtimeModelUrl": "/assets/models/nara_veil.glb",
-      "hasRuntimeModel": false
+      "hasRuntimeModel": true
     },
     {
       "id": "noel_pike",
       "displayName": "Noel Pike",
       "reviewUrl": "/assets/character-reviews/noel_pike.json",
       "runtimeModelUrl": "/assets/models/noel_pike.glb",
-      "hasRuntimeModel": false
+      "hasRuntimeModel": true
     },
     {
       "id": "orin_bell",
       "displayName": "Orin Bell",
       "reviewUrl": "/assets/character-reviews/orin_bell.json",
       "runtimeModelUrl": "/assets/models/orin_bell.glb",
-      "hasRuntimeModel": false
+      "hasRuntimeModel": true
     },
     {
       "id": "owen_grove",
       "displayName": "Owen Grove",
       "reviewUrl": "/assets/character-reviews/owen_grove.json",
       "runtimeModelUrl": "/assets/models/owen_grove.glb",
-      "hasRuntimeModel": false
+      "hasRuntimeModel": true
     },
     {
       "id": "ren_shio",
       "displayName": "Ren Shio",
       "reviewUrl": "/assets/character-reviews/ren_shio.json",
       "runtimeModelUrl": "/assets/models/ren_shio.glb",
-      "hasRuntimeModel": false
+      "hasRuntimeModel": true
     },
     {
       "id": "rowan_mint",
       "displayName": "Rowan Mint",
       "reviewUrl": "/assets/character-reviews/rowan_mint.json",
       "runtimeModelUrl": "/assets/models/rowan_mint.glb",
-      "hasRuntimeModel": false
+      "hasRuntimeModel": true
     },
     {
       "id": "selene_moon",
       "displayName": "Selene Moon",
       "reviewUrl": "/assets/character-reviews/selene_moon.json",
       "runtimeModelUrl": "/assets/models/selene_moon.glb",
-      "hasRuntimeModel": false
+      "hasRuntimeModel": true
     },
     {
       "id": "sera_lumen",
       "displayName": "Sera Lumen",
       "reviewUrl": "/assets/character-reviews/sera_lumen.json",
       "runtimeModelUrl": "/assets/models/sera_lumen.glb",
-      "hasRuntimeModel": false
+      "hasRuntimeModel": true
     },
     {
       "id": "silas_ink",
       "displayName": "Silas Ink",
       "reviewUrl": "/assets/character-reviews/silas_ink.json",
       "runtimeModelUrl": "/assets/models/silas_ink.glb",
-      "hasRuntimeModel": false
+      "hasRuntimeModel": true
     },
     {
       "id": "talia_moss",
       "displayName": "Talia Moss",
       "reviewUrl": "/assets/character-reviews/talia_moss.json",
       "runtimeModelUrl": "/assets/models/talia_moss.glb",
-      "hasRuntimeModel": false
+      "hasRuntimeModel": true
     },
     {
       "id": "theo_wake",
       "displayName": "Theo Wake",
       "reviewUrl": "/assets/character-reviews/theo_wake.json",
       "runtimeModelUrl": "/assets/models/theo_wake.glb",
-      "hasRuntimeModel": false
+      "hasRuntimeModel": true
     },
     {
       "id": "vera_night",
       "displayName": "Vera Night",
       "reviewUrl": "/assets/character-reviews/vera_night.json",
       "runtimeModelUrl": "/assets/models/vera_night.glb",
-      "hasRuntimeModel": false
+      "hasRuntimeModel": true
     },
     {
       "id": "yuna_spark",
       "displayName": "Yuna Spark",
       "reviewUrl": "/assets/character-reviews/yuna_spark.json",
       "runtimeModelUrl": "/assets/models/yuna_spark.glb",
-      "hasRuntimeModel": false
+      "hasRuntimeModel": true
     }
   ]
 }

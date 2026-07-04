@@ -4,7 +4,7 @@
   "displayName": "Kael Thorn",
   "portraitUrl": "/assets/portraits/kael_thorn-concept.png",
   "currentRuntimeModelUrl": "/assets/models/kael_thorn.glb",
-  "currentPreviewUrl": "/assets/portraits/story-npc-placeholder.svg",
+  "currentPreviewUrl": "/assets/models/kael_thorn.blender-template.png",
   "runtimeAuditUrl": "/assets/character-reviews/kael_thorn-runtime-audit.json",
   "sourceModelPath": "assets/characters/kael_thorn/source/kael_thorn.blend",
   "targetRuntimeFile": "public/assets/models/kael_thorn.glb",

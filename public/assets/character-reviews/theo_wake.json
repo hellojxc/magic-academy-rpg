@@ -4,7 +4,7 @@
   "displayName": "Theo Wake",
   "portraitUrl": "/assets/portraits/theo_wake-concept.png",
   "currentRuntimeModelUrl": "/assets/models/theo_wake.glb",
-  "currentPreviewUrl": "/assets/portraits/story-npc-placeholder.svg",
+  "currentPreviewUrl": "/assets/models/theo_wake.blender-template.png",
   "runtimeAuditUrl": "/assets/character-reviews/theo_wake-runtime-audit.json",
   "sourceModelPath": "assets/characters/theo_wake/source/theo_wake.blend",
   "targetRuntimeFile": "public/assets/models/theo_wake.glb",

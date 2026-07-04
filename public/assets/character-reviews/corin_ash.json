@@ -4,7 +4,7 @@
   "displayName": "Corin Ash",
   "portraitUrl": "/assets/portraits/corin_ash-concept.png",
   "currentRuntimeModelUrl": "/assets/models/corin_ash.glb",
-  "currentPreviewUrl": "/assets/portraits/story-npc-placeholder.svg",
+  "currentPreviewUrl": "/assets/models/corin_ash.blender-template.png",
   "runtimeAuditUrl": "/assets/character-reviews/corin_ash-runtime-audit.json",
   "sourceModelPath": "assets/characters/corin_ash/source/corin_ash.blend",
   "targetRuntimeFile": "public/assets/models/corin_ash.glb",

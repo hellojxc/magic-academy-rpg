@@ -15,7 +15,11 @@
       "quality": "hero",
       "url": "/assets/models/player.glb",
       "thumbnailUrl": "/assets/portraits/player-3d.png",
-      "animationClips": ["idle", "walk", "talk"],
+      "animationClips": [
+        "idle",
+        "walk",
+        "talk"
+      ],
       "materialProfile": "toon",
       "supportsFacialMorphs": true,
       "supportsSpringBones": false,
@@ -30,7 +34,11 @@
       "quality": "hero",
       "url": "/assets/models/lyra.glb",
       "thumbnailUrl": "/assets/portraits/lyra-3d.png",
-      "animationClips": ["idle", "walk", "talk"],
+      "animationClips": [
+        "idle",
+        "walk",
+        "talk"
+      ],
       "materialProfile": "toon",
       "supportsFacialMorphs": false,
       "supportsSpringBones": false,
@@ -45,7 +53,562 @@
       "quality": "mid",
       "url": "/assets/models/mira_voss.glb",
       "thumbnailUrl": "/assets/models/mira_voss.blender-template.png",
-      "animationClips": ["idle", "walk", "talk"],
+      "animationClips": [
+        "idle",
+        "walk",
+        "talk"
+      ],
+      "materialProfile": "toon",
+      "supportsFacialMorphs": true,
+      "supportsSpringBones": false,
+      "triangleBudget": 32000,
+      "textureBudgetKb": 2048
+    },
+    {
+      "id": "arden_quill-supporting-v1",
+      "characterId": "arden_quill",
+      "enabled": true,
+      "format": "glb",
+      "quality": "mid",
+      "url": "/assets/models/arden_quill.glb",
+      "thumbnailUrl": "/assets/models/arden_quill.blender-template.png",
+      "animationClips": [
+        "idle",
+        "walk",
+        "talk"
+      ],
+      "materialProfile": "toon",
+      "supportsFacialMorphs": true,
+      "supportsSpringBones": false,
+      "triangleBudget": 32000,
+      "textureBudgetKb": 2048
+    },
+    {
+      "id": "aria_frost-supporting-v1",
+      "characterId": "aria_frost",
+      "enabled": true,
+      "format": "glb",
+      "quality": "mid",
+      "url": "/assets/models/aria_frost.glb",
+      "thumbnailUrl": "/assets/models/aria_frost.blender-template.png",
+      "animationClips": [
+        "idle",
+        "walk",
+        "talk"
+      ],
+      "materialProfile": "toon",
+      "supportsFacialMorphs": true,
+      "supportsSpringBones": false,
+      "triangleBudget": 32000,
+      "textureBudgetKb": 2048
+    },
+    {
+      "id": "bram_iron-supporting-v1",
+      "characterId": "bram_iron",
+      "enabled": true,
+      "format": "glb",
+      "quality": "mid",
+      "url": "/assets/models/bram_iron.glb",
+      "thumbnailUrl": "/assets/models/bram_iron.blender-template.png",
+      "animationClips": [
+        "idle",
+        "walk",
+        "talk"
+      ],
+      "materialProfile": "toon",
+      "supportsFacialMorphs": true,
+      "supportsSpringBones": false,
+      "triangleBudget": 32000,
+      "textureBudgetKb": 2048
+    },
+    {
+      "id": "cassia_rune-supporting-v1",
+      "characterId": "cassia_rune",
+      "enabled": true,
+      "format": "glb",
+      "quality": "mid",
+      "url": "/assets/models/cassia_rune.glb",
+      "thumbnailUrl": "/assets/models/cassia_rune.blender-template.png",
+      "animationClips": [
+        "idle",
+        "walk",
+        "talk"
+      ],
+      "materialProfile": "toon",
+      "supportsFacialMorphs": true,
+      "supportsSpringBones": false,
+      "triangleBudget": 32000,
+      "textureBudgetKb": 2048
+    },
+    {
+      "id": "celine_wisp-supporting-v1",
+      "characterId": "celine_wisp",
+      "enabled": true,
+      "format": "glb",
+      "quality": "mid",
+      "url": "/assets/models/celine_wisp.glb",
+      "thumbnailUrl": "/assets/models/celine_wisp.blender-template.png",
+      "animationClips": [
+        "idle",
+        "walk",
+        "talk"
+      ],
+      "materialProfile": "toon",
+      "supportsFacialMorphs": true,
+      "supportsSpringBones": false,
+      "triangleBudget": 32000,
+      "textureBudgetKb": 2048
+    },
+    {
+      "id": "corin_ash-supporting-v1",
+      "characterId": "corin_ash",
+      "enabled": true,
+      "format": "glb",
+      "quality": "mid",
+      "url": "/assets/models/corin_ash.glb",
+      "thumbnailUrl": "/assets/models/corin_ash.blender-template.png",
+      "animationClips": [
+        "idle",
+        "walk",
+        "talk"
+      ],
+      "materialProfile": "toon",
+      "supportsFacialMorphs": true,
+      "supportsSpringBones": false,
+      "triangleBudget": 32000,
+      "textureBudgetKb": 2048
+    },
+    {
+      "id": "elio_cinder-supporting-v1",
+      "characterId": "elio_cinder",
+      "enabled": true,
+      "format": "glb",
+      "quality": "mid",
+      "url": "/assets/models/elio_cinder.glb",
+      "thumbnailUrl": "/assets/models/elio_cinder.blender-template.png",
+      "animationClips": [
+        "idle",
+        "walk",
+        "talk"
+      ],
+      "materialProfile": "toon",
+      "supportsFacialMorphs": true,
+      "supportsSpringBones": false,
+      "triangleBudget": 32000,
+      "textureBudgetKb": 2048
+    },
+    {
+      "id": "evelyn_crow-supporting-v1",
+      "characterId": "evelyn_crow",
+      "enabled": true,
+      "format": "glb",
+      "quality": "mid",
+      "url": "/assets/models/evelyn_crow.glb",
+      "thumbnailUrl": "/assets/models/evelyn_crow.blender-template.png",
+      "animationClips": [
+        "idle",
+        "walk",
+        "talk"
+      ],
+      "materialProfile": "toon",
+      "supportsFacialMorphs": true,
+      "supportsSpringBones": false,
+      "triangleBudget": 32000,
+      "textureBudgetKb": 2048
+    },
+    {
+      "id": "finn_rook-supporting-v1",
+      "characterId": "finn_rook",
+      "enabled": true,
+      "format": "glb",
+      "quality": "mid",
+      "url": "/assets/models/finn_rook.glb",
+      "thumbnailUrl": "/assets/models/finn_rook.blender-template.png",
+      "animationClips": [
+        "idle",
+        "walk",
+        "talk"
+      ],
+      "materialProfile": "toon",
+      "supportsFacialMorphs": true,
+      "supportsSpringBones": false,
+      "triangleBudget": 32000,
+      "textureBudgetKb": 2048
+    },
+    {
+      "id": "ilya_glass-supporting-v1",
+      "characterId": "ilya_glass",
+      "enabled": true,
+      "format": "glb",
+      "quality": "mid",
+      "url": "/assets/models/ilya_glass.glb",
+      "thumbnailUrl": "/assets/models/ilya_glass.blender-template.png",
+      "animationClips": [
+        "idle",
+        "walk",
+        "talk"
+      ],
+      "materialProfile": "toon",
+      "supportsFacialMorphs": true,
+      "supportsSpringBones": false,
+      "triangleBudget": 32000,
+      "textureBudgetKb": 2048
+    },
+    {
+      "id": "iris_vale-supporting-v1",
+      "characterId": "iris_vale",
+      "enabled": true,
+      "format": "glb",
+      "quality": "mid",
+      "url": "/assets/models/iris_vale.glb",
+      "thumbnailUrl": "/assets/models/iris_vale.blender-template.png",
+      "animationClips": [
+        "idle",
+        "walk",
+        "talk"
+      ],
+      "materialProfile": "toon",
+      "supportsFacialMorphs": true,
+      "supportsSpringBones": false,
+      "triangleBudget": 32000,
+      "textureBudgetKb": 2048
+    },
+    {
+      "id": "jun_pearl-supporting-v1",
+      "characterId": "jun_pearl",
+      "enabled": true,
+      "format": "glb",
+      "quality": "mid",
+      "url": "/assets/models/jun_pearl.glb",
+      "thumbnailUrl": "/assets/models/jun_pearl.blender-template.png",
+      "animationClips": [
+        "idle",
+        "walk",
+        "talk"
+      ],
+      "materialProfile": "toon",
+      "supportsFacialMorphs": true,
+      "supportsSpringBones": false,
+      "triangleBudget": 32000,
+      "textureBudgetKb": 2048
+    },
+    {
+      "id": "kael_thorn-supporting-v1",
+      "characterId": "kael_thorn",
+      "enabled": true,
+      "format": "glb",
+      "quality": "mid",
+      "url": "/assets/models/kael_thorn.glb",
+      "thumbnailUrl": "/assets/models/kael_thorn.blender-template.png",
+      "animationClips": [
+        "idle",
+        "walk",
+        "talk"
+      ],
+      "materialProfile": "toon",
+      "supportsFacialMorphs": true,
+      "supportsSpringBones": false,
+      "triangleBudget": 32000,
+      "textureBudgetKb": 2048
+    },
+    {
+      "id": "lina_clock-supporting-v1",
+      "characterId": "lina_clock",
+      "enabled": true,
+      "format": "glb",
+      "quality": "mid",
+      "url": "/assets/models/lina_clock.glb",
+      "thumbnailUrl": "/assets/models/lina_clock.blender-template.png",
+      "animationClips": [
+        "idle",
+        "walk",
+        "talk"
+      ],
+      "materialProfile": "toon",
+      "supportsFacialMorphs": true,
+      "supportsSpringBones": false,
+      "triangleBudget": 32000,
+      "textureBudgetKb": 2048
+    },
+    {
+      "id": "maes_dew-supporting-v1",
+      "characterId": "maes_dew",
+      "enabled": true,
+      "format": "glb",
+      "quality": "mid",
+      "url": "/assets/models/maes_dew.glb",
+      "thumbnailUrl": "/assets/models/maes_dew.blender-template.png",
+      "animationClips": [
+        "idle",
+        "walk",
+        "talk"
+      ],
+      "materialProfile": "toon",
+      "supportsFacialMorphs": true,
+      "supportsSpringBones": false,
+      "triangleBudget": 32000,
+      "textureBudgetKb": 2048
+    },
+    {
+      "id": "matteo_gate-supporting-v1",
+      "characterId": "matteo_gate",
+      "enabled": true,
+      "format": "glb",
+      "quality": "mid",
+      "url": "/assets/models/matteo_gate.glb",
+      "thumbnailUrl": "/assets/models/matteo_gate.blender-template.png",
+      "animationClips": [
+        "idle",
+        "walk",
+        "talk"
+      ],
+      "materialProfile": "toon",
+      "supportsFacialMorphs": true,
+      "supportsSpringBones": false,
+      "triangleBudget": 32000,
+      "textureBudgetKb": 2048
+    },
+    {
+      "id": "nara_veil-supporting-v1",
+      "characterId": "nara_veil",
+      "enabled": true,
+      "format": "glb",
+      "quality": "mid",
+      "url": "/assets/models/nara_veil.glb",
+      "thumbnailUrl": "/assets/models/nara_veil.blender-template.png",
+      "animationClips": [
+        "idle",
+        "walk",
+        "talk"
+      ],
+      "materialProfile": "toon",
+      "supportsFacialMorphs": true,
+      "supportsSpringBones": false,
+      "triangleBudget": 32000,
+      "textureBudgetKb": 2048
+    },
+    {
+      "id": "noel_pike-supporting-v1",
+      "characterId": "noel_pike",
+      "enabled": true,
+      "format": "glb",
+      "quality": "mid",
+      "url": "/assets/models/noel_pike.glb",
+      "thumbnailUrl": "/assets/models/noel_pike.blender-template.png",
+      "animationClips": [
+        "idle",
+        "walk",
+        "talk"
+      ],
+      "materialProfile": "toon",
+      "supportsFacialMorphs": true,
+      "supportsSpringBones": false,
+      "triangleBudget": 32000,
+      "textureBudgetKb": 2048
+    },
+    {
+      "id": "orin_bell-supporting-v1",
+      "characterId": "orin_bell",
+      "enabled": true,
+      "format": "glb",
+      "quality": "mid",
+      "url": "/assets/models/orin_bell.glb",
+      "thumbnailUrl": "/assets/models/orin_bell.blender-template.png",
+      "animationClips": [
+        "idle",
+        "walk",
+        "talk"
+      ],
+      "materialProfile": "toon",
+      "supportsFacialMorphs": true,
+      "supportsSpringBones": false,
+      "triangleBudget": 32000,
+      "textureBudgetKb": 2048
+    },
+    {
+      "id": "owen_grove-supporting-v1",
+      "characterId": "owen_grove",
+      "enabled": true,
+      "format": "glb",
+      "quality": "mid",
+      "url": "/assets/models/owen_grove.glb",
+      "thumbnailUrl": "/assets/models/owen_grove.blender-template.png",
+      "animationClips": [
+        "idle",
+        "walk",
+        "talk"
+      ],
+      "materialProfile": "toon",
+      "supportsFacialMorphs": true,
+      "supportsSpringBones": false,
+      "triangleBudget": 32000,
+      "textureBudgetKb": 2048
+    },
+    {
+      "id": "ren_shio-supporting-v1",
+      "characterId": "ren_shio",
+      "enabled": true,
+      "format": "glb",
+      "quality": "mid",
+      "url": "/assets/models/ren_shio.glb",
+      "thumbnailUrl": "/assets/models/ren_shio.blender-template.png",
+      "animationClips": [
+        "idle",
+        "walk",
+        "talk"
+      ],
+      "materialProfile": "toon",
+      "supportsFacialMorphs": true,
+      "supportsSpringBones": false,
+      "triangleBudget": 32000,
+      "textureBudgetKb": 2048
+    },
+    {
+      "id": "rowan_mint-supporting-v1",
+      "characterId": "rowan_mint",
+      "enabled": true,
+      "format": "glb",
+      "quality": "mid",
+      "url": "/assets/models/rowan_mint.glb",
+      "thumbnailUrl": "/assets/models/rowan_mint.blender-template.png",
+      "animationClips": [
+        "idle",
+        "walk",
+        "talk"
+      ],
+      "materialProfile": "toon",
+      "supportsFacialMorphs": true,
+      "supportsSpringBones": false,
+      "triangleBudget": 32000,
+      "textureBudgetKb": 2048
+    },
+    {
+      "id": "selene_moon-supporting-v1",
+      "characterId": "selene_moon",
+      "enabled": true,
+      "format": "glb",
+      "quality": "mid",
+      "url": "/assets/models/selene_moon.glb",
+      "thumbnailUrl": "/assets/models/selene_moon.blender-template.png",
+      "animationClips": [
+        "idle",
+        "walk",
+        "talk"
+      ],
+      "materialProfile": "toon",
+      "supportsFacialMorphs": true,
+      "supportsSpringBones": false,
+      "triangleBudget": 32000,
+      "textureBudgetKb": 2048
+    },
+    {
+      "id": "sera_lumen-supporting-v1",
+      "characterId": "sera_lumen",
+      "enabled": true,
+      "format": "glb",
+      "quality": "mid",
+      "url": "/assets/models/sera_lumen.glb",
+      "thumbnailUrl": "/assets/models/sera_lumen.blender-template.png",
+      "animationClips": [
+        "idle",
+        "walk",
+        "talk"
+      ],
+      "materialProfile": "toon",
+      "supportsFacialMorphs": true,
+      "supportsSpringBones": false,
+      "triangleBudget": 32000,
+      "textureBudgetKb": 2048
+    },
+    {
+      "id": "silas_ink-supporting-v1",
+      "characterId": "silas_ink",
+      "enabled": true,
+      "format": "glb",
+      "quality": "mid",
+      "url": "/assets/models/silas_ink.glb",
+      "thumbnailUrl": "/assets/models/silas_ink.blender-template.png",
+      "animationClips": [
+        "idle",
+        "walk",
+        "talk"
+      ],
+      "materialProfile": "toon",
+      "supportsFacialMorphs": true,
+      "supportsSpringBones": false,
+      "triangleBudget": 32000,
+      "textureBudgetKb": 2048
+    },
+    {
+      "id": "talia_moss-supporting-v1",
+      "characterId": "talia_moss",
+      "enabled": true,
+      "format": "glb",
+      "quality": "mid",
+      "url": "/assets/models/talia_moss.glb",
+      "thumbnailUrl": "/assets/models/talia_moss.blender-template.png",
+      "animationClips": [
+        "idle",
+        "walk",
+        "talk"
+      ],
+      "materialProfile": "toon",
+      "supportsFacialMorphs": true,
+      "supportsSpringBones": false,
+      "triangleBudget": 32000,
+      "textureBudgetKb": 2048
+    },
+    {
+      "id": "theo_wake-supporting-v1",
+      "characterId": "theo_wake",
+      "enabled": true,
+      "format": "glb",
+      "quality": "mid",
+      "url": "/assets/models/theo_wake.glb",
+      "thumbnailUrl": "/assets/models/theo_wake.blender-template.png",
+      "animationClips": [
+        "idle",
+        "walk",
+        "talk"
+      ],
+      "materialProfile": "toon",
+      "supportsFacialMorphs": true,
+      "supportsSpringBones": false,
+      "triangleBudget": 32000,
+      "textureBudgetKb": 2048
+    },
+    {
+      "id": "vera_night-supporting-v1",
+      "characterId": "vera_night",
+      "enabled": true,
+      "format": "glb",
+      "quality": "mid",
+      "url": "/assets/models/vera_night.glb",
+      "thumbnailUrl": "/assets/models/vera_night.blender-template.png",
+      "animationClips": [
+        "idle",
+        "walk",
+        "talk"
+      ],
+      "materialProfile": "toon",
+      "supportsFacialMorphs": true,
+      "supportsSpringBones": false,
+      "triangleBudget": 32000,
+      "textureBudgetKb": 2048
+    },
+    {
+      "id": "yuna_spark-supporting-v1",
+      "characterId": "yuna_spark",
+      "enabled": true,
+      "format": "glb",
+      "quality": "mid",
+      "url": "/assets/models/yuna_spark.glb",
+      "thumbnailUrl": "/assets/models/yuna_spark.blender-template.png",
+      "animationClips": [
+        "idle",
+        "walk",
+        "talk"
+      ],
       "materialProfile": "toon",
       "supportsFacialMorphs": true,
       "supportsSpringBones": false,
@@ -60,7 +623,11 @@
       "quality": "low",
       "url": "/assets/models/player.blender-template.glb",
       "thumbnailUrl": "/assets/models/player.blender-template.png",
-      "animationClips": ["idle", "walk", "talk"],
+      "animationClips": [
+        "idle",
+        "walk",
+        "talk"
+      ],
       "materialProfile": "toon",
       "supportsFacialMorphs": true,
       "supportsSpringBones": false,
@@ -75,7 +642,11 @@
       "quality": "low",
       "url": "/assets/models/lyra.blender-template.glb",
       "thumbnailUrl": "/assets/models/lyra.blender-template.png",
-      "animationClips": ["idle", "walk", "talk"],
+      "animationClips": [
+        "idle",
+        "walk",
+        "talk"
+      ],
       "materialProfile": "toon",
       "supportsFacialMorphs": false,
       "supportsSpringBones": false,

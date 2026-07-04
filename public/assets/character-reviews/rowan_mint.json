@@ -4,7 +4,7 @@
   "displayName": "Rowan Mint",
   "portraitUrl": "/assets/portraits/rowan_mint-concept.png",
   "currentRuntimeModelUrl": "/assets/models/rowan_mint.glb",
-  "currentPreviewUrl": "/assets/portraits/story-npc-placeholder.svg",
+  "currentPreviewUrl": "/assets/models/rowan_mint.blender-template.png",
   "runtimeAuditUrl": "/assets/character-reviews/rowan_mint-runtime-audit.json",
   "sourceModelPath": "assets/characters/rowan_mint/source/rowan_mint.blend",
   "targetRuntimeFile": "public/assets/models/rowan_mint.glb",

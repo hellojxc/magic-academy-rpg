@@ -4,7 +4,7 @@
   "displayName": "Iris Vale",
   "portraitUrl": "/assets/portraits/iris_vale-concept.png",
   "currentRuntimeModelUrl": "/assets/models/iris_vale.glb",
-  "currentPreviewUrl": "/assets/portraits/story-npc-placeholder.svg",
+  "currentPreviewUrl": "/assets/models/iris_vale.blender-template.png",
   "runtimeAuditUrl": "/assets/character-reviews/iris_vale-runtime-audit.json",
   "sourceModelPath": "assets/characters/iris_vale/source/iris_vale.blend",
   "targetRuntimeFile": "public/assets/models/iris_vale.glb",

@@ -4,7 +4,7 @@
   "displayName": "Maes Dew",
   "portraitUrl": "/assets/portraits/maes_dew-concept.png",
   "currentRuntimeModelUrl": "/assets/models/maes_dew.glb",
-  "currentPreviewUrl": "/assets/portraits/story-npc-placeholder.svg",
+  "currentPreviewUrl": "/assets/models/maes_dew.blender-template.png",
   "runtimeAuditUrl": "/assets/character-reviews/maes_dew-runtime-audit.json",
   "sourceModelPath": "assets/characters/maes_dew/source/maes_dew.blend",
   "targetRuntimeFile": "public/assets/models/maes_dew.glb",

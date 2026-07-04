@@ -4,7 +4,7 @@
   "displayName": "Owen Grove",
   "portraitUrl": "/assets/portraits/owen_grove-concept.png",
   "currentRuntimeModelUrl": "/assets/models/owen_grove.glb",
-  "currentPreviewUrl": "/assets/portraits/story-npc-placeholder.svg",
+  "currentPreviewUrl": "/assets/models/owen_grove.blender-template.png",
   "runtimeAuditUrl": "/assets/character-reviews/owen_grove-runtime-audit.json",
   "sourceModelPath": "assets/characters/owen_grove/source/owen_grove.blend",
   "targetRuntimeFile": "public/assets/models/owen_grove.glb",

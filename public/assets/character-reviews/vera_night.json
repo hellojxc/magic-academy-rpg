@@ -4,7 +4,7 @@
   "displayName": "Vera Night",
   "portraitUrl": "/assets/portraits/vera_night-concept.png",
   "currentRuntimeModelUrl": "/assets/models/vera_night.glb",
-  "currentPreviewUrl": "/assets/portraits/story-npc-placeholder.svg",
+  "currentPreviewUrl": "/assets/models/vera_night.blender-template.png",
   "runtimeAuditUrl": "/assets/character-reviews/vera_night-runtime-audit.json",
   "sourceModelPath": "assets/characters/vera_night/source/vera_night.blend",
   "targetRuntimeFile": "public/assets/models/vera_night.glb",

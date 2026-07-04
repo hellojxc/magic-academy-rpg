@@ -1,4 +1,5 @@
 import type { CharacterId, CharacterSpec } from './CharacterSpec';
+import { storyNpcCharacterSpecs } from './StoryNpcCharacterSpecs';
 
 export const playerSpec: CharacterSpec = {
   id: 'player',
@@ -208,7 +209,12 @@ export const characterSpecs: Record<string, CharacterSpec> = {
   player: playerSpec,
   lyra: lyraSpec,
   mira_voss: miraVossSpec,
+  ...storyNpcCharacterSpecs,
 };
+
+export function hasCharacterSpec(id: CharacterId): boolean {
+  return characterSpecs[id] !== undefined;
+}
 
 export function getCharacterSpec(id: CharacterId): CharacterSpec {
   const spec = characterSpecs[id];

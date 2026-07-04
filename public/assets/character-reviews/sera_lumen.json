@@ -4,7 +4,7 @@
   "displayName": "Sera Lumen",
   "portraitUrl": "/assets/portraits/sera_lumen-concept.png",
   "currentRuntimeModelUrl": "/assets/models/sera_lumen.glb",
-  "currentPreviewUrl": "/assets/portraits/story-npc-placeholder.svg",
+  "currentPreviewUrl": "/assets/models/sera_lumen.blender-template.png",
   "runtimeAuditUrl": "/assets/character-reviews/sera_lumen-runtime-audit.json",
   "sourceModelPath": "assets/characters/sera_lumen/source/sera_lumen.blend",
   "targetRuntimeFile": "public/assets/models/sera_lumen.glb",

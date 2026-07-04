@@ -4,7 +4,7 @@
   "displayName": "Lina Clock",
   "portraitUrl": "/assets/portraits/lina_clock-concept.png",
   "currentRuntimeModelUrl": "/assets/models/lina_clock.glb",
-  "currentPreviewUrl": "/assets/portraits/story-npc-placeholder.svg",
+  "currentPreviewUrl": "/assets/models/lina_clock.blender-template.png",
   "runtimeAuditUrl": "/assets/character-reviews/lina_clock-runtime-audit.json",
   "sourceModelPath": "assets/characters/lina_clock/source/lina_clock.blend",
   "targetRuntimeFile": "public/assets/models/lina_clock.glb",

@@ -4,7 +4,7 @@
   "displayName": "Bram Iron",
   "portraitUrl": "/assets/portraits/bram_iron-concept.png",
   "currentRuntimeModelUrl": "/assets/models/bram_iron.glb",
-  "currentPreviewUrl": "/assets/portraits/story-npc-placeholder.svg",
+  "currentPreviewUrl": "/assets/models/bram_iron.blender-template.png",
   "runtimeAuditUrl": "/assets/character-reviews/bram_iron-runtime-audit.json",
   "sourceModelPath": "assets/characters/bram_iron/source/bram_iron.blend",
   "targetRuntimeFile": "public/assets/models/bram_iron.glb",

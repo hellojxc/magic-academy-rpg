@@ -4,7 +4,7 @@
   "displayName": "Noel Pike",
   "portraitUrl": "/assets/portraits/noel_pike-concept.png",
   "currentRuntimeModelUrl": "/assets/models/noel_pike.glb",
-  "currentPreviewUrl": "/assets/portraits/story-npc-placeholder.svg",
+  "currentPreviewUrl": "/assets/models/noel_pike.blender-template.png",
   "runtimeAuditUrl": "/assets/character-reviews/noel_pike-runtime-audit.json",
   "sourceModelPath": "assets/characters/noel_pike/source/noel_pike.blend",
   "targetRuntimeFile": "public/assets/models/noel_pike.glb",

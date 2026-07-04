@@ -17,6 +17,7 @@
     "assets:characters:reference:register": "node scripts/character-pipeline/register-reference-image.mjs",
     "assets:characters:story:import": "node scripts/character-pipeline/generate-story-character-briefs.mjs",
     "assets:characters:npc:template-specs": "node scripts/character-pipeline/generate-npc-template-specs.mjs",
+    "assets:characters:story:runtime-specs": "node scripts/character-pipeline/generate-story-character-runtime-specs.mjs",
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",

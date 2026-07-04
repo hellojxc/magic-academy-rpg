@@ -4,7 +4,7 @@
   "displayName": "Ilya Glass",
   "portraitUrl": "/assets/portraits/ilya_glass-concept.png",
   "currentRuntimeModelUrl": "/assets/models/ilya_glass.glb",
-  "currentPreviewUrl": "/assets/portraits/story-npc-placeholder.svg",
+  "currentPreviewUrl": "/assets/models/ilya_glass.blender-template.png",
   "runtimeAuditUrl": "/assets/character-reviews/ilya_glass-runtime-audit.json",
   "sourceModelPath": "assets/characters/ilya_glass/source/ilya_glass.blend",
   "targetRuntimeFile": "public/assets/models/ilya_glass.glb",

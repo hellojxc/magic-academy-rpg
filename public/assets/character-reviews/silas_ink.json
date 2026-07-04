@@ -4,7 +4,7 @@
   "displayName": "Silas Ink",
   "portraitUrl": "/assets/portraits/silas_ink-concept.png",
   "currentRuntimeModelUrl": "/assets/models/silas_ink.glb",
-  "currentPreviewUrl": "/assets/portraits/story-npc-placeholder.svg",
+  "currentPreviewUrl": "/assets/models/silas_ink.blender-template.png",
   "runtimeAuditUrl": "/assets/character-reviews/silas_ink-runtime-audit.json",
   "sourceModelPath": "assets/characters/silas_ink/source/silas_ink.blend",
   "targetRuntimeFile": "public/assets/models/silas_ink.glb",

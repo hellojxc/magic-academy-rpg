@@ -2,7 +2,24 @@
   "version": "runtime-character-audit-v1",
   "characterId": "selene_moon",
   "displayName": "Selene Moon",
-  "accepted": false,
+  "accepted": true,
+  "summary": {
+    "file": "public/assets/models/selene_moon.glb",
+    "sizeKb": 1126.8,
+    "nodes": 111,
+    "meshes": 92,
+    "primitives": 92,
+    "materials": 18,
+    "skins": 1,
+    "bones": 17,
+    "animations": [
+      "idle",
+      "talk",
+      "walk"
+    ],
+    "morphTargetPrimitiveCount": 9,
+    "triangleCount": 24588
+  },
   "requirements": {
     "triangleBudgetHero": [
       18000,
@@ -30,35 +47,35 @@
   "checks": [
     {
       "name": "runtime model exists",
-      "passed": false,
+      "passed": true,
       "detail": "public/assets/models/selene_moon.glb"
     },
     {
       "name": "triangle budget",
-      "passed": false,
-      "detail": "missing model"
+      "passed": true,
+      "detail": "24588 triangles, target 18000-32000"
     },
     {
       "name": "humanoid skin",
-      "passed": false,
-      "detail": "missing model"
+      "passed": true,
+      "detail": "1 skins, 17 bones"
     },
     {
       "name": "facial morph targets",
-      "passed": false,
-      "detail": "missing model"
+      "passed": true,
+      "detail": "9 primitives with morph targets"
     },
     {
       "name": "required animation clips",
-      "passed": false,
-      "detail": "missing model"
+      "passed": true,
+      "detail": "has [idle, talk, walk], requires [idle, walk, talk]"
     },
     {
       "name": "material count",
-      "passed": false,
-      "detail": "missing model"
+      "passed": true,
+      "detail": "18 materials, target <= 32"
     }
   ],
-  "conclusion": "Runtime asset is not yet a production-quality RPG character model.",
-  "generatedAt": "2026-07-03T21:48:44.369Z"
+  "conclusion": "Runtime asset passes the current production gate.",
+  "generatedAt": "2026-07-04T01:38:21.364Z"
 }

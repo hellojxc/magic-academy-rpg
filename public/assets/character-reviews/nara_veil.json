@@ -4,7 +4,7 @@
   "displayName": "Nara Veil",
   "portraitUrl": "/assets/portraits/nara_veil-concept.png",
   "currentRuntimeModelUrl": "/assets/models/nara_veil.glb",
-  "currentPreviewUrl": "/assets/portraits/story-npc-placeholder.svg",
+  "currentPreviewUrl": "/assets/models/nara_veil.blender-template.png",
   "runtimeAuditUrl": "/assets/character-reviews/nara_veil-runtime-audit.json",
   "sourceModelPath": "assets/characters/nara_veil/source/nara_veil.blend",
   "targetRuntimeFile": "public/assets/models/nara_veil.glb",
