@@ -57,6 +57,20 @@ The same manifest owns the vendor runtime metadata. `runtime.lod` assigns hero/s
 
 The R3F runtime also adds an instanced macro surface decal pass after the hand-placed decals. This pass generates deterministic grime, dust, crack, rune-wear, impact, organic-litter and mineral-stain overlays per active chunk, grouped by texture so each decal family uses one instanced draw path. Its purpose is to break up repeated floor and terrain texture reads at camera distance without adding dozens of unique mesh objects. QA exposes the count through `window.__r3fChunkRenderState.macroDecals`.
 
+The arcane library now has a dedicated runtime hero layer on top of the CC0
+vendor layout. The manifest places CC0 shelves, reading table, lamp, bench,
+curtains and carpets in a physically readable arrangement, while the R3F layer
+adds instanced book covers, page blocks, loose parchment, bookmark ribbons,
+warm lamp response, rolling ladder rails and dusty window light shafts. QA
+exposes this as `window.__r3fChunkRenderState.libraryDetails`, and
+`?renderer=r3f&qaFocus=library` locks the camera onto the library composition.
+
+The lake-grotto biome keeps the broad chunk floor for stable navigation but
+adds Rapier deep-water blockers over the visual lake center. This prevents the
+player from treating the deepest water as walkable floor while still preserving
+shoreline access, reeds, lily pads and rock-bank inspection. The blocker count
+is exposed as `window.__r3fChunkRenderState.biomePhysicalBarriers`.
+
 ## Generated Texture Pass
 
 `npm run assets:world:materials` writes browser-loadable PNG textures with no native dependencies:

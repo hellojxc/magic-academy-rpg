@@ -451,7 +451,12 @@
       "medieval-lamp": { "kind": "box", "halfExtents": [0.22, 0.9, 0.22], "center": [0, 0.9, 0] },
       "medieval-table-dinner": { "kind": "box", "halfExtents": [1.25, 0.56, 0.62], "center": [0, 0.56, 0] },
       "medieval-signpost": { "kind": "box", "halfExtents": [0.24, 1.05, 0.18], "center": [0, 1.02, 0] },
-      "medieval-wood-platform": { "kind": "box", "halfExtents": [1.52, 0.14, 1.16], "center": [0, 0.14, 0] }
+      "medieval-wood-platform": { "kind": "box", "halfExtents": [1.52, 0.14, 1.16], "center": [0, 0.14, 0] },
+      "kenney-tree-oak": { "kind": "box", "halfExtents": [0.42, 1.45, 0.42], "center": [0, 1.42, 0] },
+      "kenney-bush-detailed": { "kind": "box", "halfExtents": [0.62, 0.48, 0.62], "center": [0, 0.48, 0] },
+      "kenney-rock-large-a": { "kind": "box", "halfExtents": [0.76, 0.42, 0.66], "center": [0, 0.42, 0] },
+      "kenney-rock-tall-d": { "kind": "box", "halfExtents": [0.5, 0.92, 0.5], "center": [0, 0.9, 0] },
+      "kenney-stone-large-a": { "kind": "box", "halfExtents": [0.5, 0.32, 0.46], "center": [0, 0.32, 0] }
     }
   },
   "placements": [
@@ -464,9 +469,16 @@
     { "id": "atrium-bench-east", "sourceId": "ca-bench-02", "chunkId": "atrium", "position": [6.4, 0.2, 4.0], "rotation": [0, -1.52, 0], "scale": 0.9 },
 
     { "id": "library-left-shelf", "sourceId": "ca-shelf-01-a", "chunkId": "arcane-library", "position": [3.0, 0.18, -5.9], "rotation": [0, 0.04, 0], "scale": 1.04 },
+    { "id": "library-north-center-shelf", "sourceId": "ca-shelf-04-a", "chunkId": "arcane-library", "position": [5.35, 0.18, -5.9], "rotation": [0, -0.02, 0], "scale": 1.02 },
+    { "id": "library-north-east-shelf", "sourceId": "ca-shelf-01-a", "chunkId": "arcane-library", "position": [7.65, 0.18, -5.82], "rotation": [0, -0.04, 0], "scale": 1.0 },
     { "id": "library-right-shelf", "sourceId": "ca-shelf-04-a", "chunkId": "arcane-library", "position": [9.2, 0.18, -4.8], "rotation": [0, 3.12, 0], "scale": 1.04 },
+    { "id": "library-east-wall-shelf", "sourceId": "ca-shelf-01-a", "chunkId": "arcane-library", "position": [9.18, 0.18, -2.95], "rotation": [0, -1.56, 0], "scale": 0.94 },
+    { "id": "library-reading-table-main", "sourceId": "medieval-table-dinner", "chunkId": "arcane-library", "position": [5.25, 0.18, -1.35], "rotation": [0, 0.05, 0], "scale": 0.66 },
+    { "id": "library-reading-lamp-main", "sourceId": "medieval-lamp", "chunkId": "arcane-library", "position": [5.1, 0.18, -1.28], "rotation": [0, 0.35, 0], "scale": 0.42 },
+    { "id": "library-window-bench", "sourceId": "ca-bench-02", "chunkId": "arcane-library", "position": [3.45, 0.2, -3.28], "rotation": [0, 1.55, 0], "scale": 0.68 },
     { "id": "library-reading-carpet", "sourceId": "ca-carpet-02", "chunkId": "arcane-library", "position": [6.0, 0.19, -2.1], "rotation": [0, -0.12, 0], "scale": 0.82 },
     { "id": "library-curtain-north", "sourceId": "ca-curtain-01", "chunkId": "arcane-library", "position": [6.4, 1.2, -6.85], "rotation": [0, 0, 0], "scale": 0.72 },
+    { "id": "library-curtain-east", "sourceId": "ca-curtain-01", "chunkId": "arcane-library", "position": [9.65, 1.15, -3.4], "rotation": [0, -1.56, 0], "scale": 0.62 },
 
     { "id": "grand-hall-stair-focus", "sourceId": "ca-stairs-02", "chunkId": "grand-hall", "position": [0, 0.18, -20.6], "rotation": [0, 0, 0], "scale": 0.72 },
     { "id": "grand-hall-left-column", "sourceId": "ca-column-01", "chunkId": "grand-hall", "position": [-9.5, 0.18, -17.2], "rotation": [0, 0.02, 0], "scale": 1.2 },
