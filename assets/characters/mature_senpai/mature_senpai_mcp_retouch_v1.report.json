@@ -1,0 +1,33 @@
+{
+  "assetId": "mature-senpai-mcp-retouch-v1",
+  "characterId": "mature_senpai",
+  "status": "active-runtime-preview",
+  "source": "public/assets/models/mature_senpai_rigged_v1.glb",
+  "blendSource": "assets/characters/mature_senpai/source/mature_senpai_mcp_retouch_v1.blend",
+  "output": "public/assets/models/mature_senpai_mcp_retouch_v1.glb",
+  "thumbnail": "public/assets/models/mature_senpai_mcp_retouch_v1.png",
+  "generatedBy": "BlenderMCP execute_code on remote Blender",
+  "inspection": {
+    "sizeKb": 34975.9,
+    "nodes": 24,
+    "meshPrimitives": 1,
+    "estimatedTriangles": 59922,
+    "materials": 1,
+    "skins": 1,
+    "bones": 22,
+    "morphTargetPrimitives": 0,
+    "animations": ["idle", "talk", "walk"]
+  },
+  "changes": [
+    "Preserved the Hunyuan-generated face, body silhouette, hair, outfit texture, and overall visual likeness.",
+    "Removed the oversized helper Icosphere from the exported asset so runtime bounds come from the character mesh.",
+    "Smoothed body mesh polygons and added weighted normals in the Blender source.",
+    "Tuned material roughness/specular response without replacing the original texture."
+  ],
+  "limitations": [
+    "Still a single Hunyuan mesh, so face, hair, outfit, hands, and shoes are not separately editable.",
+    "No facial morph targets yet.",
+    "Skin weights remain auto-generated preview weights.",
+    "This is a visual-preserving runtime preview, not the final commercial-grade retopologized character."
+  ]
+}
