@@ -2,12 +2,17 @@ import * as THREE from 'three';
 import type { InteractiveNPC } from './WorldTypes';
 
 export class InteractionController3D {
+  private static readonly pointerRaycastIntervalMs = 50;
   private readonly raycaster = new THREE.Raycaster();
   private readonly pointer = new THREE.Vector2();
   private readonly prompt: HTMLDivElement;
+  private readonly targetObjects: THREE.Object3D[];
+  private readonly targetById = new Map<string, InteractiveNPC>();
   private readonly interactionRange = 1.55;
   private currentTarget: InteractiveNPC | null = null;
   private lastPointerTarget: InteractiveNPC | null = null;
+  private pointerDirty = false;
+  private lastPointerRaycastAt = 0;
 
   constructor(
     private readonly container: HTMLElement,
@@ -17,6 +22,9 @@ export class InteractionController3D {
     private readonly targets: readonly InteractiveNPC[],
     private readonly onInteract: (npc: InteractiveNPC) => void
   ) {
+    this.targetObjects = targets.map((target) => target.object);
+    for (const target of targets) this.targetById.set(target.id, target);
+
     this.prompt = document.createElement('div');
     this.prompt.className = 'interaction-prompt';
     this.prompt.textContent = 'E 交谈';
@@ -28,6 +36,7 @@ export class InteractionController3D {
   }
 
   update(dialogueVisible: boolean): void {
+    if (!dialogueVisible && this.pointerDirty) this.updatePointerTarget(false);
     this.currentTarget = dialogueVisible ? null : this.findNearestTarget();
     this.prompt.hidden = !this.currentTarget;
     if (this.currentTarget) {
@@ -55,13 +64,12 @@ export class InteractionController3D {
     const rect = this.renderer.domElement.getBoundingClientRect();
     this.pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
     this.pointer.y = -(((event.clientY - rect.top) / rect.height) * 2 - 1);
-    this.raycaster.setFromCamera(this.pointer, this.camera);
-    const hits = this.raycaster.intersectObjects(this.targets.map((target) => target.object), true);
-    this.lastPointerTarget = hits.length > 0 ? this.findTargetForObject(hits[0].object) : null;
-    this.renderer.domElement.style.cursor = this.lastPointerTarget ? 'pointer' : 'default';
+    this.pointerDirty = true;
+    this.updatePointerTarget(false);
   };
 
   private readonly onClick = (): void => {
+    if (this.pointerDirty) this.updatePointerTarget(true);
     if (!this.lastPointerTarget) return;
     if (this.player.position.distanceTo(this.lastPointerTarget.object.position) > this.interactionRange) return;
     this.currentTarget = this.lastPointerTarget;
@@ -85,11 +93,22 @@ export class InteractionController3D {
     while (cursor) {
       const npcId = cursor.userData.npcId;
       if (typeof npcId === 'string') {
-        return this.targets.find((target) => target.id === npcId) ?? null;
+        return this.targetById.get(npcId) ?? null;
       }
       cursor = cursor.parent;
     }
     return null;
+  }
+
+  private updatePointerTarget(force: boolean): void {
+    const now = performance.now();
+    if (!force && now - this.lastPointerRaycastAt < InteractionController3D.pointerRaycastIntervalMs) return;
+    this.lastPointerRaycastAt = now;
+    this.pointerDirty = false;
+    this.raycaster.setFromCamera(this.pointer, this.camera);
+    const hits = this.raycaster.intersectObjects(this.targetObjects, true);
+    this.lastPointerTarget = hits.length > 0 ? this.findTargetForObject(hits[0].object) : null;
+    this.renderer.domElement.style.cursor = this.lastPointerTarget ? 'pointer' : 'default';
   }
 
   private worldToScreen(position: THREE.Vector3): { x: number; y: number } {

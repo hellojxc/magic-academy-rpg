@@ -85,10 +85,11 @@ export class ThreeAcademyGame {
   }
 
   destroy(): void {
-    window.cancelAnimationFrame(this.animationId);
+    if (this.animationId !== 0) window.cancelAnimationFrame(this.animationId);
     window.removeEventListener('resize', this.resize);
     window.removeEventListener('keydown', this.onKeyDown);
     window.removeEventListener('keyup', this.onKeyUp);
+    document.removeEventListener('visibilitychange', this.onVisibilityChange);
     this.interactionController.destroy();
     this.cameraController.destroy();
     this.minimap.destroy();
@@ -100,9 +101,15 @@ export class ThreeAcademyGame {
     window.addEventListener('resize', this.resize);
     window.addEventListener('keydown', this.onKeyDown);
     window.addEventListener('keyup', this.onKeyUp);
+    document.addEventListener('visibilitychange', this.onVisibilityChange);
   }
 
   private readonly animate = (): void => {
+    if (document.hidden) {
+      this.animationId = 0;
+      return;
+    }
+
     const now = performance.now();
     const delta = Math.min((now - this.lastFrameTime) / 1000, 0.033);
     this.lastFrameTime = now;
@@ -110,6 +117,22 @@ export class ThreeAcademyGame {
     this.update(delta);
     this.view.render();
     this.animationId = window.requestAnimationFrame(this.animate);
+  };
+
+  private readonly onVisibilityChange = (): void => {
+    if (document.hidden) {
+      if (this.animationId !== 0) {
+        window.cancelAnimationFrame(this.animationId);
+        this.animationId = 0;
+      }
+      this.keys.clear();
+      this.playerController.stop();
+      return;
+    }
+
+    if (this.animationId !== 0) return;
+    this.lastFrameTime = performance.now();
+    this.animate();
   };
 
   private update(delta: number): void {

@@ -2,8 +2,10 @@ import * as THREE from 'three';
 import { WORLD_BOUNDS, type Obstacle } from './WorldTypes';
 
 export class PlayerController3D {
+  private static readonly obstacleCellSize = 4;
   private readonly speed = 4.2;
   private readonly playerRadius = 0.32;
+  private readonly obstacleBuckets = new Map<string, Obstacle[]>();
   private readonly velocity = new THREE.Vector3();
   private readonly targetVelocity = new THREE.Vector3();
   private readonly forward = new THREE.Vector3();
@@ -19,6 +21,7 @@ export class PlayerController3D {
     private readonly obstacles: readonly Obstacle[]
   ) {
     this.visualYaw = player.rotation.y;
+    this.buildObstacleBuckets();
   }
 
   updateMovement(delta: number, cameraYaw: number): void {
@@ -76,16 +79,56 @@ export class PlayerController3D {
   }
 
   private collides(x: number, z: number): boolean {
-    return this.obstacles.some((obstacle) => (
-      x + this.playerRadius > obstacle.minX
-      && x - this.playerRadius < obstacle.maxX
-      && z + this.playerRadius > obstacle.minZ
-      && z - this.playerRadius < obstacle.maxZ
-    ));
+    const minCellX = this.cellCoord(x - this.playerRadius);
+    const maxCellX = this.cellCoord(x + this.playerRadius);
+    const minCellZ = this.cellCoord(z - this.playerRadius);
+    const maxCellZ = this.cellCoord(z + this.playerRadius);
+    for (let cx = minCellX; cx <= maxCellX; cx += 1) {
+      for (let cz = minCellZ; cz <= maxCellZ; cz += 1) {
+        const bucket = this.obstacleBuckets.get(PlayerController3D.cellKey(cx, cz));
+        if (!bucket) continue;
+        for (const obstacle of bucket) {
+          if (
+            x + this.playerRadius > obstacle.minX
+            && x - this.playerRadius < obstacle.maxX
+            && z + this.playerRadius > obstacle.minZ
+            && z - this.playerRadius < obstacle.maxZ
+          ) {
+            return true;
+          }
+        }
+      }
+    }
+    return false;
   }
 
   private static dampAngle(current: number, target: number, lambda: number, delta: number): number {
     const wrapped = THREE.MathUtils.euclideanModulo(target - current + Math.PI, Math.PI * 2) - Math.PI;
     return current + wrapped * (1 - Math.exp(-lambda * delta));
+  }
+
+  private buildObstacleBuckets(): void {
+    for (const obstacle of this.obstacles) {
+      const minCellX = this.cellCoord(obstacle.minX);
+      const maxCellX = this.cellCoord(obstacle.maxX);
+      const minCellZ = this.cellCoord(obstacle.minZ);
+      const maxCellZ = this.cellCoord(obstacle.maxZ);
+      for (let cx = minCellX; cx <= maxCellX; cx += 1) {
+        for (let cz = minCellZ; cz <= maxCellZ; cz += 1) {
+          const key = PlayerController3D.cellKey(cx, cz);
+          const bucket = this.obstacleBuckets.get(key);
+          if (bucket) bucket.push(obstacle);
+          else this.obstacleBuckets.set(key, [obstacle]);
+        }
+      }
+    }
+  }
+
+  private cellCoord(value: number): number {
+    return Math.floor(value / PlayerController3D.obstacleCellSize);
+  }
+
+  private static cellKey(x: number, z: number): string {
+    return `${x}:${z}`;
   }
 }
