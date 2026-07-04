@@ -35,6 +35,18 @@
 
 Three.js `AnimationMixer` 负责 clip 播放和 cross-fade。上层增加 CharacterAnimationController，统一 idle、walk、run、turn、talk、interact、emote、facial expression。不要把移动输入和具体动画 clip 直接耦合。
 
+### 开源 AI 辅助管线
+
+GitHub 上有可用轮子，但它们分别解决不同阶段，不能直接替代完整角色制作：
+
+1. `StdGEN` / `CharacterGen`：优先作为日式或角色专用的图生 3D 候选生成器。
+2. `Hunyuan3D` / `TRELLIS`：作为通用图生 3D 候选生成器，用于比较轮廓、服装和贴图方向。
+3. `InstantMesh` / `Wonder3D` / `TripoSR`：作为较轻的单图或多视角重建基线。
+4. `SkinTokens` / `UniRig`：用于候选网格的自动骨骼和蒙皮初稿，不直接视为最终绑定。
+5. `VRM Addon for Blender` + `@pixiv/three-vrm`：用于需要表情、lookAt、spring bone 的关键日式角色。
+
+这些项目的输出都必须经过 Blender 清理、拓扑修正、表情 morph、头发/裙摆/披风二级运动和网页预算审核后，才能进入 `CharacterManifest`。当前 `miemie` 没有 NVIDIA/CUDA，但有不在 `PATH` 上的 Blender 4.0.2，可用于 headless export；AI 推理应放到外部 CUDA 机器或云 GPU，产物再注册回仓库。
+
 ### 优化策略
 
 人物资源不进入首屏同步加载。近距离 hero LOD 使用完整模型和表情；中距离降贴图和 morph；远距离使用低模或裁剪。关键角色最多 2 个投影，背景 NPC 不投影或只接收阴影。

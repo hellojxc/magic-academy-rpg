@@ -2,11 +2,15 @@ import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from
 import { basename, extname, resolve } from 'node:path';
 
 const supportedTools = new Set([
+  'stdgen',
   'charactergen',
   'hunyuan3d',
   'comfyui-3d-pack',
   'trellis',
+  'instantmesh',
+  'wonder3d',
   'triposr',
+  'skintokens',
   'unirig',
   'manual',
 ]);

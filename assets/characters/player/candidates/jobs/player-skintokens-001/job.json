@@ -1,0 +1,28 @@
+{
+  "version": "ai-character-candidate-job-v1",
+  "jobId": "player-skintokens-001",
+  "characterId": "player",
+  "displayName": "Academy Protagonist",
+  "tool": "skintokens",
+  "status": "ready-to-run",
+  "input": {
+    "portraitUrl": "/assets/portraits/player-3d.png",
+    "localPortraitPath": "public/assets/portraits/player-3d.png",
+    "sourceBrief": "assets/characters/player/character-model-brief.json"
+  },
+  "files": {
+    "prompt": "assets/characters/player/candidates/jobs/player-skintokens-001/prompt.md",
+    "runbook": "assets/characters/player/candidates/jobs/player-skintokens-001/RUNBOOK.md",
+    "outputsDir": "assets/characters/player/candidates/jobs/player-skintokens-001/outputs"
+  },
+  "expectedOutput": {
+    "registerCommand": "npm run assets:characters:candidate:register -- --character player --tool skintokens --job player-skintokens-001 --input /path/to/generated.glb"
+  },
+  "acceptanceGate": [
+    "young male protagonist silhouette reads clearly",
+    "face remains anime-stylized",
+    "short hair can be separated into chunks",
+    "uniform can be refined in Blender",
+    "mesh supports retopology and rigging"
+  ]
+}

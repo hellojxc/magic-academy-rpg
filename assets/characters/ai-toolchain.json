@@ -1,102 +1,255 @@
 {
-  "version": "ai-character-toolchain-v1",
-  "goal": "Generate and refine anime RPG humanoid source models for web GLB or VRM runtime use.",
+  "version": "ai-character-toolchain-v2",
+  "verifiedAt": "2026-07-04",
+  "goal": "Generate, rig, clean up, and ship anime RPG humanoid source models as optimized web GLB or VRM runtime assets.",
+  "hostAssessment": {
+    "miemie": {
+      "hostname": "dennisj-Lenovo-XiaoXinPro-14ACH-2021",
+      "os": "Ubuntu 24.04",
+      "gpu": "AMD Radeon Vega integrated graphics",
+      "nvidiaCuda": false,
+      "blenderInstalled": true,
+      "blenderOnPath": false,
+      "blenderCandidates": [
+        "/home/dennisj/tools/blender/blender",
+        "/home/dennisj/.local/blender-4.0.2-linux-x64/blender"
+      ],
+      "sudoPasswordless": false,
+      "freeDiskGB": 68,
+      "practicalUse": [
+        "Vite preview, TypeScript build, GLB audit, and lightweight asset registration",
+        "Blender headless generation/export through the known remote Blender paths or BLENDER_BIN",
+        "Not suitable for local Hunyuan3D, TRELLIS, CharacterGen, StdGEN, UniRig, or SkinTokens inference because those routes expect NVIDIA/CUDA"
+      ]
+    }
+  },
+  "pipelineStages": [
+    "reference-sheet generation",
+    "AI mesh candidate generation",
+    "candidate registration",
+    "Blender cleanup and retopology",
+    "humanoid rigging and skin weighting",
+    "facial morph and secondary-motion authoring",
+    "GLB or VRM export",
+    "Three.js runtime audit and preview"
+  ],
   "tools": [
+    {
+      "id": "stdgen",
+      "name": "StdGEN",
+      "repo": "https://github.com/hyz317/StdGEN",
+      "stage": "anime character candidate generation",
+      "priority": 1,
+      "currentHost": "external-gpu-required",
+      "expectedInput": ["single character image", "prompt", "optional multi-view reference sheet"],
+      "expectedOutput": ["anime character mesh candidate", "intermediate semantic parts"],
+      "strengths": [
+        "character-specific route instead of generic object reconstruction",
+        "semantic decomposition is a better fit for anime hair, face, body, and outfit separation"
+      ],
+      "risks": [
+        "research output still needs Blender cleanup before game runtime use",
+        "does not replace final topology, facial morphs, secondary motion, and animation QA"
+      ],
+      "projectUse": "First GPU-backed experiment for Lyra and Mira when a CUDA machine is available."
+    },
     {
       "id": "charactergen",
       "name": "CharacterGen",
       "repo": "https://github.com/zjp-shadow/CharacterGen",
-      "role": "portrait-to-character candidate generation",
-      "priority": 1,
+      "stage": "portrait-to-character candidate generation",
+      "priority": 2,
+      "currentHost": "external-gpu-required",
       "expectedInput": ["single character portrait", "optional multiview references"],
       "expectedOutput": ["candidate textured character mesh", "multiview render references"],
       "strengths": [
         "designed around character generation",
-        "closer to anime humanoid use cases than generic object reconstruction"
+        "closer to anime humanoid use cases than generic image-to-object reconstruction"
       ],
       "risks": [
-        "research pipeline output still needs topology cleanup",
-        "game-ready rig, expressions, and secondary motion are not guaranteed"
+        "game-ready rig, expression morphs, and secondary motion are not guaranteed",
+        "face likeness and hair topology must be reviewed and repaired"
       ],
-      "projectUse": "Create the first Lyra 3D candidate from the portrait, then refine in Blender."
+      "projectUse": "Second GPU-backed experiment for portrait-to-character candidate generation."
     },
     {
       "id": "hunyuan3d",
-      "name": "Hunyuan3D",
+      "name": "Hunyuan3D 2.x",
       "repo": "https://github.com/Tencent-Hunyuan/Hunyuan3D-2",
-      "role": "image-to-3D mesh and texture candidate generation",
-      "priority": 2,
+      "stage": "image-to-3D mesh and texture generation",
+      "priority": 3,
+      "currentHost": "external-gpu-required",
       "expectedInput": ["portrait", "front view", "text prompt"],
       "expectedOutput": ["textured mesh candidate"],
       "strengths": [
-        "actively used general image-to-3D system",
-        "useful for fast shape and texture exploration"
+        "strong actively maintained general image-to-3D route",
+        "useful for fast silhouette, costume, and texture exploration"
       ],
       "risks": [
-        "not specialized for animation-ready anime characters",
-        "face likeness and hair structure must be repaired manually"
+        "not a game-character rigging solution",
+        "single generated mesh can merge hair, face, and clothing in ways that are hard to animate"
       ],
-      "projectUse": "Generate alternate Lyra and player candidates for silhouette and color exploration."
-    },
-    {
-      "id": "comfyui-3d-pack",
-      "name": "ComfyUI-3D-Pack",
-      "repo": "https://github.com/MrForExample/ComfyUI-3D-Pack",
-      "role": "workflow harness for comparing 3D generation backends",
-      "priority": 3,
-      "expectedInput": ["portrait", "workflow graph"],
-      "expectedOutput": ["multiple candidate meshes from different backends"],
-      "strengths": [
-        "fast toolchain comparison",
-        "can route the same portrait through several AI 3D methods"
-      ],
-      "risks": [
-        "workflow complexity",
-        "outputs still require DCC cleanup"
-      ],
-      "projectUse": "Run a bake-off between CharacterGen, Hunyuan3D, TRELLIS, TripoSR, and other generators."
+      "projectUse": "Fallback generator for player, Lyra, and Mira when character-specific routes fail or are unavailable."
     },
     {
       "id": "trellis",
       "name": "TRELLIS",
       "repo": "https://github.com/microsoft/TRELLIS",
-      "role": "general 3D asset candidate generation",
+      "stage": "general 3D asset candidate generation",
       "priority": 4,
+      "currentHost": "external-gpu-required",
       "expectedInput": ["image", "prompt"],
       "expectedOutput": ["candidate 3D asset"],
       "strengths": [
-        "strong general 3D generation baseline"
+        "strong general 3D generation baseline",
+        "useful for comparing whether a generic model preserves costume silhouette better than character-specific research code"
       ],
       "risks": [
-        "not a character rigging solution",
-        "anime likeness can drift"
+        "not specialized for humanoid deformation",
+        "anime facial identity can drift"
       ],
-      "projectUse": "Use as a fallback candidate generator when character-specific methods fail."
+      "projectUse": "General fallback candidate generator."
+    },
+    {
+      "id": "instantmesh",
+      "name": "InstantMesh",
+      "repo": "https://github.com/TencentARC/InstantMesh",
+      "stage": "sparse-view reconstruction baseline",
+      "priority": 5,
+      "currentHost": "external-gpu-required",
+      "expectedInput": ["single image", "generated multi-view images"],
+      "expectedOutput": ["OBJ or mesh candidate"],
+      "strengths": [
+        "good baseline for turning a character image into an inspectable mesh",
+        "works as a comparison point before heavier character-specific methods"
+      ],
+      "risks": [
+        "does not produce production topology, rigging, expressions, or runtime materials",
+        "hair and clothing can become fused"
+      ],
+      "projectUse": "Use as a visual candidate baseline when StdGEN or CharacterGen setup is too heavy."
+    },
+    {
+      "id": "wonder3d",
+      "name": "Wonder3D",
+      "repo": "https://github.com/xxlong0/Wonder3D",
+      "stage": "single-image multi-view reconstruction baseline",
+      "priority": 6,
+      "currentHost": "external-gpu-required",
+      "expectedInput": ["single image"],
+      "expectedOutput": ["reconstructed mesh candidate"],
+      "strengths": [
+        "useful for quickly producing multi-view geometry from one portrait",
+        "can expose whether the source portrait contains enough spatial information"
+      ],
+      "risks": [
+        "not anime-character-specific",
+        "mesh remains a cleanup candidate, not a final game asset"
+      ],
+      "projectUse": "Use only as a fast reconstruction baseline."
     },
     {
       "id": "triposr",
       "name": "TripoSR",
       "repo": "https://github.com/VAST-AI-Research/TripoSR",
-      "role": "lightweight image-to-3D mesh candidate generation",
-      "priority": 5,
+      "stage": "lightweight image-to-3D baseline",
+      "priority": 7,
+      "currentHost": "maybe-cpu-but-not-production-practical",
       "expectedInput": ["front view image", "portrait crop"],
       "expectedOutput": ["OBJ or GLB mesh candidate"],
       "strengths": [
         "lighter than full diffusion 3D stacks",
-        "useful as a CPU-tolerant baseline for silhouette experiments"
+        "useful as a low-cost silhouette probe"
       ],
       "risks": [
         "single-view reconstruction can flatten anime hair and clothing",
         "does not produce game-ready topology, rig, expressions, or secondary motion"
       ],
-      "projectUse": "Use for fast local or remote silhouette probes when no GPU-backed CharacterGen/Hunyuan3D environment is available."
+      "projectUse": "Use only for quick silhouette experiments when no GPU-backed route is available."
+    },
+    {
+      "id": "skintokens",
+      "name": "SkinTokens",
+      "repo": "https://github.com/VAST-AI-Research/SkinTokens",
+      "stage": "automatic rigging and skinning",
+      "priority": 1,
+      "currentHost": "external-gpu-required",
+      "expectedInput": ["clean humanoid mesh candidate"],
+      "expectedOutput": ["rigged and skinned mesh candidate"],
+      "strengths": [
+        "targets automatic skinning of 3D characters",
+        "fits after mesh generation and before Blender deformation cleanup"
+      ],
+      "risks": [
+        "auto skinning still needs walk, talk, hand, hair, and skirt deformation QA",
+        "VRM humanoid metadata, expressions, and spring bones are still separate authoring tasks"
+      ],
+      "projectUse": "Primary auto-skinning experiment after a candidate mesh has acceptable silhouette."
+    },
+    {
+      "id": "unirig",
+      "name": "UniRig",
+      "repo": "https://github.com/VAST-AI-Research/UniRig",
+      "stage": "automatic skeleton and skinning",
+      "priority": 2,
+      "currentHost": "external-gpu-required",
+      "expectedInput": ["clean humanoid mesh candidate"],
+      "expectedOutput": ["rigged and skinned character candidate"],
+      "strengths": [
+        "targets automatic skeleton and skinning for generated characters",
+        "fits the stage between mesh generation and Blender cleanup"
+      ],
+      "risks": [
+        "auto-rig output still needs deformation review",
+        "facial morphs and secondary-motion bones still need manual authoring"
+      ],
+      "projectUse": "Fallback auto-rig pass when SkinTokens is unsuitable."
+    },
+    {
+      "id": "vrm-addon-for-blender",
+      "name": "VRM Addon for Blender",
+      "repo": "https://github.com/saturday06/VRM-Addon-for-Blender",
+      "stage": "VRM import/export",
+      "priority": 1,
+      "currentHost": "requires-blender-install",
+      "expectedInput": ["rigged Blender character"],
+      "expectedOutput": ["VRM avatar with humanoid metadata, expressions, and spring bones"],
+      "strengths": [
+        "matches anime avatar workflow",
+        "supports the VRM route for expressions, MToon-like materials, lookAt, and spring bones"
+      ],
+      "risks": [
+        "requires correct humanoid setup",
+        "export validation must be enforced before runtime promotion"
+      ],
+      "projectUse": "Use for Lyra and major NPCs if GLB is not expressive enough."
+    },
+    {
+      "id": "three-vrm",
+      "name": "@pixiv/three-vrm",
+      "repo": "https://github.com/pixiv/three-vrm",
+      "stage": "web runtime VRM loading",
+      "priority": 1,
+      "currentHost": "already-integrated",
+      "expectedInput": ["VRM avatar"],
+      "expectedOutput": ["Three.js VRM scene with expressions and humanoid helpers"],
+      "strengths": [
+        "native runtime bridge for VRM in Three.js",
+        "already present in package dependencies"
+      ],
+      "risks": [
+        "runtime cost must be controlled with lazy loading, LOD, and texture budgets",
+        "VRM assets still need animation and expression integration per character"
+      ],
+      "projectUse": "Runtime path for expressive anime characters."
     },
     {
       "id": "makehuman",
       "name": "MakeHuman",
       "repo": "https://github.com/makehumancommunity/makehuman",
-      "role": "parameterized humanoid base mesh fallback",
-      "priority": 6,
+      "stage": "parameterized humanoid base mesh fallback",
+      "priority": 8,
+      "currentHost": "cpu-possible-but-not-anime-final",
       "expectedInput": ["height", "body proportions", "anime stylization plan"],
       "expectedOutput": ["editable humanoid mesh base"],
       "strengths": [
@@ -107,66 +260,33 @@
         "not anime-stylized by default",
         "face, hair, clothing, textures, and expressions still require Blender authoring"
       ],
-      "projectUse": "Use as a legal base-mesh fallback for player and supporting NPC body proportions before anime stylization in Blender."
+      "projectUse": "Legal body-base fallback for player and supporting NPCs before anime stylization."
     },
     {
       "id": "mb-lab",
       "name": "MB-Lab",
       "repo": "https://github.com/animate1978/MB-Lab",
-      "role": "Blender-native humanoid base mesh and rig fallback",
-      "priority": 6,
+      "stage": "Blender-native humanoid base mesh fallback",
+      "priority": 9,
+      "currentHost": "requires-blender-install",
       "expectedInput": ["body proportions", "facial targets", "clothing plan"],
       "expectedOutput": ["Blender source character base"],
       "strengths": [
         "runs inside Blender",
-        "fits a headless or scripted source-model workflow better than GUI-only avatar tools"
+        "fits scripted source-model workflows better than GUI-only avatar tools"
       ],
       "risks": [
         "not a final anime character generator",
-        "requires retopology, stylized head editing, custom hair, custom clothing, and toon materials"
+        "requires custom anime head, hair, clothing, textures, and expressions"
       ],
-      "projectUse": "Use to create reusable editable body bases for story NPCs, then replace the head, hair, outfit, and face with character-specific anime meshes."
-    },
-    {
-      "id": "unirig",
-      "name": "UniRig",
-      "repo": "https://github.com/VAST-AI-Research/UniRig",
-      "role": "automatic rigging and skinning candidate pass",
-      "priority": 2,
-      "expectedInput": ["cleaned humanoid mesh candidate"],
-      "expectedOutput": ["rigged and skinned character candidate"],
-      "strengths": [
-        "targets automatic skeleton and skinning for generated characters",
-        "fits the pipeline stage between mesh generation and Blender cleanup"
-      ],
-      "risks": [
-        "auto-rig output still needs deformation review in walk and talk clips",
-        "VRM humanoid metadata, facial morphs, and spring bones still need Blender authoring"
-      ],
-      "projectUse": "Use after a generated Lyra or player mesh has acceptable silhouette but lacks a usable skeleton."
-    },
-    {
-      "id": "vrm-addon-for-blender",
-      "name": "VRM Addon for Blender",
-      "repo": "https://github.com/saturday06/VRM-Addon-for-Blender",
-      "role": "VRM import and export from Blender",
-      "priority": 1,
-      "expectedInput": ["rigged Blender character"],
-      "expectedOutput": ["VRM avatar with humanoid metadata, expressions, and spring bones"],
-      "strengths": [
-        "matches anime avatar workflow",
-        "maps well to @pixiv/three-vrm runtime"
-      ],
-      "risks": [
-        "requires correct humanoid setup",
-        "export validation must be enforced"
-      ],
-      "projectUse": "Use when Lyra needs VRM expressions, lookAt, MToon, hair, skirt, and ribbon spring bones."
+      "projectUse": "Base-mesh fallback if all AI candidate routes are unavailable."
     }
   ],
   "decision": {
-    "firstExperiment": "CharacterGen for Lyra portrait-to-candidate generation",
-    "fallbackExperiment": "Hunyuan3D portrait-to-mesh candidate generation",
-    "finalAssetPath": "Blender source model with manual cleanup, rigging, morphs, and GLB or VRM export"
+    "firstExperiment": "Run StdGEN or CharacterGen on a CUDA GPU machine for Lyra and Mira candidate meshes.",
+    "fallbackExperiment": "Run Hunyuan3D or TRELLIS for shape and texture candidates, then register outputs into this repository.",
+    "riggingExperiment": "Run SkinTokens first, UniRig second, then manually repair deformation in Blender.",
+    "currentMiemiePath": "Do not install heavy AI inference stacks on miemie unless an NVIDIA/CUDA GPU is added. Use the known remote Blender paths for deterministic headless source export and preview.",
+    "finalAssetPath": "Clean Blender source model with hand-checked topology, humanoid rig, skin weights, facial morphs, secondary-motion bones, and GLB or VRM export."
   }
 }

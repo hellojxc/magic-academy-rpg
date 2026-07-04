@@ -11,11 +11,19 @@ characters with reusable anime RPG humanoids.
 npm run assets:characters:blender
 ```
 
-The command expects a Blender executable on `PATH`. If Blender is installed in a
+The command looks for Blender on `PATH`, known versioned executable names, the
+remote `miemie` tool paths, and the macOS app path. If Blender is installed in a
 custom location, pass it explicitly:
 
 ```sh
 BLENDER_BIN=/Applications/Blender.app/Contents/MacOS/Blender npm run assets:characters:blender
+```
+
+Known `miemie` paths:
+
+```text
+/home/dennisj/tools/blender/blender
+/home/dennisj/.local/blender-4.0.2-linux-x64/blender
 ```
 
 Generate one character:

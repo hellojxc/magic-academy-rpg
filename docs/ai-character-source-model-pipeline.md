@@ -27,18 +27,18 @@ portrait and runtime requirements.
 
 The project should test tools in this order:
 
-1. CharacterGen: first choice for portrait-to-character candidate generation.
-2. Hunyuan3D: first fallback for image-to-3D shape and texture candidates.
-3. TRELLIS: general 3D generation fallback.
-4. TripoSR: lightweight single-image mesh baseline when GPU generation is not
-   available.
-5. MakeHuman or MB-Lab: parameterized humanoid base mesh fallback when AI
-   generation is unavailable or too unstable.
-6. ComfyUI-3D-Pack: harness for comparing several 3D generation backends.
-7. UniRig: automatic skeleton and skinning candidate pass for a cleaned humanoid
-   mesh.
-8. VRM Addon for Blender: export route when a character needs VRM metadata,
-   expressions, MToon materials, and spring-bone motion.
+1. StdGEN: first choice for anime-character-specific candidate generation.
+2. CharacterGen: portrait-to-character candidate generation fallback.
+3. Hunyuan3D: strong general image-to-3D shape and texture candidate fallback.
+4. TRELLIS: general 3D generation fallback.
+5. InstantMesh or Wonder3D: sparse-view reconstruction baselines.
+6. TripoSR: lightweight single-image mesh baseline.
+7. SkinTokens: first automatic skinning experiment for cleaned generated meshes.
+8. UniRig: automatic skeleton and skinning fallback.
+9. VRM Addon for Blender: export route when a character needs VRM metadata,
+   expressions, MToon-style materials, and spring-bone motion.
+10. MakeHuman or MB-Lab: parameterized humanoid base mesh fallback when AI
+    generation is unavailable or too unstable.
 
 The repository list and intended use live in:
 
@@ -46,9 +46,11 @@ The repository list and intended use live in:
 assets/characters/ai-toolchain.json
 ```
 
-These tools are candidate generators, not final game-character exporters. The
-expected result is a useful starting mesh or multiview reference. The final model
-still needs Blender cleanup.
+These tools are separate pipeline stages, not one-click final game-character
+exporters. Image-to-3D tools produce candidate meshes. Auto-rigging tools produce
+candidate skeletons and skin weights. The final model still needs Blender cleanup,
+retopology, facial morphs, secondary-motion bones, material work, and runtime
+audit before it can replace a gameplay character.
 
 ## Production Steps
 
@@ -92,9 +94,12 @@ npm run assets:characters:review
 Prepare an AI candidate generation job:
 
 ```sh
+npm run assets:characters:candidate:prepare -- --character lyra --tool stdgen --job lyra-stdgen-001
 npm run assets:characters:candidate:prepare -- --character lyra --tool charactergen --job lyra-charactergen-001
 npm run assets:characters:candidate:prepare -- --character lyra --tool hunyuan3d --job lyra-hunyuan3d-001
+npm run assets:characters:candidate:prepare -- --character lyra --tool instantmesh --job lyra-instantmesh-001
 npm run assets:characters:candidate:prepare -- --character lyra --tool triposr --job lyra-triposr-001
+npm run assets:characters:candidate:prepare -- --character lyra --tool skintokens --job lyra-skintokens-001
 npm run assets:characters:candidate:prepare -- --character lyra --tool unirig --job lyra-unirig-001
 ```
 
@@ -164,11 +169,20 @@ public/assets/character-reviews/lyra-source-audit.json
 
 ## Hardware Reality
 
-The current `miemie` preview/build host has Blender and Python, but no visible
-NVIDIA runtime. That makes local CharacterGen, Hunyuan3D, or TRELLIS inference
-impractical on that host. The project pipeline therefore treats AI generation as
-an external job that can run on a GPU workstation, cloud GPU, ComfyUI server, or
-another machine. The generated mesh is then registered back into
+The current `miemie` preview/build host has Python and enough disk for project
+builds, but it does not expose an NVIDIA/CUDA runtime. It currently reports AMD
+Radeon Vega integrated graphics, no `nvidia-smi`, and `sudo` requires a
+password. Blender 4.0.2 is available at `/home/dennisj/tools/blender/blender`
+and `/home/dennisj/.local/blender-4.0.2-linux-x64/blender`, but it is not on
+`PATH`. That makes deterministic Blender export practical on `miemie`, but local
+StdGEN, CharacterGen, Hunyuan3D, TRELLIS, InstantMesh, Wonder3D, SkinTokens, or
+UniRig inference remains impractical on that host.
+
+Use `miemie` for preview, TypeScript builds, GLB inspection, runtime audits,
+candidate registration, and Blender headless export through the known executable
+paths or `BLENDER_BIN`. Treat heavy AI generation as an external GPU job on a
+CUDA workstation, cloud GPU, ComfyUI server, Hugging Face Space, or another
+machine. The generated mesh is then registered back into
 `assets/characters/<id>/candidates/registered` and continues through Blender
 cleanup and source export.
 

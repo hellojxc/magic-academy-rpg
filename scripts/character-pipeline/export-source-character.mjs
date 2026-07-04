@@ -20,6 +20,8 @@ const candidates = [
   'blender-4.3',
   'blender-4.2',
   'blender-4.1',
+  '/home/dennisj/tools/blender/blender',
+  '/home/dennisj/.local/blender-4.0.2-linux-x64/blender',
   '/Applications/Blender.app/Contents/MacOS/Blender',
 ].filter(Boolean);
 

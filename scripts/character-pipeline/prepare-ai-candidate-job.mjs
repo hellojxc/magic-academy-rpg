@@ -2,11 +2,15 @@ import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 const supportedTools = new Set([
+  'stdgen',
   'charactergen',
   'hunyuan3d',
   'comfyui-3d-pack',
   'trellis',
+  'instantmesh',
+  'wonder3d',
   'triposr',
+  'skintokens',
   'unirig',
 ]);
 
@@ -74,6 +78,35 @@ function promptFor(brief, tool) {
 }
 
 function toolRunbook(tool, job) {
+  if (tool === 'stdgen') {
+    return [
+      '# StdGEN Job',
+      '',
+      'StdGEN is the first-choice open-source experiment for anime RPG characters because it treats a character as semantically decomposed parts instead of a generic object mesh.',
+      '',
+      'Upstream setup summary:',
+      '',
+      '```sh',
+      'git clone https://github.com/hyz317/StdGEN.git',
+      'cd StdGEN',
+      '# Follow upstream CUDA/Python setup and checkpoint instructions.',
+      '```',
+      '',
+      'Use this project job input:',
+      '',
+      `- Portrait: ${job.input.localPortraitPath}`,
+      `- Prompt: ${job.files.prompt}`,
+      `- Expected output folder: ${job.files.outputsDir}`,
+      '',
+      'After generation, export or copy the best GLB/OBJ result and register it:',
+      '',
+      '```sh',
+      `npm run assets:characters:candidate:register -- --character ${job.characterId} --tool stdgen --job ${job.jobId} --input /path/to/generated.glb`,
+      '```',
+      '',
+    ].join('\n');
+  }
+
   if (tool === 'charactergen') {
     return [
       '# CharacterGen Job',
@@ -200,6 +233,93 @@ function toolRunbook(tool, job) {
       '',
       '```sh',
       `npm run assets:characters:candidate:register -- --character ${job.characterId} --tool triposr --job ${job.jobId} --input /path/to/generated.glb`,
+      '```',
+      '',
+    ].join('\n');
+  }
+
+  if (tool === 'instantmesh') {
+    return [
+      '# InstantMesh Job',
+      '',
+      'InstantMesh is a sparse-view reconstruction baseline. Use it to compare whether a generated multi-view mesh preserves the character silhouette better than the character-specific routes.',
+      '',
+      'Upstream setup summary:',
+      '',
+      '```sh',
+      'git clone https://github.com/TencentARC/InstantMesh.git',
+      'cd InstantMesh',
+      '# Follow upstream CUDA/Python setup and checkpoint instructions.',
+      '```',
+      '',
+      'Use this project job input:',
+      '',
+      `- Portrait or model sheet: ${job.input.localPortraitPath}`,
+      `- Prompt: ${job.files.prompt}`,
+      `- Expected output folder: ${job.files.outputsDir}`,
+      '',
+      'Register the best output:',
+      '',
+      '```sh',
+      `npm run assets:characters:candidate:register -- --character ${job.characterId} --tool instantmesh --job ${job.jobId} --input /path/to/generated.glb`,
+      '```',
+      '',
+    ].join('\n');
+  }
+
+  if (tool === 'wonder3d') {
+    return [
+      '# Wonder3D Job',
+      '',
+      'Wonder3D is a single-image multi-view reconstruction baseline. Use it only as a fast candidate route; it is not a rigged anime character pipeline.',
+      '',
+      'Upstream setup summary:',
+      '',
+      '```sh',
+      'git clone https://github.com/xxlong0/Wonder3D.git',
+      'cd Wonder3D',
+      '# Follow upstream CUDA/Python setup and checkpoint instructions.',
+      '```',
+      '',
+      'Use this project job input:',
+      '',
+      `- Portrait or front reference: ${job.input.localPortraitPath}`,
+      `- Prompt: ${job.files.prompt}`,
+      `- Expected output folder: ${job.files.outputsDir}`,
+      '',
+      'Register the best output:',
+      '',
+      '```sh',
+      `npm run assets:characters:candidate:register -- --character ${job.characterId} --tool wonder3d --job ${job.jobId} --input /path/to/generated.glb`,
+      '```',
+      '',
+    ].join('\n');
+  }
+
+  if (tool === 'skintokens') {
+    return [
+      '# SkinTokens Job',
+      '',
+      'SkinTokens is not a portrait-to-mesh generator. Use it after a generated or hand-cleaned humanoid mesh has acceptable silhouette but lacks stable skin weights.',
+      '',
+      'Upstream setup summary:',
+      '',
+      '```sh',
+      'git clone https://github.com/VAST-AI-Research/SkinTokens.git',
+      'cd SkinTokens',
+      '# Follow upstream CUDA/Python setup and checkpoint instructions.',
+      '```',
+      '',
+      'Use this project job input:',
+      '',
+      `- Source brief: ${job.input.sourceBrief}`,
+      `- Prompt: ${job.files.prompt}`,
+      `- Expected output folder: ${job.files.outputsDir}`,
+      '',
+      'Register the rigged candidate after exporting GLB:',
+      '',
+      '```sh',
+      `npm run assets:characters:candidate:register -- --character ${job.characterId} --tool skintokens --job ${job.jobId} --input /path/to/rigged.glb`,
       '```',
       '',
     ].join('\n');
