@@ -9,6 +9,8 @@ import { GrandHall } from './GrandHall';
 import { DiningHall } from './DiningHall';
 import { LawnLakeEnvironment } from './LawnLakeEnvironment';
 import { LibraryEnvironment } from './LibraryEnvironment';
+import { ExtendedAcademyGrounds } from './ExtendedAcademyGrounds';
+import { EquipmentShowcase } from './EquipmentShowcase';
 import { addWorldPrefabRegion } from './WorldPrefabLayer';
 import {
   Geo, UNIT_BOX, getStandardMaterial,
@@ -65,11 +67,15 @@ export class AcademyWorld {
   private grandHall: GrandHall;
   private diningHall: DiningHall;
   private outdoor: LawnLakeEnvironment;
+  private extendedGrounds: ExtendedAcademyGrounds;
+  private equipmentShowcase: EquipmentShowcase;
 
   constructor(private readonly scene: THREE.Scene) {
     this.grandHall = new GrandHall(this.scene);
     this.diningHall = new DiningHall(this.scene);
     this.outdoor = new LawnLakeEnvironment(this.scene);
+    this.extendedGrounds = new ExtendedAcademyGrounds(this.scene);
+    this.equipmentShowcase = new EquipmentShowcase(this.scene);
   }
 
   private readonly marbleTex = makeSharedMarbleTexture('#d8d0dc', '#afa0b9', '#f0e8f3');
@@ -94,6 +100,8 @@ export class AcademyWorld {
     this.obstacles.push(...this.grandHall.build());
     this.obstacles.push(...this.diningHall.build());
     this.obstacles.push(...this.outdoor.build());
+    this.obstacles.push(...this.extendedGrounds.build());
+    this.obstacles.push(...this.equipmentShowcase.build());
 
     // 区域间通道 — 移除阻挡通行的障碍
     this.clearPassages();
@@ -227,6 +235,12 @@ export class AcademyWorld {
       make('dining_hall', (t) => this.diningHall.update(t)),
       make('lawn', (t, d) => this.outdoor.update(t, d)),
       make('lake', (t, d) => this.outdoor.update(t, d)),
+      make('greenhouse', (t, d) => this.extendedGrounds.update(t, d)),
+      make('training_ground', (t, d) => {
+        this.extendedGrounds.update(t, d);
+        this.equipmentShowcase.update(t);
+      }),
+      make('moonstone_grotto', (t, d) => this.extendedGrounds.update(t, d)),
     );
   }
 
@@ -265,6 +279,8 @@ export class AcademyWorld {
       { axis: 'x' as const, minX: -1.4, maxX: 1.4, minZ: -8, maxZ: -5.5 },
       // 东通道 (中庭→食堂) — 沿 z 轴在东墙上开门，z:[-1.5,1.5]
       { axis: 'z' as const, minX: 8, maxX: 10.5, minZ: -1.7, maxZ: 1.7 },
+      // 西通道 (中庭→水晶温室) — 沿 z 轴在西墙开门，z:[-1.6,1.6]
+      { axis: 'z' as const, minX: -10.5, maxX: -8.0, minZ: -1.65, maxZ: 1.65 },
       // 南通道 (中庭→草坪) — 沿 x 轴在南墙开门（南墙是装饰边框，低矮可跨越所以不需要裁）
       // 南面本来就是开放的，没有整面墙障碍
     ];
@@ -391,6 +407,7 @@ export class AcademyWorld {
     this.addWallSurfaceDetails();
     this.addWindows();
     this.addArchedDoor();
+    this.addWestGreenhousePortal();
     this.addColumnsAndBeams();
     this.addLibrary();
     this.addStudyArea();
@@ -596,6 +613,49 @@ export class AcademyWorld {
     this.scene.add(arch);
   }
 
+  private addWestGreenhousePortal(): void {
+    const trimMat = new THREE.MeshStandardMaterial({ color: 0xc7a060, roughness: 0.24, metalness: 0.48 });
+    const glassMat = new THREE.MeshStandardMaterial({
+      color: 0xaef5df,
+      emissive: 0x4cbf9e,
+      emissiveIntensity: 0.22,
+      transparent: true,
+      opacity: 0.38,
+      roughness: 0.12,
+      metalness: 0.02,
+      depthWrite: false,
+    });
+    const vineMat = new THREE.MeshStandardMaterial({ color: 0x4f8b3e, roughness: 0.78, metalness: 0.02 });
+
+    this.addBox(new THREE.Vector3(-8.62, 1.72, -1.05), new THREE.Vector3(0.16, 3.32, 0.12), trimMat, true, true);
+    this.addBox(new THREE.Vector3(-8.62, 1.72, 1.05), new THREE.Vector3(0.16, 3.32, 0.12), trimMat, true, true);
+    this.addBox(new THREE.Vector3(-8.62, 3.36, 0), new THREE.Vector3(0.18, 0.12, 2.24), trimMat, true, true);
+
+    const arch = new THREE.Mesh(new THREE.TorusGeometry(1.04, 0.052, 12, 30, Math.PI), trimMat);
+    arch.position.set(-8.62, 3.34, 0);
+    arch.rotation.set(Math.PI / 2, 0, Math.PI);
+    arch.castShadow = true;
+    this.scene.add(arch);
+
+    for (const z of [-1.35, 1.35]) {
+      const pane = new THREE.Mesh(Geo.plane(1.24, 2.6), glassMat);
+      pane.position.set(-8.55, 2.58, z);
+      pane.rotation.y = Math.PI / 2;
+      pane.castShadow = false;
+      this.scene.add(pane);
+    }
+
+    for (let i = 0; i < 8; i += 1) {
+      const vine = new THREE.Mesh(Geo.box(0.026, 0.68 + (i % 3) * 0.18, 0.026), vineMat);
+      vine.position.set(-8.45, 2.65 - (i % 4) * 0.22, -1.1 + i * 0.32);
+      vine.rotation.set(0.22 + i * 0.03, 0.1, -0.18 + i * 0.05);
+      vine.castShadow = true;
+      this.scene.add(vine);
+    }
+
+    this.addPointLight(-8.35, 2.15, 0, 0xaef5df, 0.82, 4.2);
+  }
+
   private addColumnsAndBeams(): void {
     const stoneMat = new THREE.MeshStandardMaterial({ color: 0x806f88, roughness: 0.42, metalness: 0.12 });
     const trimMat = new THREE.MeshStandardMaterial({ color: 0xc7a060, roughness: 0.24, metalness: 0.48 });
@@ -714,6 +774,7 @@ export class AcademyWorld {
     this.lyra = this.lyraRig.root;
     this.lyra.position.set(lyraData?.worldX ?? 5.35, 0, lyraData?.worldZ ?? -1.35);
     this.lyra.rotation.y = lyraData?.rotationY ?? -Math.PI * 0.18;
+    this.lyra.userData.npcId = 'lyra';
     this.scene.add(this.lyra);
     this.registerInteractiveNpc(lyraData ?? {
       id: 'lyra',

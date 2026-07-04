@@ -20,6 +20,14 @@
     "assets:characters:story:import": "node scripts/character-pipeline/generate-story-character-briefs.mjs",
     "assets:characters:npc:template-specs": "node scripts/character-pipeline/generate-npc-template-specs.mjs",
     "assets:characters:story:runtime-specs": "node scripts/character-pipeline/generate-story-character-runtime-specs.mjs",
+    "assets:world": "npm run assets:world:materials && npm run assets:world:chunks && npm run assets:world:optimize && npm run assets:world:report",
+    "assets:world:blender": "blender assets/world/magic-academy.blend --background --python scripts/blender/export_academy_scene_chunks.py",
+    "assets:world:materials": "node scripts/world-pipeline/generate-world-materials.mjs",
+    "assets:world:chunks": "node scripts/world-pipeline/generate-world-chunks.mjs",
+    "assets:world:optimize": "node scripts/world-pipeline/optimize-world-assets.mjs",
+    "assets:world:vendor": "node scripts/world-pipeline/sync-vendor-world-assets.mjs",
+    "assets:world:report": "node scripts/world-pipeline/report-world-assets.mjs",
+    "qa:r3f": "node scripts/world-pipeline/verify-r3f-render.mjs",
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
@@ -27,10 +35,25 @@
   },
   "dependencies": {
     "@pixiv/three-vrm": "^3.5.4",
-    "three": "^0.185.1"
+    "@react-three/drei": "^10.7.7",
+    "@react-three/fiber": "^9.6.1",
+    "@react-three/postprocessing": "^3.0.4",
+    "@react-three/rapier": "^2.2.0",
+    "@vitejs/plugin-react": "^5.2.0",
+    "ecctrl": "^2.0.0",
+    "postprocessing": "^6.39.2",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "three": "^0.185.1",
+    "three-stdlib": "^2.36.1",
+    "zustand": "^5.0.14"
   },
   "devDependencies": {
+    "@gltf-transform/cli": "^4.4.1",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
     "@types/three": "^0.185.0",
+    "gltfjsx": "^6.5.3",
     "typescript": "^5.7.0",
     "vite": "^6.0.0"
   }

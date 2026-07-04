@@ -2,6 +2,8 @@ import { DomDialogueBox } from '../ui/DomDialogueBox';
 import { DialogueSystem } from '../systems/DialogueSystem';
 import { SaveSystem } from '../systems/SaveSystem';
 import { GameHud } from '../ui/GameHud';
+import { CombatSkillSystem } from '../systems/CombatSkillSystem';
+import { InventorySystem } from '../systems/InventorySystem';
 import { AcademyWorld } from './AcademyWorld';
 import { CameraController3D } from './CameraController3D';
 import { InteractionController3D } from './InteractionController3D';
@@ -151,6 +153,34 @@ export class ThreeAcademyGame {
       return;
     }
 
+    if (event.code === 'KeyZ') {
+      this.saveSystem.cycleSkill(this.save, 'melee');
+      this.updateHud();
+      event.preventDefault();
+      return;
+    }
+
+    if (event.code === 'KeyX') {
+      this.saveSystem.cycleSkill(this.save, 'ranged');
+      this.updateHud();
+      event.preventDefault();
+      return;
+    }
+
+    if (event.code === 'KeyC') {
+      this.saveSystem.cycleSkill(this.save, 'defense');
+      this.updateHud();
+      event.preventDefault();
+      return;
+    }
+
+    if (event.code === 'KeyV') {
+      this.saveSystem.cycleEquipment(this.save, 'mainHand');
+      this.updateHud();
+      event.preventDefault();
+      return;
+    }
+
     this.keys.add(event.code);
   };
 
@@ -204,6 +234,12 @@ export class ThreeAcademyGame {
   private applyShowcaseSpawn(worldObjects: AcademyWorldObjects): void {
     const showcase = new URLSearchParams(window.location.search).get('showcase');
     if (!showcase) return;
+    if (showcase === 'equipment') {
+      worldObjects.player.position.set(17.0, 0, 34.2);
+      worldObjects.player.rotation.y = Math.PI;
+      return;
+    }
+
     const npc = worldObjects.npcs.find((entry) => entry.id === showcase);
     if (!npc) return;
     worldObjects.player.position.set(
@@ -229,12 +265,26 @@ export class ThreeAcademyGame {
     characters: Record<'player' | 'lyra', string>;
     npcCount: number;
     playerPosition: { x: number; y: number; z: number };
+    progression: {
+      coverage: { attributes: number; melee: number; ranged: number; defense: number; items: number };
+      activeSkills: Record<'melee' | 'ranged' | 'defense', string>;
+      equipped: string[];
+    };
   } {
     const { x, y, z } = this.world.getPlayerPosition().position;
     return {
       characters: this.world.getCharacterModelStates(),
       npcCount: this.world.getInteractiveNpcCount(),
       playerPosition: { x, y, z },
+      progression: {
+        coverage: CombatSkillSystem.getCoverage(),
+        activeSkills: {
+          melee: CombatSkillSystem.getActiveSkill(this.save.skillLoadout, 'melee').label,
+          ranged: CombatSkillSystem.getActiveSkill(this.save.skillLoadout, 'ranged').label,
+          defense: CombatSkillSystem.getActiveSkill(this.save.skillLoadout, 'defense').label,
+        },
+        equipped: InventorySystem.getEquippedItems(this.save.inventory).map((item) => item.label),
+      },
     };
   }
 }

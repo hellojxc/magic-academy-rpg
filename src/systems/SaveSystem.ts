@@ -2,33 +2,50 @@
 // 使用 localStorage 保存/读取游戏状态。
 
 import type { SaveData } from '../types';
+import type { ItemSlot, SkillCategory } from '../types';
+import { CharacterStatsSystem } from './CharacterStatsSystem';
+import { CombatSkillSystem } from './CombatSkillSystem';
+import { InventorySystem } from './InventorySystem';
 
 const SAVE_KEY = 'magic_academy_save';
 
-const DEFAULT_SAVE: SaveData = {
-  affection: 0,
-  npcAffection: {},
-  completedEvents: [],
-  currentDialogueId: null,
-  lastInteractTimestamp: 0,
-};
+function createDefaultSave(): SaveData {
+  return {
+    affection: 0,
+    npcAffection: { lyra: 0 },
+    completedEvents: [],
+    currentDialogueId: null,
+    lastInteractTimestamp: 0,
+    attributes: CharacterStatsSystem.normalizeAttributes(),
+    skillLoadout: CombatSkillSystem.createDefaultLoadout(),
+    inventory: InventorySystem.createDefaultInventory(),
+  };
+}
 
 export class SaveSystem {
   /** 读取存档，不存在则返回默认值 */
   static load(): SaveData {
     try {
       const raw = localStorage.getItem(SAVE_KEY);
-      if (!raw) return { ...DEFAULT_SAVE };
-      const parsed = JSON.parse(raw) as SaveData;
+      const defaults = createDefaultSave();
+      if (!raw) return defaults;
+      const parsed = JSON.parse(raw) as Partial<SaveData>;
       // 合并默认值，防止旧版存档缺字段
       return {
-        ...DEFAULT_SAVE,
+        ...defaults,
         ...parsed,
-        npcAffection: parsed.npcAffection ?? {},
+        affection: parsed.affection ?? defaults.affection,
+        npcAffection: {
+          lyra: parsed.affection ?? defaults.affection,
+          ...(parsed.npcAffection ?? {}),
+        },
         completedEvents: parsed.completedEvents ?? [],
+        attributes: CharacterStatsSystem.normalizeAttributes(parsed.attributes),
+        skillLoadout: CombatSkillSystem.normalizeLoadout(parsed.skillLoadout),
+        inventory: InventorySystem.normalizeInventory(parsed.inventory),
       };
     } catch {
-      return { ...DEFAULT_SAVE };
+      return createDefaultSave();
     }
   }
 
@@ -54,6 +71,10 @@ export class SaveSystem {
 
   /** 更新好感度并保存 */
   static updateAffection(save: SaveData, delta: number, npcId = 'lyra'): number {
+    return SaveSystem.updateNpcAffection(save, delta, npcId);
+  }
+
+  static updateNpcAffection(save: SaveData, delta: number, npcId = 'lyra'): number {
     const next = Math.max(-10, Math.min(100, SaveSystem.getAffection(save, npcId) + delta));
     if (!save.npcAffection) save.npcAffection = {};
     save.npcAffection[npcId] = next;
@@ -73,5 +94,15 @@ export class SaveSystem {
   /** 检查事件是否已完成 */
   static hasEvent(save: SaveData, eventId: string): boolean {
     return save.completedEvents.includes(eventId);
+  }
+
+  static cycleSkill(save: SaveData, category: SkillCategory): void {
+    save.skillLoadout = CombatSkillSystem.cycleSkill(save.skillLoadout, category);
+    SaveSystem.save(save);
+  }
+
+  static cycleEquipment(save: SaveData, slot: ItemSlot): void {
+    save.inventory = InventorySystem.cycleEquipment(save.inventory, slot);
+    SaveSystem.save(save);
   }
 }

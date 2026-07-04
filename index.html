@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" href="data:," />
   <title>Magic Academy RPG</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -29,7 +30,8 @@
       top: 18px;
       left: 18px;
       z-index: 10;
-      min-width: 190px;
+      width: min(430px, calc(100vw - 220px));
+      min-width: 320px;
       padding: 12px 14px;
       border: 1px solid rgba(255, 222, 129, 0.32);
       border-radius: 8px;
@@ -41,6 +43,67 @@
       backdrop-filter: blur(8px);
     }
     .game-hud strong { color: #ffe07a; }
+    .hud-topline {
+      white-space: nowrap;
+    }
+    .hud-derived {
+      display: flex;
+      gap: 10px;
+      margin-top: 6px;
+      color: rgba(244, 231, 255, 0.86);
+      font-size: 12px;
+    }
+    .hud-stat-grid {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 4px;
+      margin-top: 8px;
+    }
+    .hud-stat {
+      display: flex;
+      min-width: 0;
+      justify-content: space-between;
+      gap: 4px;
+      padding: 3px 5px;
+      border: 1px solid rgba(255, 224, 122, 0.16);
+      border-radius: 5px;
+      background: rgba(255, 255, 255, 0.05);
+      color: rgba(244, 231, 255, 0.86);
+      font-size: 11px;
+    }
+    .hud-stat b { color: #ffe07a; font-weight: 700; }
+    .hud-skill-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .hud-skill-grid > div {
+      min-width: 0;
+      padding: 6px;
+      border: 1px solid rgba(159, 220, 255, 0.18);
+      border-radius: 6px;
+      background: rgba(10, 18, 32, 0.32);
+      font-size: 11px;
+    }
+    .hud-skill-grid b,
+    .hud-skill-grid strong,
+    .hud-skill-grid span {
+      display: block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .hud-skill-grid b { color: rgba(244, 231, 255, 0.7); }
+    .hud-skill-grid strong { color: #ffe07a; }
+    .hud-loadout {
+      overflow: hidden;
+      margin-top: 7px;
+      color: rgba(244, 231, 255, 0.78);
+      font-size: 12px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
     .hud-help {
       margin-top: 6px;
       color: rgba(244, 231, 255, 0.72);
@@ -148,14 +211,72 @@
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
       pointer-events: none;
     }
+    .r3f-canvas-shell {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      background: #111725;
+    }
+    .r3f-react-root {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+    .r3f-canvas-shell canvas {
+      cursor: crosshair;
+    }
+    .r3f-loading {
+      padding: 8px 12px;
+      border: 1px solid rgba(157, 226, 255, 0.32);
+      border-radius: 8px;
+      background: rgba(8, 14, 24, 0.72);
+      color: #dff2ff;
+      font-size: 13px;
+      white-space: nowrap;
+      pointer-events: none;
+    }
+    .r3f-npc-label {
+      display: grid;
+      gap: 2px;
+      min-width: 76px;
+      padding: 5px 8px;
+      border: 1px solid rgba(255, 224, 122, 0.42);
+      border-radius: 8px;
+      background: rgba(11, 12, 22, 0.68);
+      color: #fff1c2;
+      text-align: center;
+      text-shadow: 0 2px 6px rgba(0, 0, 0, 0.8);
+      pointer-events: none;
+      backdrop-filter: blur(6px);
+    }
+    .r3f-npc-label strong {
+      color: #ffe07a;
+      font-size: 12px;
+      line-height: 1.1;
+    }
+    .r3f-npc-label span {
+      color: rgba(244, 231, 255, 0.8);
+      font-size: 10px;
+      line-height: 1.1;
+      white-space: nowrap;
+    }
     @media (max-width: 640px) {
       .game-hud {
         top: 10px;
         left: 10px;
-        min-width: 150px;
+        width: min(244px, calc(100vw - 146px));
+        min-width: 0;
         padding: 9px 10px;
         font-size: 12px;
       }
+      .hud-topline { white-space: normal; }
+      .hud-derived { gap: 5px; font-size: 10px; }
+      .hud-stat-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 3px; }
+      .hud-stat { padding: 2px 4px; font-size: 10px; }
+      .hud-skill-grid { grid-template-columns: 1fr; gap: 4px; }
+      .hud-skill-grid > div { padding: 4px 5px; font-size: 10px; }
+      .hud-loadout { font-size: 10px; }
       .hud-help { font-size: 11px; }
       .minimap {
         top: 10px;

@@ -32,7 +32,7 @@ export class ThreeGameView {
     });
     this.renderer.setPixelRatio(this.lowQuality ? Math.min(this.renderPixelRatio, 1) : this.renderPixelRatio);
     this.renderer.shadowMap.enabled = true;
-    this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    this.renderer.shadowMap.type = THREE.PCFShadowMap;
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
     this.renderer.toneMappingExposure = 1.08;
