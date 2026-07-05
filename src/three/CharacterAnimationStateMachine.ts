@@ -10,6 +10,11 @@ export class CharacterAnimationStateMachine {
   private state: CharacterAnimationState = 'idle';
   private movementBlend = 0;
   private talkBlend = 0;
+  private readonly poseWeights: CharacterPoseWeights = {
+    idle: 1,
+    walk: 0,
+    talk: 0,
+  };
 
   setMoving(moving: boolean): void {
     if (this.state === 'talk') return;
@@ -33,11 +38,10 @@ export class CharacterAnimationStateMachine {
 
     const walk = this.movementBlend * (1 - this.talkBlend);
     const talk = this.talkBlend;
-    return {
-      idle: Math.max(0, 1 - walk - talk),
-      walk,
-      talk,
-    };
+    this.poseWeights.idle = Math.max(0, 1 - walk - talk);
+    this.poseWeights.walk = walk;
+    this.poseWeights.talk = talk;
+    return this.poseWeights;
   }
 
   getState(): CharacterAnimationState {
