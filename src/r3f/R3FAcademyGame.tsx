@@ -1609,6 +1609,21 @@ function ThirdPartyAssetLayer({
   readonly activeIds: ReadonlySet<WorldChunkId>;
   readonly playerPosition: THREE.Vector3;
 }): React.ReactElement {
+  const glbAssetsEnabled = shouldEnableThirdPartyGlbAssets();
+  const compactViewport = isCompactViewport();
+  const lodKey = `${Math.round(playerPosition.x / 4)}:${Math.round(playerPosition.z / 4)}:${compactViewport ? 'mobile' : 'desktop'}`;
+  const lodAnchor = useMemo<ThirdPartyWorldLodAnchor>(() => ({
+    position: playerPosition.clone(),
+    compactViewport,
+  }), [lodKey]);
+  useEffect(() => {
+    if (glbAssetsEnabled) return;
+    window.__r3fChunkRenderState = {
+      ...(window.__r3fChunkRenderState ?? {}),
+      thirdPartyGlbAssets: 'disabled-default:enable-with-vendorGlb=1',
+    };
+  }, [glbAssetsEnabled]);
+
   const groups = useMemo(() => {
     const grouped = new Map<string, {
       source: ThirdPartyWorldAssetSource;
@@ -1619,6 +1634,7 @@ function ThirdPartyAssetLayer({
       if (!activeIds.has(placement.chunkId)) continue;
       const source = thirdPartyWorldAssetSourcesById.get(placement.sourceId);
       if (!source) continue;
+      if (!shouldLoadThirdPartyPlacement(source.id, placement, lodAnchor)) continue;
       const existing = grouped.get(source.id);
       if (existing) {
         existing.placements.push(placement);
@@ -1628,13 +1644,11 @@ function ThirdPartyAssetLayer({
     }
 
     return [...grouped.values()];
-  }, [activeIds]);
-  const compactViewport = isCompactViewport();
-  const lodKey = `${Math.round(playerPosition.x / 4)}:${Math.round(playerPosition.z / 4)}:${compactViewport ? 'mobile' : 'desktop'}`;
-  const lodAnchor = useMemo<ThirdPartyWorldLodAnchor>(() => ({
-    position: playerPosition.clone(),
-    compactViewport,
-  }), [lodKey]);
+  }, [activeIds, lodAnchor]);
+
+  if (!glbAssetsEnabled) {
+    return <group name="cc0-third-party-world-assets" />;
+  }
 
   return (
     <group name="cc0-third-party-world-assets">
@@ -1711,6 +1725,11 @@ function ThirdPartyAssetGroup({
   );
 }
 
+function shouldEnableThirdPartyGlbAssets(): boolean {
+  if (typeof window === 'undefined') return false;
+  return new URLSearchParams(window.location.search).get('vendorGlb') === '1';
+}
+
 function isCompactViewport(): boolean {
   return typeof window !== 'undefined' && window.innerWidth < 700;
 }
@@ -1742,6 +1761,21 @@ function shouldRenderThirdPartyPlacement(
     ? lod.mobileFadeDistance
     : lod.fadeDistance;
   return getThirdPartyPlacementDistance(placement, anchor) <= fadeDistance;
+}
+
+function shouldLoadThirdPartyPlacement(
+  sourceId: string,
+  placement: ThirdPartyWorldPropPlacement,
+  anchor: ThirdPartyWorldLodAnchor,
+): boolean {
+  const lod = getThirdPartyLodConfig(sourceId);
+  const configuredFadeDistance = anchor.compactViewport && lod.mobileFadeDistance
+    ? lod.mobileFadeDistance
+    : lod.fadeDistance;
+  const priorityLoadDistance = lod.importance === 'hero'
+    ? (anchor.compactViewport ? 28 : 36)
+    : (anchor.compactViewport ? 18 : 26);
+  return getThirdPartyPlacementDistance(placement, anchor) <= Math.min(configuredFadeDistance, priorityLoadDistance);
 }
 
 function shouldCastShadowForThirdPartyPlacement(
@@ -2013,6 +2047,7 @@ function LibraryHeroLayer({ activeIds }: { readonly activeIds: ReadonlySet<World
       <pointLight name="library-shelf-lantern-fill-light" position={[8.45, 1.8, -4.75]} color="#c98cff" intensity={1.35} distance={4.8} decay={2.4} />
       <LibraryProceduralFurniture />
       <LibraryGroundedReadingNook />
+      <LibraryArchiveClutterLayer />
       <LibraryReadingLampCluster />
       <LibraryDeskObjectLayer />
       <LibraryLadderAndRails />
@@ -2436,6 +2471,109 @@ function LibraryBookCart({
   );
 }
 
+function LibraryArchiveClutterLayer(): React.ReactElement {
+  const darkWoodMaterial = useMemo(() => createPbrMaterial(
+    'runtime-library-archive-clutter-dark-oiled-wood',
+    createFilePbrSet('wood'),
+    { color: 0x3a2519, roughness: 0.86, metalness: 0, envMapIntensity: 0.16, normalScale: 0.22 },
+  ), []);
+  const pageMaterial = useMemo(() => createPbrMaterial(
+    'runtime-library-archive-clutter-aged-paper',
+    createFilePbrSet('organic'),
+    { color: 0xc9b388, roughness: 0.96, metalness: 0, envMapIntensity: 0.1, normalScale: 0.08 },
+  ), []);
+  const leatherMaterial = useMemo(() => createPbrMaterial(
+    'runtime-library-archive-clutter-worn-leather',
+    createFilePbrSet('organic'),
+    { color: 0x5a2c32, roughness: 0.9, metalness: 0, envMapIntensity: 0.12, normalScale: 0.1 },
+  ), []);
+  const brassMaterial = useMemo(() => new THREE.MeshStandardMaterial({
+    name: 'runtime-library-archive-clutter-dulled-brass',
+    color: 0x8d6e37,
+    roughness: 0.62,
+    metalness: 0.34,
+    envMapIntensity: 0.26,
+  }), []);
+
+  useEffect(() => {
+    window.__r3fChunkRenderState = {
+      ...(window.__r3fChunkRenderState ?? {}),
+      libraryArchiveClutter: 'bookStacks:5,scrollTubes:7,catalogTray:1,crates:2',
+    };
+  }, []);
+
+  const floorBookStacks = [
+    [3.82, 0.31, -4.02, 0.22],
+    [4.15, 0.31, -4.12, -0.16],
+    [8.25, 0.31, -3.35, 0.48],
+    [8.1, 0.31, -2.72, -0.36],
+    [6.86, 0.31, -0.58, 0.12],
+  ] as const;
+  const scrollTubes = [
+    [3.62, 0.34, -3.52, 0.4],
+    [3.78, 0.34, -3.48, 0.22],
+    [3.95, 0.34, -3.55, -0.1],
+    [8.64, 0.34, -3.0, 1.2],
+    [8.78, 0.34, -2.88, 1.38],
+    [6.86, 0.52, -0.95, -0.72],
+    [7.02, 0.52, -0.92, -0.54],
+  ] as const;
+
+  return (
+    <group name="library-archive-grounded-clutter">
+      <group name="library-archive-card-catalog-tray" position={[6.78, 0.31, -0.88]} rotation={[0, -0.2, 0]}>
+        <mesh name="library-archive-card-tray-box" castShadow receiveShadow material={darkWoodMaterial}>
+          <boxGeometry args={[0.58, 0.2, 0.38]} />
+        </mesh>
+        <mesh name="library-archive-card-tray-paper-stack" position={[0, 0.12, -0.02]} castShadow receiveShadow material={pageMaterial}>
+          <boxGeometry args={[0.5, 0.075, 0.3]} />
+        </mesh>
+        <mesh name="library-archive-card-tray-brass-pull" position={[0, 0.02, -0.205]} castShadow receiveShadow material={brassMaterial}>
+          <boxGeometry args={[0.22, 0.035, 0.025]} />
+        </mesh>
+      </group>
+      {floorBookStacks.map(([x, y, z, yaw], stack) => (
+        <group key={`floor-books:${stack}`} name="library-archive-floor-book-stack" position={[x, y, z]} rotation={[0, yaw, 0]}>
+          {[0, 1, 2].map((level) => (
+            <mesh key={level} name="library-archive-floor-book" position={[0, level * 0.055, 0]} castShadow receiveShadow material={level % 2 === 0 ? leatherMaterial : darkWoodMaterial}>
+              <boxGeometry args={[0.42 - level * 0.035, 0.052, 0.28 + level * 0.025]} />
+            </mesh>
+          ))}
+          <mesh name="library-archive-floor-page-edge" position={[0.218, 0.06, 0]} castShadow receiveShadow material={pageMaterial}>
+            <boxGeometry args={[0.028, 0.14, 0.25]} />
+          </mesh>
+        </group>
+      ))}
+      {scrollTubes.map(([x, y, z, yaw], index) => (
+        <mesh
+          key={`scroll:${index}`}
+          name="library-archive-rolled-scroll-tube"
+          position={[x, y, z]}
+          rotation={[Math.PI / 2, 0, yaw]}
+          castShadow
+          receiveShadow
+          material={pageMaterial}
+        >
+          <cylinderGeometry args={[0.055, 0.055, 0.48, 12]} />
+        </mesh>
+      ))}
+      {[[-0.04, 0.18, 0], [0.04, 0.36, 0.04]].map(([offsetX, y, offsetZ], crate) => (
+        <group key={`crate:${crate}`} name="library-archive-wooden-storage-crate" position={[3.72 + offsetX, y, -4.58 + offsetZ]} rotation={[0, 0.18 + crate * 0.22, 0]}>
+          <mesh name="library-archive-crate-body" castShadow receiveShadow material={darkWoodMaterial}>
+            <boxGeometry args={[0.56, 0.32, 0.42]} />
+          </mesh>
+          <mesh name="library-archive-crate-front-slat" position={[0, 0.04, -0.222]} castShadow receiveShadow material={brassMaterial}>
+            <boxGeometry args={[0.48, 0.035, 0.025]} />
+          </mesh>
+          <mesh name="library-archive-crate-top-slat" position={[0, 0.18, 0]} castShadow receiveShadow material={darkWoodMaterial}>
+            <boxGeometry args={[0.6, 0.035, 0.46]} />
+          </mesh>
+        </group>
+      ))}
+    </group>
+  );
+}
+
 function LibraryDeskObjectLayer(): React.ReactElement {
   const inkMaterial = useMemo(() => new THREE.MeshPhysicalMaterial({
     name: 'runtime-library-ink-bottle-dark-glass',
@@ -2697,6 +2835,104 @@ function BiomeHeroLayer({ activeIds }: { readonly activeIds: ReadonlySet<WorldCh
     <group name="runtime-biome-hero-layer">
       {activeIds.has('moonlit-lawn') ? <MoonlitLawnBiome /> : null}
       {activeIds.has('lake-grotto') ? <LakeGrottoBiome /> : null}
+      <LakeLawnGroundedDressing activeIds={activeIds} />
+    </group>
+  );
+}
+
+function LakeLawnGroundedDressing({ activeIds }: { readonly activeIds: ReadonlySet<WorldChunkId> }): React.ReactElement | null {
+  const enabled = activeIds.has('moonlit-lawn') || activeIds.has('lake-grotto');
+  const woodMaterial = useMemo(() => createPbrMaterial(
+    'runtime-lake-lawn-grounded-dressing-wet-wood-pbr',
+    createFilePbrSet('wood'),
+    { color: 0x3f3327, roughness: 0.92, metalness: 0, envMapIntensity: 0.16, normalScale: 0.26 },
+  ), []);
+  const stoneMaterial = useMemo(() => createPbrMaterial(
+    'runtime-lake-lawn-grounded-dressing-wet-stone-pbr',
+    createFilePbrSet('stone'),
+    { color: 0x68766f, roughness: 0.72, metalness: 0.02, envMapIntensity: 0.28, normalScale: 0.22 },
+  ), []);
+  const mossMaterial = useMemo(() => createPbrMaterial(
+    'runtime-lake-lawn-grounded-dressing-moss-pbr',
+    createFilePbrSet('grass'),
+    { color: 0x5c7d43, roughness: 0.9, metalness: 0, envMapIntensity: 0.18, normalScale: 0.18 },
+  ), []);
+
+  useEffect(() => {
+    if (!enabled) return;
+    window.__r3fChunkRenderState = {
+      ...(window.__r3fChunkRenderState ?? {}),
+      lakeLawnGroundedDressing: 'planks:5,steppingStones:9,bankPosts:4,mossPads:6',
+    };
+  }, [enabled]);
+
+  if (!enabled) return null;
+
+  const steppingStones = [
+    [-10.6, 0.19, 17.65, 0.18, 0.85, 0.16, 0.58],
+    [-9.48, 0.19, 18.15, -0.14, 0.72, 0.14, 0.5],
+    [-8.42, 0.19, 18.76, 0.42, 0.9, 0.13, 0.62],
+    [-7.26, 0.19, 19.4, -0.35, 0.78, 0.16, 0.56],
+    [-6.24, 0.19, 20.1, 0.1, 0.88, 0.14, 0.54],
+    [-5.18, 0.19, 20.72, -0.22, 0.72, 0.12, 0.48],
+    [-7.95, 0.19, 21.35, 0.36, 0.8, 0.14, 0.52],
+    [-9.12, 0.19, 20.78, -0.48, 0.7, 0.13, 0.46],
+    [-10.2, 0.19, 20.08, 0.2, 0.76, 0.15, 0.5],
+  ] as const;
+  const planks = [
+    [-9.65, 0.245, 19.15, -0.58, 1.05],
+    [-8.72, 0.255, 19.62, -0.48, 0.94],
+    [-7.82, 0.255, 20.1, -0.6, 1.08],
+    [-8.98, 0.27, 20.48, 0.96, 0.82],
+    [-10.12, 0.27, 18.72, 0.88, 0.78],
+  ] as const;
+  const bankPosts = [
+    [-10.18, 0.55, 18.48, -0.06, 0.68],
+    [-8.08, 0.58, 19.62, 0.08, 0.72],
+    [-6.72, 0.54, 20.62, -0.08, 0.62],
+    [-9.2, 0.52, 21.32, 0.04, 0.58],
+  ] as const;
+  const mossPads = [
+    [-10.7, 0.205, 18.42, 0.32, 0.72, 0.28],
+    [-9.3, 0.205, 19.28, -0.18, 0.64, 0.22],
+    [-7.42, 0.205, 20.62, 0.12, 0.68, 0.26],
+    [-5.78, 0.205, 20.94, -0.28, 0.58, 0.2],
+    [6.4, 0.205, 20.9, 0.44, 0.7, 0.24],
+    [9.1, 0.205, 21.74, -0.14, 0.66, 0.24],
+  ] as const;
+
+  return (
+    <group name="lake-lawn-grounded-asset-dressing">
+      {steppingStones.map(([x, y, z, yaw, sx, sy, sz], index) => (
+        <mesh key={`stone:${index}`} name="lake-lawn-foreground-stepping-stone" position={[x, y, z]} rotation={[0.02, yaw, -0.01]} scale={[sx, sy, sz]} castShadow receiveShadow material={stoneMaterial}>
+          <dodecahedronGeometry args={[0.5, 0]} />
+        </mesh>
+      ))}
+      {planks.map(([x, y, z, yaw, length], index) => (
+        <group key={`plank:${index}`} name="lake-lawn-weathered-bank-plank" position={[x, y, z]} rotation={[0.02, yaw, -0.015]}>
+          <mesh castShadow receiveShadow material={woodMaterial}>
+            <boxGeometry args={[length, 0.055, 0.24]} />
+          </mesh>
+          <mesh name="lake-lawn-plank-wet-edge" position={[0, 0.035, -0.126]} castShadow receiveShadow material={stoneMaterial}>
+            <boxGeometry args={[length * 0.92, 0.018, 0.025]} />
+          </mesh>
+        </group>
+      ))}
+      {bankPosts.map(([x, y, z, lean, height], index) => (
+        <group key={`post:${index}`} name="lake-lawn-low-mooring-post" position={[x, y, z]} rotation={[lean, index * 0.42, -lean * 0.5]}>
+          <mesh castShadow receiveShadow material={woodMaterial}>
+            <cylinderGeometry args={[0.075, 0.11, height, 8]} />
+          </mesh>
+          <mesh name="lake-lawn-mooring-post-wet-cap" position={[0, height * 0.52, 0]} castShadow receiveShadow material={stoneMaterial}>
+            <cylinderGeometry args={[0.13, 0.1, 0.06, 8]} />
+          </mesh>
+        </group>
+      ))}
+      {mossPads.map(([x, y, z, yaw, sx, sz], index) => (
+        <mesh key={`moss:${index}`} name="lake-lawn-mossy-ground-contact-pad" position={[x, y, z]} rotation={[-Math.PI / 2, 0, yaw]} scale={[sx, sz, 1]} receiveShadow material={mossMaterial} renderOrder={9}>
+          <circleGeometry args={[0.42, 18]} />
+        </mesh>
+      ))}
     </group>
   );
 }
@@ -8490,6 +8726,46 @@ function setAssetLoadState(url: string, state: string): void {
   };
 }
 
+const assetProbeCache = new Map<string, 'unknown' | 'present' | 'missing'>();
+
+function useAssetProbe(url: string | null): 'unknown' | 'present' | 'missing' {
+  const [state, setState] = useState<'unknown' | 'present' | 'missing'>(() => (
+    url ? assetProbeCache.get(url) ?? 'unknown' : 'missing'
+  ));
+
+  useEffect(() => {
+    if (!url) {
+      setState('missing');
+      return;
+    }
+    const cached = assetProbeCache.get(url);
+    if (cached === 'present' || cached === 'missing') {
+      setState(cached);
+      return;
+    }
+    let cancelled = false;
+    fetch(url, { method: 'HEAD' })
+      .then((response) => {
+        if (cancelled) return;
+        const contentType = response.headers.get('content-type') ?? '';
+        const ok = response.ok && !contentType.includes('text/html');
+        const next = ok ? 'present' : 'missing';
+        assetProbeCache.set(url, next);
+        setState(next);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        assetProbeCache.set(url, 'missing');
+        setState('missing');
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [url]);
+
+  return state;
+}
+
 function enhanceAuthoredWorldMaterial(
   source: THREE.MeshStandardMaterial,
   objectName: string,
@@ -8780,46 +9056,6 @@ function applyChunkCutaway(root: THREE.Object3D, chunk: WorldChunkDefinition): v
       object.visible = false;
     }
   });
-}
-
-const assetProbeCache = new Map<string, 'unknown' | 'present' | 'missing'>();
-
-function useAssetProbe(url: string | null): 'unknown' | 'present' | 'missing' {
-  const [state, setState] = useState<'unknown' | 'present' | 'missing'>(() => (
-    url ? assetProbeCache.get(url) ?? 'unknown' : 'missing'
-  ));
-
-  useEffect(() => {
-    if (!url) {
-      setState('missing');
-      return;
-    }
-    const cached = assetProbeCache.get(url);
-    if (cached === 'present' || cached === 'missing') {
-      setState(cached);
-      return;
-    }
-    let cancelled = false;
-    fetch(url, { method: 'HEAD' })
-      .then((response) => {
-        if (cancelled) return;
-        const contentType = response.headers.get('content-type') ?? '';
-        const ok = response.ok && !contentType.includes('text/html');
-        const next = ok ? 'present' : 'missing';
-        assetProbeCache.set(url, next);
-        setState(next);
-      })
-      .catch(() => {
-        if (cancelled) return;
-        assetProbeCache.set(url, 'missing');
-        setState('missing');
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [url]);
-
-  return state;
 }
 
 function shouldProbeAuthoredChunks(): boolean {
