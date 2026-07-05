@@ -137,7 +137,7 @@ const playerSpawn = new THREE.Vector3(0, 1.25, 4.2);
 const maxAuthoredChunkCount = 8;
 const initialAuthoredChunkCount = 2;
 const authoredChunkStreamStepMs = 900;
-const maxConcurrentGlbLoads = 5;
+const maxConcurrentGlbLoads = 6;
 const r3fPlayerStatePublishDistanceSq = 0.18 * 0.18;
 const r3fDebugStatePublishIntervalMs = 250;
 const r3fSceneDiagnosticsIntervalMs = 2500;
@@ -1685,7 +1685,17 @@ function ThirdPartyAssetLayer({
       }
     }
 
-    return [...grouped.values()];
+    return [...grouped.values()].sort((a, b) => {
+      const priorityDelta = (
+        getGlbLoadPriorityRank(getThirdPartyGlbLoadPriority(b.placements))
+        - getGlbLoadPriorityRank(getThirdPartyGlbLoadPriority(a.placements))
+      );
+      if (priorityDelta !== 0) return priorityDelta;
+      return (
+        getThirdPartyGroupNearestDistance(a.placements, lodAnchor)
+        - getThirdPartyGroupNearestDistance(b.placements, lodAnchor)
+      );
+    });
   }, [activeIds, allGlbAssetsEnabled, defaultGlbAssetsDisabled, lodAnchor]);
 
   return (
@@ -1711,7 +1721,7 @@ function ThirdPartyAssetGroup({
   readonly placements: readonly ThirdPartyWorldPropPlacement[];
   readonly lodAnchor: ThirdPartyWorldLodAnchor;
 }): React.ReactElement {
-  const priority = useMemo(() => getThirdPartyGlbLoadPriority(source.id, placements), [placements, source.id]);
+  const priority = useMemo(() => getThirdPartyGlbLoadPriority(placements), [placements]);
   const template = useOptionalGlb(source.url, false, undefined, priority);
   const objects = useMemo(() => {
     if (!template) return [];
@@ -1811,6 +1821,15 @@ function getThirdPartyPlacementDistance(
   return Math.hypot(dx, dz);
 }
 
+function getThirdPartyGroupNearestDistance(
+  placements: readonly ThirdPartyWorldPropPlacement[],
+  anchor: ThirdPartyWorldLodAnchor,
+): number {
+  return placements.reduce((nearest, placement) => (
+    Math.min(nearest, getThirdPartyPlacementDistance(placement, anchor))
+  ), Number.POSITIVE_INFINITY);
+}
+
 function shouldRenderThirdPartyPlacement(
   sourceId: string,
   placement: ThirdPartyWorldPropPlacement,
@@ -1848,19 +1867,21 @@ function shouldCastShadowForThirdPartyPlacement(
   return shadowDistance > 0 && getThirdPartyPlacementDistance(placement, anchor) <= shadowDistance;
 }
 
-function getThirdPartyGlbLoadPriority(
-  sourceId: string,
-  placements: readonly ThirdPartyWorldPropPlacement[],
-): GlbLoadPriority {
-  const lod = getThirdPartyLodConfig(sourceId);
+function getThirdPartyGlbLoadPriority(placements: readonly ThirdPartyWorldPropPlacement[]): GlbLoadPriority {
   if (placements.some((placement) => (
     placement.chunkId === 'lake-grotto'
     || placement.chunkId === 'moonlit-lawn'
     || placement.chunkId === 'arcane-library'
   ))) {
-    return lod.importance === 'detail' ? 'normal' : 'high';
+    return 'high';
   }
   return 'normal';
+}
+
+function getGlbLoadPriorityRank(priority: GlbLoadPriority): number {
+  if (priority === 'critical') return 2;
+  if (priority === 'high') return 1;
+  return 0;
 }
 
 function prepareThirdPartyPropObject(
@@ -9532,9 +9553,14 @@ function flushGlbLoadQueue(): void {
       critical();
       continue;
     }
+    const high = pendingHighPriorityGlbLoadQueue.shift();
+    if (high) {
+      high();
+      continue;
+    }
     if (activeCriticalGlbLoadCount > 0) return;
 
-    const normal = pendingHighPriorityGlbLoadQueue.shift() ?? pendingGlbLoadQueue.shift();
+    const normal = pendingGlbLoadQueue.shift();
     if (!normal) return;
     normal();
   }
