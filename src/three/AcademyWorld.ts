@@ -468,8 +468,8 @@ export class AcademyWorld {
 
   private addFloor(): void {
     const floor = new THREE.Mesh(
-      new THREE.BoxGeometry(18, 0.16, 13.2),
-      new THREE.MeshStandardMaterial({
+      Geo.box(18, 0.16, 13.2),
+      getStandardMaterial({
         color: 0xc9c0ce,
         roughness: 0.42,
         metalness: 0.05,
@@ -483,7 +483,7 @@ export class AcademyWorld {
     floor.receiveShadow = true;
     this.scene.add(floor);
 
-    const grooveMat = new THREE.MeshStandardMaterial({ color: 0x6f6078, roughness: 0.55, metalness: 0.05 });
+    const grooveMat = getStandardMaterial({ color: 0x6f6078, roughness: 0.55, metalness: 0.05 });
     for (let x = -8.1; x <= 8.1; x += 1.35) {
       this.addBox(new THREE.Vector3(x, 0.018, 0), new THREE.Vector3(0.022, 0.022, 12.8), grooveMat, false, true);
     }
@@ -491,7 +491,7 @@ export class AcademyWorld {
       this.addBox(new THREE.Vector3(0, 0.022, z), new THREE.Vector3(17.6, 0.022, 0.022), grooveMat, false, true);
     }
 
-    const borderMat = new THREE.MeshStandardMaterial({ color: 0xc7a060, roughness: 0.24, metalness: 0.48 });
+    const borderMat = getStandardMaterial({ color: 0xc7a060, roughness: 0.24, metalness: 0.48 });
     const borders: Array<[number, number, number, number]> = [
       [0, -6.14, 17.3, 0.08],
       [0, 6.14, 17.3, 0.08],
@@ -507,7 +507,7 @@ export class AcademyWorld {
   }
 
   private addWalls(): void {
-    const wallMat = new THREE.MeshStandardMaterial({
+    const wallMat = getStandardMaterial({
       color: 0xb8adbd,
       roughness: 0.58,
       metalness: 0.03,
@@ -516,8 +516,8 @@ export class AcademyWorld {
       bumpScale: 0.035,
       roughnessMap: this.plasterDetailTex,
     });
-    const lowerMat = new THREE.MeshStandardMaterial({ color: 0x7b6680, roughness: 0.5, metalness: 0.08 });
-    const trimMat = new THREE.MeshStandardMaterial({ color: 0xbf985d, roughness: 0.25, metalness: 0.45 });
+    const lowerMat = getStandardMaterial({ color: 0x7b6680, roughness: 0.5, metalness: 0.08 });
+    const trimMat = getStandardMaterial({ color: 0xbf985d, roughness: 0.25, metalness: 0.45 });
 
     // 北墙 — 分成左右两段，中间留门洞 (x:[-1.2, 1.2] 开放)
     this.addBox(new THREE.Vector3(-4.8, 2.25, -6.62), new THREE.Vector3(7.8, 4.5, 0.45), wallMat, false, true);
@@ -551,9 +551,9 @@ export class AcademyWorld {
   }
 
   private addWallPanels(): void {
-    const panelMat = new THREE.MeshStandardMaterial({ color: 0x9f91aa, roughness: 0.56, metalness: 0.04 });
-    const insetMat = new THREE.MeshStandardMaterial({ color: 0x77647f, roughness: 0.62, metalness: 0.04 });
-    const trimMat = new THREE.MeshStandardMaterial({ color: 0xc7a060, roughness: 0.24, metalness: 0.48 });
+    const panelMat = getStandardMaterial({ color: 0x9f91aa, roughness: 0.56, metalness: 0.04 });
+    const insetMat = getStandardMaterial({ color: 0x77647f, roughness: 0.62, metalness: 0.04 });
+    const trimMat = getStandardMaterial({ color: 0xc7a060, roughness: 0.24, metalness: 0.48 });
 
     for (const x of [-7.1, -4.7, -2.35, 2.35, 4.7, 7.1]) {
       this.addFramedPanel(new THREE.Vector3(x, 2.65, -6.35), 1.28, 2.05, 'back', panelMat, insetMat, trimMat);
@@ -566,9 +566,9 @@ export class AcademyWorld {
   }
 
   private addWallSurfaceDetails(): void {
-    const seamMat = new THREE.MeshStandardMaterial({ color: 0x6f6277, roughness: 0.72, metalness: 0.02 });
-    const chipMat = new THREE.MeshStandardMaterial({ color: 0x8f8197, roughness: 0.7, metalness: 0.03 });
-    const trimMat = new THREE.MeshStandardMaterial({ color: 0xc7a060, roughness: 0.3, metalness: 0.45 });
+    const seamMat = getStandardMaterial({ color: 0x6f6277, roughness: 0.72, metalness: 0.02 });
+    const chipMat = getStandardMaterial({ color: 0x8f8197, roughness: 0.7, metalness: 0.03 });
+    const trimMat = getStandardMaterial({ color: 0xc7a060, roughness: 0.3, metalness: 0.45 });
 
     for (const x of [-7.6, -5.2, -2.8, 2.8, 5.2, 7.6]) {
       this.addBox(new THREE.Vector3(x, 2.6, -6.04), new THREE.Vector3(0.024, 2.5, 0.05), seamMat, false, true);
@@ -594,7 +594,7 @@ export class AcademyWorld {
       [8.52, 2.85, -3.0, 'side'],
       [-8.52, 2.2, 3.4, 'side'],
     ] as Array<[number, number, number, 'back' | 'side']>) {
-      const chip = new THREE.Mesh(new THREE.DodecahedronGeometry(0.11, 0), chipMat);
+      const chip = new THREE.Mesh(Geo.dodecahedron(0.11, 0), chipMat);
       chip.position.set(x, y, z);
       chip.scale.set(side === 'back' ? 1 : 0.42, 0.32, side === 'back' ? 0.42 : 1);
       chip.rotation.set(Math.random() * 0.5, Math.random() * Math.PI, Math.random() * 0.5);
@@ -603,8 +603,9 @@ export class AcademyWorld {
       this.scene.add(chip);
     }
 
+    const medallionGeo = Geo.torus(0.18, 0.016, 8, 24);
     for (const [x, z] of [[-2.9, -6.0], [2.9, -6.0], [8.52, -1.95], [8.52, 2.05]] as Array<[number, number]>) {
-      const medallion = new THREE.Mesh(new THREE.TorusGeometry(0.18, 0.016, 8, 24), trimMat);
+      const medallion = new THREE.Mesh(medallionGeo, trimMat);
       medallion.position.set(x, 3.58, z);
       if (Math.abs(x) > 8) medallion.rotation.y = Math.PI / 2;
       medallion.castShadow = true;
@@ -613,8 +614,8 @@ export class AcademyWorld {
   }
 
   private addWindows(): void {
-    const frameMat = new THREE.MeshStandardMaterial({ color: 0xc7a060, roughness: 0.24, metalness: 0.45 });
-    const glassMat = new THREE.MeshStandardMaterial({
+    const frameMat = getStandardMaterial({ color: 0xc7a060, roughness: 0.24, metalness: 0.45 });
+    const glassMat = getStandardMaterial({
       color: 0xbfe7ff,
       emissive: 0x5c8eda,
       emissiveIntensity: 0.18,
@@ -623,7 +624,7 @@ export class AcademyWorld {
       roughness: 0.12,
       metalness: 0.02,
     });
-    const stoneMat = new THREE.MeshStandardMaterial({ color: 0x8f8298, roughness: 0.52, metalness: 0.08 });
+    const stoneMat = getStandardMaterial({ color: 0x8f8298, roughness: 0.52, metalness: 0.08 });
 
     for (const x of [-5.65, 5.65]) {
       this.addBox(new THREE.Vector3(x, 2.88, -6.02), new THREE.Vector3(1.65, 2.5, 0.08), glassMat, false, false);
@@ -638,14 +639,14 @@ export class AcademyWorld {
   }
 
   private addArchedDoor(): void {
-    const trimMat = new THREE.MeshStandardMaterial({ color: 0xc7a060, roughness: 0.24, metalness: 0.48 });
+    const trimMat = getStandardMaterial({ color: 0xc7a060, roughness: 0.24, metalness: 0.48 });
 
     // 门框 — 左右立柱 + 顶部横梁 + 拱形 (门洞开放，无门板)
     this.addBox(new THREE.Vector3(-0.86, 1.7, -5.84), new THREE.Vector3(0.12, 3.32, 0.18), trimMat, true, true);
     this.addBox(new THREE.Vector3(0.86, 1.7, -5.84), new THREE.Vector3(0.12, 3.32, 0.18), trimMat, true, true);
     this.addBox(new THREE.Vector3(0, 3.36, -5.84), new THREE.Vector3(1.85, 0.12, 0.18), trimMat, true, true);
 
-    const arch = new THREE.Mesh(new THREE.TorusGeometry(0.88, 0.055, 12, 28, Math.PI), trimMat);
+    const arch = new THREE.Mesh(Geo.torusArc(0.88, 0.055, 12, 28, Math.PI), trimMat);
     arch.position.set(0, 3.34, -5.84);
     arch.rotation.z = Math.PI;
     arch.castShadow = true;
@@ -653,8 +654,8 @@ export class AcademyWorld {
   }
 
   private addWestGreenhousePortal(): void {
-    const trimMat = new THREE.MeshStandardMaterial({ color: 0xc7a060, roughness: 0.24, metalness: 0.48 });
-    const glassMat = new THREE.MeshStandardMaterial({
+    const trimMat = getStandardMaterial({ color: 0xc7a060, roughness: 0.24, metalness: 0.48 });
+    const glassMat = getStandardMaterial({
       color: 0xaef5df,
       emissive: 0x4cbf9e,
       emissiveIntensity: 0.22,
@@ -664,13 +665,13 @@ export class AcademyWorld {
       metalness: 0.02,
       depthWrite: false,
     });
-    const vineMat = new THREE.MeshStandardMaterial({ color: 0x4f8b3e, roughness: 0.78, metalness: 0.02 });
+    const vineMat = getStandardMaterial({ color: 0x4f8b3e, roughness: 0.78, metalness: 0.02 });
 
     this.addBox(new THREE.Vector3(-8.62, 1.72, -1.05), new THREE.Vector3(0.16, 3.32, 0.12), trimMat, true, true);
     this.addBox(new THREE.Vector3(-8.62, 1.72, 1.05), new THREE.Vector3(0.16, 3.32, 0.12), trimMat, true, true);
     this.addBox(new THREE.Vector3(-8.62, 3.36, 0), new THREE.Vector3(0.18, 0.12, 2.24), trimMat, true, true);
 
-    const arch = new THREE.Mesh(new THREE.TorusGeometry(1.04, 0.052, 12, 30, Math.PI), trimMat);
+    const arch = new THREE.Mesh(Geo.torusArc(1.04, 0.052, 12, 30, Math.PI), trimMat);
     arch.position.set(-8.62, 3.34, 0);
     arch.rotation.set(Math.PI / 2, 0, Math.PI);
     arch.castShadow = true;
@@ -696,8 +697,8 @@ export class AcademyWorld {
   }
 
   private addColumnsAndBeams(): void {
-    const stoneMat = new THREE.MeshStandardMaterial({ color: 0x806f88, roughness: 0.42, metalness: 0.12 });
-    const trimMat = new THREE.MeshStandardMaterial({ color: 0xc7a060, roughness: 0.24, metalness: 0.48 });
+    const stoneMat = getStandardMaterial({ color: 0x806f88, roughness: 0.42, metalness: 0.12 });
+    const trimMat = getStandardMaterial({ color: 0xc7a060, roughness: 0.24, metalness: 0.48 });
 
     for (const [x, z] of [
       [-7.2, -4.85],
@@ -732,7 +733,7 @@ export class AcademyWorld {
   }
 
   private addStudyArea(): void {
-    const woodMat = new THREE.MeshStandardMaterial({
+    const woodMat = getStandardMaterial({
       color: 0x5b3324,
       roughness: 0.42,
       metalness: 0.1,
@@ -741,8 +742,8 @@ export class AcademyWorld {
       bumpScale: 0.018,
       roughnessMap: this.woodDetailTex,
     });
-    const pageMat = new THREE.MeshStandardMaterial({ color: 0xf0dfbd, roughness: 0.65, metalness: 0.02 });
-    const purpleMat = new THREE.MeshStandardMaterial({ color: 0x623660, roughness: 0.66, metalness: 0.02 });
+    const pageMat = getStandardMaterial({ color: 0xf0dfbd, roughness: 0.65, metalness: 0.02 });
+    const purpleMat = getStandardMaterial({ color: 0x623660, roughness: 0.66, metalness: 0.02 });
 
     this.addBox(new THREE.Vector3(5.2, 0.68, -0.12), new THREE.Vector3(2.5, 0.2, 1.24), woodMat, true, true);
     this.addBox(new THREE.Vector3(5.2, 0.82, -0.12), new THREE.Vector3(2.18, 0.035, 0.36), purpleMat, false, true);
@@ -756,8 +757,8 @@ export class AcademyWorld {
     this.addBox(new THREE.Vector3(5.36, 0.83, -0.1), new THREE.Vector3(0.44, 0.04, 0.36), pageMat, true, true).rotation.y = -0.16;
 
     const orb = new THREE.Mesh(
-      new THREE.SphereGeometry(0.18, 24, 16),
-      new THREE.MeshStandardMaterial({
+      Geo.sphere(0.18, 24, 16),
+      getStandardMaterial({
         color: 0x9fdcff,
         emissive: 0x5f8fff,
         emissiveIntensity: 1.1,
@@ -772,13 +773,13 @@ export class AcademyWorld {
   }
 
   private addRugsAndFloorDetails(): void {
-    const rugMat = new THREE.MeshStandardMaterial({
+    const rugMat = getStandardMaterial({
       color: 0x6b2f73,
       roughness: 0.78,
       metalness: 0.02,
         map: this.carpetTex,
     });
-    const trimMat = new THREE.MeshStandardMaterial({ color: 0xe0bc72, roughness: 0.32, metalness: 0.38 });
+    const trimMat = getStandardMaterial({ color: 0xe0bc72, roughness: 0.32, metalness: 0.38 });
 
     this.addFlatPlane(new THREE.Vector3(4.6, 0.072, 2.3), new THREE.Vector2(3.4, 2.4), rugMat);
     this.addBox(new THREE.Vector3(4.6, 0.092, 1.1), new THREE.Vector3(3.35, 0.025, 0.045), trimMat, false, true);
@@ -1028,7 +1029,7 @@ export class AcademyWorld {
     const width = 1.18;
     const height = 2.95;
     const depth = 0.58;
-    const woodMat = new THREE.MeshStandardMaterial({
+    const woodMat = getStandardMaterial({
       color: 0x5a3629,
       roughness: 0.45,
       metalness: 0.08,
@@ -1037,8 +1038,8 @@ export class AcademyWorld {
       bumpScale: 0.018,
       roughnessMap: this.woodDetailTex,
     });
-    const darkMat = new THREE.MeshStandardMaterial({ color: 0x2b1c1c, roughness: 0.58, metalness: 0.05 });
-    const goldMat = new THREE.MeshStandardMaterial({ color: 0xd0ac68, roughness: 0.25, metalness: 0.5 });
+    const darkMat = getStandardMaterial({ color: 0x2b1c1c, roughness: 0.58, metalness: 0.05 });
+    const goldMat = getStandardMaterial({ color: 0xd0ac68, roughness: 0.25, metalness: 0.5 });
 
     this.addBoxToGroup(shelf, new THREE.Vector3(0, height / 2, -depth / 2), new THREE.Vector3(width, height, 0.08), darkMat);
     this.addBoxToGroup(shelf, new THREE.Vector3(-width / 2 - 0.07, height / 2, 0), new THREE.Vector3(0.14, height, depth), woodMat);
@@ -1108,8 +1109,8 @@ export class AcademyWorld {
     depth: number,
     goldMat: THREE.Material
   ): void {
-    const labelMat = new THREE.MeshStandardMaterial({ color: 0xe7c87a, roughness: 0.28, metalness: 0.45 });
-    const parchmentMat = new THREE.MeshStandardMaterial({ color: 0xd9c08e, roughness: 0.68, metalness: 0.02 });
+    const labelMat = getStandardMaterial({ color: 0xe7c87a, roughness: 0.28, metalness: 0.45 });
+    const parchmentMat = getStandardMaterial({ color: 0xd9c08e, roughness: 0.68, metalness: 0.02 });
     const glassMats = [
       getStandardMaterial({ color: 0x75c6d8, roughness: 0.12, metalness: 0.02, transparent: true, opacity: 0.72 }),
       getStandardMaterial({ color: 0xa978d4, roughness: 0.12, metalness: 0.02, transparent: true, opacity: 0.72 }),
@@ -1121,8 +1122,9 @@ export class AcademyWorld {
       this.addBoxToGroup(shelf, new THREE.Vector3(width / 2 + 0.01, level + 0.25, depth / 2 + 0.055), new THREE.Vector3(0.05, 0.22, 0.018), labelMat);
     }
 
+    const scrollGeo = Geo.cylinder(0.035, 0.035, 0.42, 12);
     for (let i = 0; i < 3; i += 1) {
-      const scroll = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 0.42, 12), parchmentMat);
+      const scroll = new THREE.Mesh(scrollGeo, parchmentMat);
       scroll.position.set(-0.38 + i * 0.18, shelfLevels[2] + 0.14, depth / 2 - 0.02);
       scroll.rotation.z = Math.PI / 2;
       scroll.castShadow = true;
@@ -1130,20 +1132,22 @@ export class AcademyWorld {
       shelf.add(scroll);
     }
 
+    const bottleGeo = Geo.cylinder(0.045, 0.055, 0.18, 12);
+    const stopperGeo = Geo.box(0.04, 0.045, 0.04);
     for (let i = 0; i < 3; i += 1) {
-      const bottle = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.055, 0.18, 12), glassMats[i]);
+      const bottle = new THREE.Mesh(bottleGeo, glassMats[i]);
       bottle.position.set(0.28 + i * 0.16, shelfLevels[0] + 0.18, depth / 2 - 0.03);
       bottle.castShadow = true;
       shelf.add(bottle);
 
-      const stopper = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.045, 0.04), goldMat);
+      const stopper = new THREE.Mesh(stopperGeo, goldMat);
       stopper.position.set(bottle.position.x, bottle.position.y + 0.11, bottle.position.z);
       stopper.castShadow = true;
       shelf.add(stopper);
     }
 
     const charm = new THREE.Mesh(
-      new THREE.OctahedronGeometry(0.07, 0),
+      Geo.octahedron(0.07, 0),
       getStandardMaterial({ color: 0x8fc7ff, emissive: 0x4f8cff, emissiveIntensity: 0.65, roughness: 0.2 })
     );
     charm.position.set(0, shelfLevels[4] + 0.28, depth / 2 + 0.03);
@@ -1153,7 +1157,7 @@ export class AcademyWorld {
 
   private addLibraryLadder(): void {
     const ladder = new THREE.Group();
-    const woodMat = new THREE.MeshStandardMaterial({ color: 0x6d432b, roughness: 0.44, metalness: 0.08, map: this.woodTex });
+    const woodMat = getStandardMaterial({ color: 0x6d432b, roughness: 0.44, metalness: 0.08, map: this.woodTex });
     for (const x of [-0.28, 0.28]) {
       const rail = this.addBoxToGroup(ladder, new THREE.Vector3(x, 0.95, 0), new THREE.Vector3(0.055, 1.85, 0.06), woodMat);
       rail.rotation.z = x < 0 ? 0.17 : 0.05;
@@ -1264,7 +1268,7 @@ export class AcademyWorld {
 
   private addWindowLightPatch(x: number, z: number): void {
     const lightPlane = new THREE.Mesh(
-      new THREE.PlaneGeometry(2.5, 5.4),
+      Geo.plane(2.5, 5.4),
       new THREE.MeshBasicMaterial({ color: 0xf1f7ff, transparent: true, opacity: 0.13, depthWrite: false })
     );
     lightPlane.position.set(x, 0.085, z);
