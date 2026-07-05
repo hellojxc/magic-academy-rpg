@@ -25,7 +25,40 @@ interface AnimatedObject {
   rotateY?: number;
 }
 
+interface AnimatedInstance {
+  mesh: THREE.InstancedMesh;
+  index: number;
+  x: number;
+  z: number;
+  scaleX: number;
+  scaleY: number;
+  scaleZ: number;
+  rotationX: number;
+  rotationY: number;
+  rotationZ: number;
+  baseY: number;
+  amp: number;
+  speed: number;
+  phase: number;
+}
+
 type OutdoorAnimationZone = 'lawn' | 'lake';
+
+interface AnimatedInstanceSpec {
+  zone: OutdoorAnimationZone;
+  x: number;
+  z: number;
+  scaleX: number;
+  scaleY: number;
+  scaleZ: number;
+  rotationX: number;
+  rotationY: number;
+  rotationZ: number;
+  baseY: number;
+  amp: number;
+  speed: number;
+  phase: number;
+}
 
 interface TerrainSample {
   height: number;
@@ -49,7 +82,11 @@ const LAKEBED = new THREE.Color(0x263746);
 export class LawnLakeEnvironment {
   private readonly lawnAnimatedObjects: AnimatedObject[] = [];
   private readonly lakeAnimatedObjects: AnimatedObject[] = [];
+  private readonly lawnAnimatedInstances: AnimatedInstance[] = [];
+  private readonly lakeAnimatedInstances: AnimatedInstance[] = [];
+  private readonly animatedInstanceMeshes: THREE.InstancedMesh[] = [];
   private readonly waterMaterials: THREE.ShaderMaterial[] = [];
+  private readonly instanceDummy = new THREE.Object3D();
   private lastUpdateTime = -1;
   private lastLawnUpdateTime = -1;
   private lastLakeUpdateTime = -1;
@@ -83,12 +120,14 @@ export class LawnLakeEnvironment {
     if (elapsedTime === this.lastLawnUpdateTime) return;
     this.lastLawnUpdateTime = elapsedTime;
     this.updateAnimatedObjects(this.lawnAnimatedObjects, elapsedTime, delta);
+    this.updateAnimatedInstances(this.lawnAnimatedInstances, elapsedTime);
   }
 
   updateLake(elapsedTime: number, delta: number): void {
     if (elapsedTime === this.lastLakeUpdateTime) return;
     this.lastLakeUpdateTime = elapsedTime;
     this.updateAnimatedObjects(this.lakeAnimatedObjects, elapsedTime, delta);
+    this.updateAnimatedInstances(this.lakeAnimatedInstances, elapsedTime);
 
     for (const material of this.waterMaterials) {
       updateLakeWaterMaterial(material, elapsedTime);
@@ -99,6 +138,7 @@ export class LawnLakeEnvironment {
     return [
       ...this.lawnAnimatedObjects.map((item) => item.obj),
       ...this.lakeAnimatedObjects.map((item) => item.obj),
+      ...this.animatedInstanceMeshes,
     ];
   }
 
@@ -110,9 +150,65 @@ export class LawnLakeEnvironment {
     }
   }
 
+  private updateAnimatedInstances(instances: readonly AnimatedInstance[], elapsedTime: number): void {
+    let changedMesh: THREE.InstancedMesh | null = null;
+    for (const item of instances) {
+      if (changedMesh && changedMesh !== item.mesh) changedMesh.instanceMatrix.needsUpdate = true;
+      changedMesh = item.mesh;
+      this.writeAnimatedInstanceMatrix(item, elapsedTime);
+    }
+    if (changedMesh) changedMesh.instanceMatrix.needsUpdate = true;
+  }
+
   private addAnimatedObject(zone: OutdoorAnimationZone, item: AnimatedObject): void {
     if (zone === 'lake') this.lakeAnimatedObjects.push(item);
     else this.lawnAnimatedObjects.push(item);
+  }
+
+  private addAnimatedInstance(zone: OutdoorAnimationZone, item: AnimatedInstance): void {
+    if (zone === 'lake') this.lakeAnimatedInstances.push(item);
+    else this.lawnAnimatedInstances.push(item);
+  }
+
+  private addAnimatedInstancedMesh(
+    geometry: THREE.BufferGeometry,
+    material: THREE.Material,
+    specs: readonly AnimatedInstanceSpec[],
+    castShadow: boolean,
+    receiveShadow: boolean
+  ): void {
+    if (specs.length === 0) return;
+    const mesh = new THREE.InstancedMesh(geometry, material, specs.length);
+    mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+    mesh.castShadow = castShadow;
+    mesh.receiveShadow = receiveShadow;
+    mesh.frustumCulled = false;
+    this.animatedInstanceMeshes.push(mesh);
+    this.scene.add(mesh);
+
+    specs.forEach((spec, index) => {
+      const item: AnimatedInstance = {
+        ...spec,
+        mesh,
+        index,
+      };
+      this.addAnimatedInstance(spec.zone, item);
+      this.writeAnimatedInstanceMatrix(item, 0);
+    });
+    mesh.instanceMatrix.needsUpdate = true;
+    mesh.computeBoundingSphere();
+  }
+
+  private writeAnimatedInstanceMatrix(item: AnimatedInstance, elapsedTime: number): void {
+    this.instanceDummy.position.set(
+      item.x,
+      item.baseY + Math.sin(elapsedTime * item.speed + item.phase) * item.amp,
+      item.z
+    );
+    this.instanceDummy.rotation.set(item.rotationX, item.rotationY, item.rotationZ);
+    this.instanceDummy.scale.set(item.scaleX, item.scaleY, item.scaleZ);
+    this.instanceDummy.updateMatrix();
+    item.mesh.setMatrixAt(item.index, this.instanceDummy.matrix);
   }
 
   private animationZoneForPosition(x: number, z: number): OutdoorAnimationZone {
@@ -355,26 +451,39 @@ export class LawnLakeEnvironment {
     });
 
     const lilyMat = getStandardMaterial({ color: 0x2c6a29, roughness: 0.72, metalness: 0.02 });
-    const flowerMat = MatLib.lilyFlower;
+    const lilySpecs: AnimatedInstanceSpec[] = [];
+    const flowerMatrices: THREE.Matrix4[] = [];
+    const flowerDummy = new THREE.Object3D();
     for (let i = 0; i < 34; i += 1) {
       const x = LAKE_CENTER_X + (seeded(i * 17) - 0.5) * 15.8;
       const z = LAKE_CENTER_Z + (seeded(i * 19) - 0.5) * 11.4;
       if (!this.isInsideLake(x, z, -1.1)) continue;
-      const lily = new THREE.Mesh(Geo.circle(0.18 + seeded(i * 23) * 0.18, 12), lilyMat);
-      lily.rotation.x = -Math.PI / 2;
-      lily.rotation.z = seeded(i * 29) * Math.PI * 2;
-      lily.scale.set(1.2, 0.72, 1);
-      lily.position.set(x, 0.062, z);
-      lily.receiveShadow = true;
-      this.scene.add(lily);
-      this.addAnimatedObject('lake', { obj: lily, baseY: 0.062, amp: 0.008, speed: 1.2 + seeded(i) * 0.7, phase: seeded(i * 31) * Math.PI * 2 });
+      const radius = 0.18 + seeded(i * 23) * 0.18;
+      lilySpecs.push({
+        zone: 'lake',
+        x,
+        z,
+        scaleX: radius * 1.2,
+        scaleY: radius * 0.72,
+        scaleZ: 1,
+        rotationX: -Math.PI / 2,
+        rotationY: 0,
+        rotationZ: seeded(i * 29) * Math.PI * 2,
+        baseY: 0.062,
+        amp: 0.008,
+        speed: 1.2 + seeded(i) * 0.7,
+        phase: seeded(i * 31) * Math.PI * 2,
+      });
       if (i % 4 === 0) {
-        const flower = new THREE.Mesh(Geo.sphere(0.045, 8, 6), flowerMat);
-        flower.position.set(x + 0.05, 0.105, z - 0.02);
-        flower.castShadow = true;
-        this.scene.add(flower);
+        flowerDummy.position.set(x + 0.05, 0.105, z - 0.02);
+        flowerDummy.rotation.set(0, 0, 0);
+        flowerDummy.scale.set(1, 1, 1);
+        flowerDummy.updateMatrix();
+        flowerMatrices.push(flowerDummy.matrix.clone());
       }
     }
+    this.addAnimatedInstancedMesh(Geo.circle(1, 12), lilyMat, lilySpecs, false, true);
+    this.addInstancedStaticMesh(Geo.sphere(0.045, 8, 6), MatLib.lilyFlower, flowerMatrices, true, false);
 
     this.addWaterSparkles();
   }
@@ -618,30 +727,55 @@ export class LawnLakeEnvironment {
 
   private addFireflies(): void {
     const fireflyMat = MatLib.firefly;
+    const specs: AnimatedInstanceSpec[] = [];
     for (let i = 0; i < 42; i += 1) {
       const x = -24 + seeded(i * 13) * 38;
       const z = 8 + seeded(i * 19) * 19;
       if (this.isInsideLake(x, z, -0.4)) continue;
       const y = this.terrainHeight(x, z) + 0.5 + seeded(i * 23) * 1.4;
-      const fly = new THREE.Mesh(Geo.sphere(0.028, 6, 4), fireflyMat);
-      fly.position.set(x, y, z);
-      this.scene.add(fly);
-      this.addAnimatedObject(this.animationZoneForPosition(x, z), { obj: fly, baseY: y, amp: 0.28 + seeded(i * 29) * 0.36, speed: 0.45 + seeded(i * 31) * 0.8, phase: seeded(i * 37) * Math.PI * 2 });
+      specs.push({
+        zone: this.animationZoneForPosition(x, z),
+        x,
+        z,
+        scaleX: 1,
+        scaleY: 1,
+        scaleZ: 1,
+        rotationX: 0,
+        rotationY: 0,
+        rotationZ: 0,
+        baseY: y,
+        amp: 0.28 + seeded(i * 29) * 0.36,
+        speed: 0.45 + seeded(i * 31) * 0.8,
+        phase: seeded(i * 37) * Math.PI * 2,
+      });
     }
+    this.addAnimatedInstancedMesh(Geo.sphere(0.028, 6, 4), fireflyMat, specs, false, false);
   }
 
   private addWaterSparkles(): void {
     const sparkMat = MatLib.waterSparkle;
-    const geo = Geo.sphere(0.018, 4, 3);
+    const specs: AnimatedInstanceSpec[] = [];
     for (let i = 0; i < 48; i += 1) {
       const x = LAKE_CENTER_X + (seeded(i * 17) - 0.5) * 16;
       const z = LAKE_CENTER_Z + (seeded(i * 19) - 0.5) * 12;
       if (!this.isInsideLake(x, z, -1.2)) continue;
-      const spark = new THREE.Mesh(geo, sparkMat);
-      spark.position.set(x, 0.078, z);
-      this.scene.add(spark);
-      this.addAnimatedObject('lake', { obj: spark, baseY: 0.078, amp: 0.015, speed: 1.8 + seeded(i * 23) * 1.7, phase: seeded(i * 29) * Math.PI * 2 });
+      specs.push({
+        zone: 'lake',
+        x,
+        z,
+        scaleX: 1,
+        scaleY: 1,
+        scaleZ: 1,
+        rotationX: 0,
+        rotationY: 0,
+        rotationZ: 0,
+        baseY: 0.078,
+        amp: 0.015,
+        speed: 1.8 + seeded(i * 23) * 1.7,
+        phase: seeded(i * 29) * Math.PI * 2,
+      });
     }
+    this.addAnimatedInstancedMesh(Geo.sphere(0.018, 4, 3), sparkMat, specs, false, false);
   }
 
   private shouldAvoidGrass(x: number, z: number): boolean {
