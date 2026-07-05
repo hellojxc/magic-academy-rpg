@@ -137,6 +137,10 @@ export class DiningHall {
     }
   }
 
+  getDynamicObjects(): readonly THREE.Object3D[] {
+    return this.animatedObjects.map((item) => item.obj);
+  }
+
   private addDiningTable(centerX: number, centerZ: number, length: number, woodMat: THREE.Material, clothMat: THREE.Material, darkWoodMat: THREE.Material): void {
     // 桌面
     const top = new THREE.Mesh(Geo.box(length, 0.08, 1.2), woodMat);

@@ -95,6 +95,13 @@ export class LawnLakeEnvironment {
     }
   }
 
+  getDynamicObjects(): readonly THREE.Object3D[] {
+    return [
+      ...this.lawnAnimatedObjects.map((item) => item.obj),
+      ...this.lakeAnimatedObjects.map((item) => item.obj),
+    ];
+  }
+
   private updateAnimatedObjects(objects: readonly AnimatedObject[], elapsedTime: number, delta: number): void {
     const frameScale = delta * 60;
     for (const item of objects) {

@@ -175,6 +175,10 @@ export class GrandHall {
     }
   }
 
+  getDynamicObjects(): readonly THREE.Object3D[] {
+    return this.animatedObjects.map((item) => item.obj);
+  }
+
   private addColumn(x: number, z: number, stoneMat: THREE.Material, trimMat: THREE.Material): void {
     const baseGeo = Geo.cylinder(0.45, 0.52, 0.2, 28);
     const base = new THREE.Mesh(baseGeo, stoneMat);

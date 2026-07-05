@@ -72,6 +72,7 @@ const STORY_NPC_ASSET_LOAD_START_INTERVAL_SECONDS = 1.25;
 const POINT_LIGHT_UPDATE_DISTANCE_SQ = 0.35 * 0.35;
 const POINT_LIGHT_BUDGET = 8;
 const POINT_LIGHT_RELEVANCE_MARGIN = 2.5;
+const RUNTIME_DYNAMIC_OBJECT = 'runtimeDynamicObject';
 
 export class AcademyWorld {
   private readonly obstacles: Obstacle[] = [];
@@ -147,6 +148,7 @@ export class AcademyWorld {
     this.collectPointLightsByRegion();
     // 注册区域动画更新组，用于按距离裁剪
     this.registerRegionUpdateGroups();
+    this.freezeStaticSceneMatrices();
 
     return {
       player: this.player,
@@ -323,6 +325,7 @@ export class AcademyWorld {
       const light = new THREE.PointLight(0xffffff, 0, 1, 2);
       light.visible = true;
       light.userData.runtimePointLightProxy = true;
+      light.userData[RUNTIME_DYNAMIC_OBJECT] = true;
       light.name = `Runtime point light proxy ${this.pointLightProxies.length + 1}`;
       this.pointLightProxies.push(light);
       this.scene.add(light);
@@ -394,6 +397,49 @@ export class AcademyWorld {
   /** 直接返回序列化字符串，避免每帧分配中间对象 */
   getCharacterModelStatesString(): string {
     return `player:${this.playerRig.getModelState()},lyra:${this.lyraRig.getModelState()}`;
+  }
+
+  private freezeStaticSceneMatrices(): void {
+    this.markDynamicSceneObjects();
+    let frozen = 0;
+
+    const visit = (object: THREE.Object3D, dynamicAncestor: boolean): void => {
+      const dynamicSubtree = dynamicAncestor
+        || object.userData[RUNTIME_DYNAMIC_OBJECT] === true
+        || object instanceof THREE.Light
+        || object instanceof THREE.Camera;
+
+      if (!dynamicSubtree && object !== this.scene) {
+        object.updateMatrix();
+        object.matrixAutoUpdate = false;
+        frozen += 1;
+      }
+
+      for (const child of object.children) visit(child, dynamicSubtree);
+    };
+
+    visit(this.scene, false);
+    this.scene.updateMatrixWorld(true);
+    this.scene.userData.staticMatrixFreezeCount = frozen;
+  }
+
+  private markDynamicSceneObjects(): void {
+    this.markRuntimeDynamic(this.sunTarget);
+    this.markRuntimeDynamic(this.player);
+    this.markRuntimeDynamic(this.lyra);
+    for (const npc of this.storyNpcObjects) this.markRuntimeDynamic(npc.object);
+    for (const item of this.animatedObjects) this.markRuntimeDynamic(item.object);
+    for (const object of this.grandHall.getDynamicObjects()) this.markRuntimeDynamic(object);
+    for (const object of this.diningHall.getDynamicObjects()) this.markRuntimeDynamic(object);
+    for (const object of this.outdoor.getDynamicObjects()) this.markRuntimeDynamic(object);
+    for (const object of this.extendedGrounds.getDynamicObjects()) this.markRuntimeDynamic(object);
+    for (const object of this.equipmentShowcase.getDynamicObjects()) this.markRuntimeDynamic(object);
+    for (const light of this.pointLightProxies) this.markRuntimeDynamic(light);
+  }
+
+  private markRuntimeDynamic(object: THREE.Object3D | undefined): void {
+    if (!object) return;
+    object.userData[RUNTIME_DYNAMIC_OBJECT] = true;
   }
 
   /**

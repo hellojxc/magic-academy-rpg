@@ -65,6 +65,10 @@ export class ExtendedAcademyGrounds {
     }
   }
 
+  getDynamicObjects(): readonly THREE.Object3D[] {
+    return this.animatedObjects.map((item) => item.obj);
+  }
+
   private addCrystalGreenhouse(obstacles: Obstacle[]): void {
     const floorTex = makeSharedSurfaceDetailTexture('greenhouse-mosaic-floor', 5, 4);
     const floorMat = getStandardMaterial({

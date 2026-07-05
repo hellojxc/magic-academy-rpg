@@ -79,6 +79,10 @@ export class EquipmentShowcase {
     }
   }
 
+  getDynamicObjects(): readonly THREE.Object3D[] {
+    return this.displayObjects.map((display) => display.model);
+  }
+
   private getPlacement(index: number): { x: number; z: number; rotationY: number; modelYaw: number } {
     if (index < 10) {
       return { x: 8.1, z: 24 + index * 1.52, rotationY: Math.PI / 2, modelYaw: -Math.PI / 2 };

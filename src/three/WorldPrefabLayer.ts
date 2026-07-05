@@ -36,6 +36,7 @@ export function addWorldPrefabRegion(scene: THREE.Scene, region: WorldRegionId):
             object.receiveShadow = true;
           }
         });
+        freezeStaticSubtree(instance);
         scene.add(instance);
       }
     })
@@ -57,4 +58,12 @@ function applyScale(object: THREE.Object3D, scale: number | [number, number, num
     return;
   }
   object.scale.setScalar(scale);
+}
+
+function freezeStaticSubtree(root: THREE.Object3D): void {
+  root.traverse((object) => {
+    object.updateMatrix();
+    object.matrixAutoUpdate = false;
+  });
+  root.updateMatrixWorld(true);
 }
