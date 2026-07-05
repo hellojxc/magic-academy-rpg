@@ -25,6 +25,8 @@ interface AnimatedObject {
   rotateY?: number;
 }
 
+type OutdoorAnimationZone = 'lawn' | 'lake';
+
 interface TerrainSample {
   height: number;
   color: THREE.Color;
@@ -45,9 +47,12 @@ const PATH = new THREE.Color(0x8f8575);
 const LAKEBED = new THREE.Color(0x263746);
 
 export class LawnLakeEnvironment {
-  private readonly animatedObjects: AnimatedObject[] = [];
+  private readonly lawnAnimatedObjects: AnimatedObject[] = [];
+  private readonly lakeAnimatedObjects: AnimatedObject[] = [];
   private readonly waterMaterials: THREE.ShaderMaterial[] = [];
   private lastUpdateTime = -1;
+  private lastLawnUpdateTime = -1;
+  private lastLakeUpdateTime = -1;
 
   constructor(private readonly scene: THREE.Scene) {}
 
@@ -70,16 +75,41 @@ export class LawnLakeEnvironment {
   update(elapsedTime: number, delta: number): void {
     if (elapsedTime === this.lastUpdateTime) return;
     this.lastUpdateTime = elapsedTime;
+    this.updateLawn(elapsedTime, delta);
+    this.updateLake(elapsedTime, delta);
+  }
 
-    const frameScale = delta * 60;
-    for (const item of this.animatedObjects) {
-      item.obj.position.y = item.baseY + Math.sin(elapsedTime * item.speed + item.phase) * item.amp;
-      if (item.rotateY) item.obj.rotation.y += item.rotateY * frameScale;
-    }
+  updateLawn(elapsedTime: number, delta: number): void {
+    if (elapsedTime === this.lastLawnUpdateTime) return;
+    this.lastLawnUpdateTime = elapsedTime;
+    this.updateAnimatedObjects(this.lawnAnimatedObjects, elapsedTime, delta);
+  }
+
+  updateLake(elapsedTime: number, delta: number): void {
+    if (elapsedTime === this.lastLakeUpdateTime) return;
+    this.lastLakeUpdateTime = elapsedTime;
+    this.updateAnimatedObjects(this.lakeAnimatedObjects, elapsedTime, delta);
 
     for (const material of this.waterMaterials) {
       updateLakeWaterMaterial(material, elapsedTime);
     }
+  }
+
+  private updateAnimatedObjects(objects: readonly AnimatedObject[], elapsedTime: number, delta: number): void {
+    const frameScale = delta * 60;
+    for (const item of objects) {
+      item.obj.position.y = item.baseY + Math.sin(elapsedTime * item.speed + item.phase) * item.amp;
+      if (item.rotateY) item.obj.rotation.y += item.rotateY * frameScale;
+    }
+  }
+
+  private addAnimatedObject(zone: OutdoorAnimationZone, item: AnimatedObject): void {
+    if (zone === 'lake') this.lakeAnimatedObjects.push(item);
+    else this.lawnAnimatedObjects.push(item);
+  }
+
+  private animationZoneForPosition(x: number, z: number): OutdoorAnimationZone {
+    return x >= -26 && x <= -4 && z >= 10 && z <= 28 ? 'lake' : 'lawn';
   }
 
   private addTerrain(): void {
@@ -330,7 +360,7 @@ export class LawnLakeEnvironment {
       lily.position.set(x, 0.062, z);
       lily.receiveShadow = true;
       this.scene.add(lily);
-      this.animatedObjects.push({ obj: lily, baseY: 0.062, amp: 0.008, speed: 1.2 + seeded(i) * 0.7, phase: seeded(i * 31) * Math.PI * 2 });
+      this.addAnimatedObject('lake', { obj: lily, baseY: 0.062, amp: 0.008, speed: 1.2 + seeded(i) * 0.7, phase: seeded(i * 31) * Math.PI * 2 });
       if (i % 4 === 0) {
         const flower = new THREE.Mesh(Geo.sphere(0.045, 8, 6), flowerMat);
         flower.position.set(x + 0.05, 0.105, z - 0.02);
@@ -384,7 +414,7 @@ export class LawnLakeEnvironment {
     const lamp = new THREE.Mesh(Geo.octahedron(0.16, 1), MatLib.warmGlowWeak);
     lamp.position.set(startX + 5.6, 0.82, z);
     this.scene.add(lamp);
-    this.animatedObjects.push({ obj: lamp, baseY: 0.82, amp: 0.035, speed: 1.8, phase: 0.2, rotateY: 0.008 });
+    this.addAnimatedObject(this.animationZoneForPosition(lamp.position.x, lamp.position.z), { obj: lamp, baseY: 0.82, amp: 0.035, speed: 1.8, phase: 0.2, rotateY: 0.008 });
     addPointLight(this.scene, startX + 5.6, 0.82, z, 0xffc96d, 1.15, 5.6);
   }
 
@@ -410,7 +440,7 @@ export class LawnLakeEnvironment {
     water.rotation.x = -Math.PI / 2;
     water.position.set(x, baseY + 0.415, z);
     this.scene.add(water);
-    this.animatedObjects.push({ obj: water, baseY: baseY + 0.415, amp: 0.006, speed: 1.8, phase: 0.2 });
+    this.addAnimatedObject('lawn', { obj: water, baseY: baseY + 0.415, amp: 0.006, speed: 1.8, phase: 0.2 });
 
     const pillar = new THREE.Mesh(Geo.cylinder(0.16, 0.22, 0.72, 18), stoneMat);
     pillar.position.set(x, baseY + 0.72, z);
@@ -425,7 +455,7 @@ export class LawnLakeEnvironment {
     const spout = new THREE.Mesh(Geo.cylinder(0.05, 0.08, 0.42, 12), MatLib.waterSpout);
     spout.position.set(x, baseY + 1.33, z);
     this.scene.add(spout);
-    this.animatedObjects.push({ obj: spout, baseY: baseY + 1.33, amp: 0.035, speed: 4.0, phase: 0 });
+    this.addAnimatedObject('lawn', { obj: spout, baseY: baseY + 1.33, amp: 0.035, speed: 4.0, phase: 0 });
     addPointLight(this.scene, x, baseY + 0.8, z, 0x6fc4ff, 0.65, 4);
     obstacles.push({ minX: -1.25, maxX: 1.25, minZ: 13.35, maxZ: 15.65 });
 
@@ -514,7 +544,7 @@ export class LawnLakeEnvironment {
       if (this.isInsideLake(tree.x, tree.z, 0.35)) continue;
       const y = this.terrainHeight(tree.x, tree.z);
       const group = addNaturalTree(this.scene, { ...tree, baseY: y });
-      this.animatedObjects.push({ obj: group, baseY: y, amp: 0.006, speed: 0.45, phase: tree.seed * 0.01, rotateY: 0.0008 });
+      this.addAnimatedObject(this.animationZoneForPosition(tree.x, tree.z), { obj: group, baseY: y, amp: 0.006, speed: 0.45, phase: tree.seed * 0.01, rotateY: 0.0008 });
       const radius = 0.28 * tree.scale;
       obstacles.push({ minX: tree.x - radius, maxX: tree.x + radius, minZ: tree.z - radius, maxZ: tree.z + radius });
     }
@@ -575,7 +605,7 @@ export class LawnLakeEnvironment {
     const lamp = new THREE.Mesh(Geo.octahedron(0.2, 1), MatLib.warmLight);
     lamp.position.set(x, y + 3.1, z);
     this.scene.add(lamp);
-    this.animatedObjects.push({ obj: lamp, baseY: y + 3.1, amp: 0.035, speed: 1.8, phase: seeded(x * 31 + z * 17) * Math.PI * 2, rotateY: 0.006 });
+    this.addAnimatedObject(this.animationZoneForPosition(x, z), { obj: lamp, baseY: y + 3.1, amp: 0.035, speed: 1.8, phase: seeded(x * 31 + z * 17) * Math.PI * 2, rotateY: 0.006 });
     addPointLight(this.scene, x, y + 3.05, z, 0xffc96d, 1.2, 6);
   }
 
@@ -589,7 +619,7 @@ export class LawnLakeEnvironment {
       const fly = new THREE.Mesh(Geo.sphere(0.028, 6, 4), fireflyMat);
       fly.position.set(x, y, z);
       this.scene.add(fly);
-      this.animatedObjects.push({ obj: fly, baseY: y, amp: 0.28 + seeded(i * 29) * 0.36, speed: 0.45 + seeded(i * 31) * 0.8, phase: seeded(i * 37) * Math.PI * 2 });
+      this.addAnimatedObject(this.animationZoneForPosition(x, z), { obj: fly, baseY: y, amp: 0.28 + seeded(i * 29) * 0.36, speed: 0.45 + seeded(i * 31) * 0.8, phase: seeded(i * 37) * Math.PI * 2 });
     }
   }
 
@@ -603,7 +633,7 @@ export class LawnLakeEnvironment {
       const spark = new THREE.Mesh(geo, sparkMat);
       spark.position.set(x, 0.078, z);
       this.scene.add(spark);
-      this.animatedObjects.push({ obj: spark, baseY: 0.078, amp: 0.015, speed: 1.8 + seeded(i * 23) * 1.7, phase: seeded(i * 29) * Math.PI * 2 });
+      this.addAnimatedObject('lake', { obj: spark, baseY: 0.078, amp: 0.015, speed: 1.8 + seeded(i * 23) * 1.7, phase: seeded(i * 29) * Math.PI * 2 });
     }
   }
 
