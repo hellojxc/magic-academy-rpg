@@ -38,6 +38,12 @@ interface RankedPointLight {
   distanceSq: number;
 }
 
+interface DistanceShadowObject {
+  object: THREE.Object3D;
+  shadowDistanceSq: number;
+  shadowsEnabled: boolean | null;
+}
+
 interface RegionUpdateGroup {
   id: string;
   updateKey: string;
@@ -76,7 +82,10 @@ const STORY_NPC_ASSET_LOAD_START_INTERVAL_SECONDS = 1.25;
 const POINT_LIGHT_UPDATE_DISTANCE_SQ = 0.35 * 0.35;
 const POINT_LIGHT_BUDGET = 8;
 const POINT_LIGHT_RELEVANCE_MARGIN = 2.5;
+const DYNAMIC_OBJECT_SHADOW_DISTANCE_SQ = 14 * 14;
+const DYNAMIC_SHADOW_UPDATE_DISTANCE_SQ = 0.5 * 0.5;
 const RUNTIME_DYNAMIC_OBJECT = 'runtimeDynamicObject';
+const DISTANCE_SHADOW_DEFAULT = 'distanceShadowDefault';
 
 export class AcademyWorld {
   private readonly obstacles: Obstacle[] = [];
@@ -87,8 +96,10 @@ export class AcademyWorld {
   private readonly pointLights: THREE.PointLight[] = [];
   private readonly pointLightProxies: THREE.PointLight[] = [];
   private readonly pointLightRankBuffer: RankedPointLight[] = [];
+  private readonly distanceShadowObjects: DistanceShadowObject[] = [];
   private readonly regionUpdateGroups: RegionUpdateGroup[] = [];
   private readonly updatedRegionKeys = new Set<string>();
+  private readonly distanceShadowWorldPosition = new THREE.Vector3();
   private readonly sunTarget = new THREE.Object3D();
   private sun!: THREE.DirectionalLight;
   private readonly sunOffset = new THREE.Vector3(-8, 12, 6);
@@ -97,6 +108,8 @@ export class AcademyWorld {
   private lastSunFollowZ = Number.NaN;
   private lastPointLightUpdateX = Number.NaN;
   private lastPointLightUpdateZ = Number.NaN;
+  private lastDynamicShadowUpdateX = Number.NaN;
+  private lastDynamicShadowUpdateZ = Number.NaN;
   private lastStoryNpcAssetLoadStartTime = Number.NEGATIVE_INFINITY;
   private lyraRigUpdateAccumulator = 0;
   private playerRig!: CharacterModel3D;
@@ -167,6 +180,7 @@ export class AcademyWorld {
     this.playerRig.update(elapsedTime, delta);
     this.updateLyraRig(elapsedTime, delta, playerMoving);
     this.updateStoryNpcs(elapsedTime, delta, playerMoving);
+    this.updateDistanceShadows();
 
     this.updateSunFollow();
 
@@ -324,6 +338,29 @@ export class AcademyWorld {
     }
   }
 
+  private updateDistanceShadows(force = false): void {
+    if (this.distanceShadowObjects.length === 0) return;
+
+    const px = this.player.position.x;
+    const pz = this.player.position.z;
+    const movedX = px - this.lastDynamicShadowUpdateX;
+    const movedZ = pz - this.lastDynamicShadowUpdateZ;
+    if (!force && movedX * movedX + movedZ * movedZ < DYNAMIC_SHADOW_UPDATE_DISTANCE_SQ) return;
+
+    this.lastDynamicShadowUpdateX = px;
+    this.lastDynamicShadowUpdateZ = pz;
+    for (const entry of this.distanceShadowObjects) {
+      entry.object.getWorldPosition(this.distanceShadowWorldPosition);
+      const dx = px - this.distanceShadowWorldPosition.x;
+      const dz = pz - this.distanceShadowWorldPosition.z;
+      const enabled = dx * dx + dz * dz <= entry.shadowDistanceSq;
+      if (entry.shadowsEnabled === enabled) continue;
+
+      entry.shadowsEnabled = enabled;
+      this.setObjectShadows(entry.object, enabled);
+    }
+  }
+
   private ensurePointLightProxies(): void {
     while (this.pointLightProxies.length < POINT_LIGHT_BUDGET) {
       const light = new THREE.PointLight(0xffffff, 0, 1, 2);
@@ -432,18 +469,29 @@ export class AcademyWorld {
     this.markRuntimeDynamic(this.player);
     this.markRuntimeDynamic(this.lyra);
     for (const npc of this.storyNpcObjects) this.markRuntimeDynamic(npc.object);
-    for (const item of this.animatedObjects) this.markRuntimeDynamic(item.object);
-    for (const object of this.grandHall.getDynamicObjects()) this.markRuntimeDynamic(object);
-    for (const object of this.diningHall.getDynamicObjects()) this.markRuntimeDynamic(object);
-    for (const object of this.outdoor.getDynamicObjects()) this.markRuntimeDynamic(object);
-    for (const object of this.extendedGrounds.getDynamicObjects()) this.markRuntimeDynamic(object);
-    for (const object of this.equipmentShowcase.getDynamicObjects()) this.markRuntimeDynamic(object);
+    for (const item of this.animatedObjects) this.markRuntimeDynamicWithDistanceShadows(item.object);
+    for (const object of this.grandHall.getDynamicObjects()) this.markRuntimeDynamicWithDistanceShadows(object);
+    for (const object of this.diningHall.getDynamicObjects()) this.markRuntimeDynamicWithDistanceShadows(object);
+    for (const object of this.outdoor.getDynamicObjects()) this.markRuntimeDynamicWithDistanceShadows(object);
+    for (const object of this.extendedGrounds.getDynamicObjects()) this.markRuntimeDynamicWithDistanceShadows(object);
+    for (const object of this.equipmentShowcase.getDynamicObjects()) this.markRuntimeDynamicWithDistanceShadows(object);
     for (const light of this.pointLightProxies) this.markRuntimeDynamic(light);
+    this.updateDistanceShadows(true);
   }
 
   private markRuntimeDynamic(object: THREE.Object3D | undefined): void {
     if (!object) return;
     object.userData[RUNTIME_DYNAMIC_OBJECT] = true;
+  }
+
+  private markRuntimeDynamicWithDistanceShadows(object: THREE.Object3D | undefined): void {
+    if (!object) return;
+    this.markRuntimeDynamic(object);
+    this.distanceShadowObjects.push({
+      object,
+      shadowDistanceSq: DYNAMIC_OBJECT_SHADOW_DISTANCE_SQ,
+      shadowsEnabled: null,
+    });
   }
 
   /**
@@ -1215,8 +1263,16 @@ export class AcademyWorld {
   }
 
   private setStoryNpcShadows(root: THREE.Object3D, enabled: boolean): void {
+    this.setObjectShadows(root, enabled);
+  }
+
+  private setObjectShadows(root: THREE.Object3D, enabled: boolean): void {
     root.traverse((object) => {
-      if (object instanceof THREE.Mesh) object.castShadow = enabled;
+      if (!(object instanceof THREE.Mesh)) return;
+      if (object.userData[DISTANCE_SHADOW_DEFAULT] === undefined) {
+        object.userData[DISTANCE_SHADOW_DEFAULT] = object.castShadow;
+      }
+      object.castShadow = enabled && object.userData[DISTANCE_SHADOW_DEFAULT] === true;
     });
   }
 
