@@ -50,15 +50,19 @@ interface StoryNpcObject {
   homeZ: number;
   phase: number;
   idleSpeed: number;
+  rigUpdateAccumulator: number;
 }
 
 const STORY_NPC_IMMEDIATE_ASSET_DISTANCE_SQ = 6.2 * 6.2;
 const STORY_NPC_IDLE_ASSET_DISTANCE_SQ = 13 * 13;
 const STORY_NPC_HEAVY_IDLE_ASSET_DISTANCE_SQ = 8.5 * 8.5;
 const STORY_NPC_ACTIVE_DISTANCE_SQ = 18 * 18;
+const STORY_NPC_FULL_RATE_DISTANCE_SQ = 8.5 * 8.5;
 const STORY_NPC_LOOK_AT_DISTANCE_SQ = 4 * 4;
 const STORY_NPC_IDLE_PRELOAD_DELAY_SECONDS = 3.2;
 const STORY_NPC_HEAVY_IDLE_PRELOAD_DELAY_SECONDS = 8;
+const STORY_NPC_FAR_UPDATE_INTERVAL_MOVING = 1 / 18;
+const STORY_NPC_FAR_UPDATE_INTERVAL_IDLE = 1 / 12;
 const POINT_LIGHT_UPDATE_DISTANCE_SQ = 0.35 * 0.35;
 
 export class AcademyWorld {
@@ -851,6 +855,7 @@ export class AcademyWorld {
         homeZ: root.position.z,
         phase: index * 0.63,
         idleSpeed: 0.85 + (index % 7) * 0.07,
+        rigUpdateAccumulator: 0,
       });
       return;
     }
@@ -929,6 +934,7 @@ export class AcademyWorld {
       homeZ: root.position.z,
       phase: index * 0.63,
       idleSpeed: 0.85 + (index % 7) * 0.07,
+      rigUpdateAccumulator: 0,
     });
   }
 
@@ -959,18 +965,47 @@ export class AcademyWorld {
 
       if (distanceSq > STORY_NPC_ACTIVE_DISTANCE_SQ) {
         npc.rig?.setMoving(false);
+        npc.rigUpdateAccumulator = 0;
         continue;
       }
 
       const showcaseMoving = this.updateMatureSenpaiShowcaseWalk(npc, elapsedTime, delta, distanceSq);
-      npc.rig?.setMoving(showcaseMoving);
-      npc.rig?.update(elapsedTime, delta, this.player.position);
+      this.updateStoryNpcRig(npc, elapsedTime, delta, showcaseMoving, playerMoving, distanceSq);
       npc.object.position.y = npc.baseY + Math.sin(elapsedTime * npc.idleSpeed + npc.phase) * 0.025;
       if (distanceSq > STORY_NPC_LOOK_AT_DISTANCE_SQ) continue;
       const targetYaw = Math.atan2(dx, dz);
       const wrapped = THREE.MathUtils.euclideanModulo(targetYaw - npc.object.rotation.y + Math.PI, Math.PI * 2) - Math.PI;
       npc.object.rotation.y += wrapped * (1 - Math.exp(-7 * delta));
     }
+  }
+
+  private updateStoryNpcRig(
+    npc: StoryNpcObject,
+    elapsedTime: number,
+    delta: number,
+    moving: boolean,
+    playerMoving: boolean,
+    distanceSq: number
+  ): void {
+    if (!npc.rig) return;
+
+    npc.rig.setMoving(moving);
+    const fullRate = distanceSq <= STORY_NPC_FULL_RATE_DISTANCE_SQ || distanceSq <= STORY_NPC_LOOK_AT_DISTANCE_SQ;
+    if (fullRate) {
+      npc.rigUpdateAccumulator = 0;
+      npc.rig.update(elapsedTime, delta, this.player.position);
+      return;
+    }
+
+    npc.rigUpdateAccumulator += delta;
+    const updateInterval = playerMoving
+      ? STORY_NPC_FAR_UPDATE_INTERVAL_MOVING
+      : STORY_NPC_FAR_UPDATE_INTERVAL_IDLE;
+    if (npc.rigUpdateAccumulator < updateInterval) return;
+
+    const rigDelta = Math.min(npc.rigUpdateAccumulator, 0.12);
+    npc.rigUpdateAccumulator = 0;
+    npc.rig.update(elapsedTime, rigDelta, this.player.position);
   }
 
   private shouldLoadStoryNpcAsset(id: string, distanceSq: number, elapsedTime: number, playerMoving: boolean): boolean {
