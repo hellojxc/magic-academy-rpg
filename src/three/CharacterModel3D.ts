@@ -85,6 +85,7 @@ interface AssetLoadQueueEntry {
 
 interface CharacterModel3DOptions {
   readonly autoLoad?: boolean;
+  readonly onAssetInstalled?: () => void;
 }
 
 type ThreeVRMModule = typeof import('@pixiv/three-vrm');
@@ -125,7 +126,10 @@ export class CharacterModel3D {
   private readonly gltfLookHeadLocal = new THREE.Vector3();
   private readonly runtimePivotCenter = new THREE.Vector3();
 
-  constructor(private readonly spec: CharacterSpec, options: CharacterModel3DOptions = {}) {
+  constructor(
+    private readonly spec: CharacterSpec,
+    private readonly options: CharacterModel3DOptions = {},
+  ) {
     this.buildPlan = createCharacterBuildPlan(spec);
     this.root.userData.characterId = spec.id;
     this.root.userData.characterDisplayName = spec.displayName;
@@ -318,6 +322,7 @@ export class CharacterModel3D {
       vrm.lookAt.target = this.lookTarget;
       vrm.lookAt.autoUpdate = true;
     }
+    this.notifyAssetInstalled();
   }
 
   private installGLTF(scene: THREE.Group, animations: THREE.AnimationClip[]): void {
@@ -348,6 +353,19 @@ export class CharacterModel3D {
       }
       this.playGLTFAction('idle', 0);
     }
+    this.notifyAssetInstalled();
+  }
+
+  private notifyAssetInstalled(): void {
+    const callback = this.options.onAssetInstalled;
+    if (!callback) return;
+    queueMicrotask(() => {
+      try {
+        callback();
+      } catch (error) {
+        console.warn(`Failed to run ${this.spec.id} character asset install callback`, error);
+      }
+    });
   }
 
   private applyGLTFVisualProfile(model: THREE.Object3D, asset: CharacterAssetEntry): void {

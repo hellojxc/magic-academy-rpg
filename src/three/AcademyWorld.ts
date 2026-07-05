@@ -104,7 +104,10 @@ export class AcademyWorld {
   private extendedGrounds: ExtendedAcademyGrounds;
   private equipmentShowcase: EquipmentShowcase;
 
-  constructor(private readonly scene: THREE.Scene) {
+  constructor(
+    private readonly scene: THREE.Scene,
+    private readonly onCharacterAssetInstalled?: () => void,
+  ) {
     this.grandHall = new GrandHall(this.scene);
     this.diningHall = new DiningHall(this.scene);
     this.outdoor = new LawnLakeEnvironment(this.scene);
@@ -891,13 +894,17 @@ export class AcademyWorld {
     const npcEntries = npcsData as NPCData[];
     const lyraData = npcEntries.find((npc) => npc.id === 'lyra');
 
-    this.playerRig = new CharacterModel3D(getCharacterSpec('player'));
+    this.playerRig = new CharacterModel3D(getCharacterSpec('player'), {
+      onAssetInstalled: this.onCharacterAssetInstalled,
+    });
     this.player = this.playerRig.root;
     this.player.position.set(-5.1, 0, 2.5);
     this.player.rotation.y = Math.PI * 0.78;
     this.scene.add(this.player);
 
-    this.lyraRig = new CharacterModel3D(getCharacterSpec('lyra'));
+    this.lyraRig = new CharacterModel3D(getCharacterSpec('lyra'), {
+      onAssetInstalled: this.onCharacterAssetInstalled,
+    });
     this.lyra = this.lyraRig.root;
     this.lyra.position.set(lyraData?.worldX ?? 5.35, 0, lyraData?.worldZ ?? -1.35);
     this.lyra.rotation.y = lyraData?.rotationY ?? -Math.PI * 0.18;
@@ -923,7 +930,10 @@ export class AcademyWorld {
 
   private addStoryNpc(npcData: NPCData, index: number): void {
     if (hasCharacterSpec(npcData.id)) {
-      const rig = new CharacterModel3D(getCharacterSpec(npcData.id), { autoLoad: false });
+      const rig = new CharacterModel3D(getCharacterSpec(npcData.id), {
+        autoLoad: false,
+        onAssetInstalled: this.onCharacterAssetInstalled,
+      });
       const root = rig.root;
       root.position.set(npcData.worldX ?? 0, 0, npcData.worldZ ?? 0);
       root.rotation.y = npcData.rotationY ?? (Math.PI + index * 0.37);

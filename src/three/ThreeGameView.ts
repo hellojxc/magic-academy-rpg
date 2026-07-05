@@ -94,8 +94,12 @@ export class ThreeGameView {
     this.composer.render();
   }
 
-  warmup(): void {
+  compileScene(): void {
     this.renderer.compile(this.scene, this.camera);
+  }
+
+  warmup(): void {
+    this.compileScene();
     this.composer.render();
   }
 
