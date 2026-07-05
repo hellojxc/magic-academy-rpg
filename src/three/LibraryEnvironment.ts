@@ -15,10 +15,13 @@ export class LibraryEnvironment {
   private readonly dummy = new THREE.Object3D();
   private readonly woodTex = makeSharedWoodTexture();
 
-  constructor(private readonly scene: THREE.Scene) {}
+  constructor(
+    private readonly scene: THREE.Scene,
+    private readonly onSceneAssetInstalled?: () => void,
+  ) {}
 
   build(): void {
-    addWorldPrefabRegion(this.scene, 'library');
+    addWorldPrefabRegion(this.scene, 'library', this.onSceneAssetInstalled);
     this.addContactShadows();
     this.addInstancedLooseBooks();
     this.addScrollClusters();

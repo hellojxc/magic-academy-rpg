@@ -6,7 +6,11 @@ const loader = new GLTFLoader();
 let packPromise: Promise<THREE.Group> | null = null;
 const appliedRegions = new WeakMap<THREE.Scene, Set<WorldRegionId>>();
 
-export function addWorldPrefabRegion(scene: THREE.Scene, region: WorldRegionId): void {
+export function addWorldPrefabRegion(
+  scene: THREE.Scene,
+  region: WorldRegionId,
+  onInstalled?: () => void,
+): void {
   let regions = appliedRegions.get(scene);
   if (!regions) {
     regions = new Set();
@@ -17,6 +21,7 @@ export function addWorldPrefabRegion(scene: THREE.Scene, region: WorldRegionId):
 
   void getPrefabPack()
     .then((pack) => {
+      let installed = 0;
       for (const placement of WORLD_PREFAB_PLACEMENTS) {
         if (placement.region !== region) continue;
         const source = pack.getObjectByName(placement.prefab);
@@ -38,7 +43,9 @@ export function addWorldPrefabRegion(scene: THREE.Scene, region: WorldRegionId):
         });
         freezeStaticSubtree(instance);
         scene.add(instance);
+        installed += 1;
       }
+      if (installed > 0) onInstalled?.();
     })
     .catch((error) => {
       console.warn('Failed to load world prefab pack', error);

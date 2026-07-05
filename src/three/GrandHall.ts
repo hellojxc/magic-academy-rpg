@@ -14,7 +14,10 @@ import { addWorldPrefabRegion } from './WorldPrefabLayer';
 export class GrandHall {
   private readonly animatedObjects: { obj: THREE.Object3D; baseY: number; amp: number; speed: number; phase: number }[] = [];
 
-  constructor(private readonly scene: THREE.Scene) {}
+  constructor(
+    private readonly scene: THREE.Scene,
+    private readonly onSceneAssetInstalled?: () => void,
+  ) {}
 
   build(): Obstacle[] {
     const obstacles: Obstacle[] = [];
@@ -148,7 +151,7 @@ export class GrandHall {
 
     // 北面大型彩色玻璃窗
     this.addStainedGlass(0, 3.2, -22.05, 5, 3.5);
-    addWorldPrefabRegion(this.scene, 'grand_hall');
+    addWorldPrefabRegion(this.scene, 'grand_hall', this.onSceneAssetInstalled);
 
     // 障碍物 — 墙壁和柱子
     obstacles.push(

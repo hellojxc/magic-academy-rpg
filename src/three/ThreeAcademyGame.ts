@@ -14,7 +14,7 @@ import dialoguesData from '../data/dialogues.json';
 import type { DialogueTree, SaveData } from '../types';
 import type { AcademyWorldObjects, InteractiveNPC } from './WorldTypes';
 
-const CHARACTER_ASSET_SHADER_WARMUP_MIN_INTERVAL_MS = 300;
+const ASYNC_SCENE_ASSET_SHADER_WARMUP_MIN_INTERVAL_MS = 300;
 
 export class ThreeAcademyGame {
   private readonly view: ThreeGameView;
@@ -34,8 +34,8 @@ export class ThreeAcademyGame {
   private lastFrameTime = performance.now();
   private lastCharacterModelState = '';
   private lastDebugDatasetAt = 0;
-  private lastCharacterAssetShaderWarmupAt = Number.NEGATIVE_INFINITY;
-  private pendingCharacterAssetShaderWarmup = false;
+  private lastAsyncSceneAssetShaderWarmupAt = Number.NEGATIVE_INFINITY;
+  private pendingAsyncSceneAssetShaderWarmup = false;
   private currentNpc: InteractiveNPC | null = null;
   private frameListener: ((now: number) => void) | null = null;
 
@@ -43,7 +43,7 @@ export class ThreeAcademyGame {
     this.container.classList.add('three-game');
 
     this.view = new ThreeGameView(this.container);
-    this.world = new AcademyWorld(this.view.scene, this.requestCharacterAssetShaderWarmup);
+    this.world = new AcademyWorld(this.view.scene, this.requestAsyncSceneAssetShaderWarmup);
     const worldObjects = this.world.build();
     this.applyShowcaseSpawn(worldObjects);
 
@@ -127,7 +127,7 @@ export class ThreeAcademyGame {
     this.lastFrameTime = now;
     this.elapsedTime += delta;
     this.update(delta);
-    this.warmupCharacterAssetShadersWhenIdle(now);
+    this.warmupAsyncSceneAssetShadersWhenIdle(now);
     this.view.render();
     this.frameListener?.(now);
     this.animationId = window.requestAnimationFrame(this.animate);
@@ -165,17 +165,17 @@ export class ThreeAcademyGame {
     this.updateDebugDataset();
   }
 
-  private readonly requestCharacterAssetShaderWarmup = (): void => {
-    this.pendingCharacterAssetShaderWarmup = true;
+  private readonly requestAsyncSceneAssetShaderWarmup = (): void => {
+    this.pendingAsyncSceneAssetShaderWarmup = true;
   };
 
-  private warmupCharacterAssetShadersWhenIdle(now: number): void {
-    if (!this.pendingCharacterAssetShaderWarmup) return;
+  private warmupAsyncSceneAssetShadersWhenIdle(now: number): void {
+    if (!this.pendingAsyncSceneAssetShaderWarmup) return;
     if (this.playerController.isMoving()) return;
-    if (now - this.lastCharacterAssetShaderWarmupAt < CHARACTER_ASSET_SHADER_WARMUP_MIN_INTERVAL_MS) return;
+    if (now - this.lastAsyncSceneAssetShaderWarmupAt < ASYNC_SCENE_ASSET_SHADER_WARMUP_MIN_INTERVAL_MS) return;
 
-    this.pendingCharacterAssetShaderWarmup = false;
-    this.lastCharacterAssetShaderWarmupAt = now;
+    this.pendingAsyncSceneAssetShaderWarmup = false;
+    this.lastAsyncSceneAssetShaderWarmupAt = now;
     this.view.compileScene();
   }
 

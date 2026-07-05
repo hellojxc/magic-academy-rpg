@@ -107,10 +107,10 @@ export class AcademyWorld {
 
   constructor(
     private readonly scene: THREE.Scene,
-    private readonly onCharacterAssetInstalled?: () => void,
+    private readonly onSceneAssetInstalled?: () => void,
   ) {
-    this.grandHall = new GrandHall(this.scene);
-    this.diningHall = new DiningHall(this.scene);
+    this.grandHall = new GrandHall(this.scene, this.onSceneAssetInstalled);
+    this.diningHall = new DiningHall(this.scene, this.onSceneAssetInstalled);
     this.outdoor = new LawnLakeEnvironment(this.scene);
     this.extendedGrounds = new ExtendedAcademyGrounds(this.scene);
     this.equipmentShowcase = new EquipmentShowcase(this.scene);
@@ -587,7 +587,7 @@ export class AcademyWorld {
     this.addLibrary();
     this.addStudyArea();
     this.addRugsAndFloorDetails();
-    addWorldPrefabRegion(this.scene, 'atrium');
+    addWorldPrefabRegion(this.scene, 'atrium', this.onSceneAssetInstalled);
 
     this.obstacles.push(
       { minX: -8.9, maxX: 8.9, minZ: -6.45, maxZ: -5.95 },
@@ -865,7 +865,7 @@ export class AcademyWorld {
     this.addBookStack(3.6, -1.05, 4);
     this.addBookStack(7.2, 0.72, 5);
     this.addBookStack(6.58, -2.05, 3);
-    new LibraryEnvironment(this.scene).build();
+    new LibraryEnvironment(this.scene, this.onSceneAssetInstalled).build();
   }
 
   private addStudyArea(): void {
@@ -941,7 +941,7 @@ export class AcademyWorld {
     const lyraData = npcEntries.find((npc) => npc.id === 'lyra');
 
     this.playerRig = new CharacterModel3D(getCharacterSpec('player'), {
-      onAssetInstalled: this.onCharacterAssetInstalled,
+      onAssetInstalled: this.onSceneAssetInstalled,
     });
     this.player = this.playerRig.root;
     this.player.position.set(-5.1, 0, 2.5);
@@ -949,7 +949,7 @@ export class AcademyWorld {
     this.scene.add(this.player);
 
     this.lyraRig = new CharacterModel3D(getCharacterSpec('lyra'), {
-      onAssetInstalled: this.onCharacterAssetInstalled,
+      onAssetInstalled: this.onSceneAssetInstalled,
     });
     this.lyra = this.lyraRig.root;
     this.lyra.position.set(lyraData?.worldX ?? 5.35, 0, lyraData?.worldZ ?? -1.35);
@@ -978,7 +978,7 @@ export class AcademyWorld {
     if (hasCharacterSpec(npcData.id)) {
       const rig = new CharacterModel3D(getCharacterSpec(npcData.id), {
         autoLoad: false,
-        onAssetInstalled: this.onCharacterAssetInstalled,
+        onAssetInstalled: this.onSceneAssetInstalled,
       });
       const root = rig.root;
       root.position.set(npcData.worldX ?? 0, 0, npcData.worldZ ?? 0);

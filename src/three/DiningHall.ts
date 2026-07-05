@@ -11,7 +11,10 @@ import { addWorldPrefabRegion } from './WorldPrefabLayer';
 export class DiningHall {
   private readonly animatedObjects: { obj: THREE.Object3D; baseY: number; amp: number; speed: number; phase: number }[] = [];
 
-  constructor(private readonly scene: THREE.Scene) {}
+  constructor(
+    private readonly scene: THREE.Scene,
+    private readonly onSceneAssetInstalled?: () => void,
+  ) {}
 
   build(): Obstacle[] {
     const obstacles: Obstacle[] = [];
@@ -106,7 +109,7 @@ export class DiningHall {
     for (const z of [-4, -1, 2, 5]) {
       this.addWindow(23.7, 2.5, z, 'side');
     }
-    addWorldPrefabRegion(this.scene, 'dining_hall');
+    addWorldPrefabRegion(this.scene, 'dining_hall', this.onSceneAssetInstalled);
 
     // 障碍物
     obstacles.push(
