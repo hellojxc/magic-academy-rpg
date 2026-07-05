@@ -40,6 +40,9 @@ const grassMaterials = new Map<number, THREE.MeshStandardMaterial>();
 const groundDecalMaterials = new Map<string, THREE.MeshBasicMaterial>();
 let leafTexture: THREE.CanvasTexture | null = null;
 let grassBladeTexture: THREE.CanvasTexture | null = null;
+let treeCanopyShadowMaterial: THREE.MeshBasicMaterial | null = null;
+
+type CanopyCenter = readonly [number, number, number, number];
 
 export function addNaturalTree(scene: THREE.Scene, spec: TreeSpec): THREE.Group {
   const rand = seededRandom(spec.seed);
@@ -245,9 +248,11 @@ function addLeafCanopy(group: THREE.Group, trunkTop: THREE.Vector3, spec: TreeSp
     : spec.variant === 'willow'
       ? [0x4d8c3f, 0x6ea957, 0x8ab76a]
       : [0x3e7b32, 0x5a9b45, 0x77a952];
-  const centers = spec.variant === 'willow'
+  const centers: CanopyCenter[] = spec.variant === 'willow'
     ? [[0, 0.05, 0, 1.1], [0.34, -0.22, 0.2, 0.9], [-0.36, -0.2, -0.16, 0.85], [0.08, -0.5, -0.34, 0.72]]
     : [[0, 0.18, 0, 1.1], [0.42, 0.02, 0.16, 0.86], [-0.34, 0.04, -0.2, 0.82], [0.06, 0.42, -0.12, 0.76]];
+
+  addCanopyShadowProxies(group, trunkTop, spec, centers);
 
   const leafGeo = Geo.plane(0.42, 0.24);
   for (const [cx, cy, cz, radius] of centers) {
@@ -266,9 +271,34 @@ function addLeafCanopy(group: THREE.Group, trunkTop: THREE.Vector3, spec: TreeSp
       leaf.rotation.set(rand() * Math.PI, rand() * Math.PI * 2, rand() * Math.PI);
       const leafScale = spec.scale * lerp(0.62, 1.35, rand());
       leaf.scale.set(leafScale, leafScale * lerp(0.8, 1.5, rand()), 1);
-      leaf.castShadow = true;
+      leaf.castShadow = false;
       group.add(leaf);
     }
+  }
+}
+
+function addCanopyShadowProxies(
+  group: THREE.Group,
+  trunkTop: THREE.Vector3,
+  spec: TreeSpec,
+  centers: readonly CanopyCenter[]
+): void {
+  const material = getTreeCanopyShadowMaterial();
+  const geometry = Geo.sphere(1, 8, 6);
+
+  for (const [cx, cy, cz, radius] of centers) {
+    const proxy = new THREE.Mesh(geometry, material);
+    const canopyRadius = radius * spec.scale * spec.scale;
+    proxy.position.set(
+      trunkTop.x + cx * spec.scale,
+      trunkTop.y + cy * spec.scale,
+      trunkTop.z + cz * spec.scale
+    );
+    proxy.scale.set(canopyRadius * 1.08, canopyRadius * 0.66, canopyRadius * 1.08);
+    proxy.castShadow = true;
+    proxy.receiveShadow = false;
+    proxy.userData.shadowProxy = true;
+    group.add(proxy);
   }
 }
 
@@ -279,7 +309,7 @@ function addBarkRidges(group: THREE.Group, scale: number, height: number, mat: T
     const ridge = new THREE.Mesh(Geo.box(0.018 * scale, ridgeHeight, 0.022 * scale), mat);
     ridge.position.set(Math.cos(angle) * 0.22 * scale, height * lerp(0.28, 0.48, rand()), Math.sin(angle) * 0.22 * scale);
     ridge.rotation.y = -angle;
-    ridge.castShadow = true;
+    ridge.castShadow = false;
     group.add(ridge);
   }
 }
@@ -302,6 +332,16 @@ function addCylinderBetween(
   mesh.receiveShadow = true;
   parent.add(mesh);
   return mesh;
+}
+
+function getTreeCanopyShadowMaterial(): THREE.MeshBasicMaterial {
+  if (treeCanopyShadowMaterial) return treeCanopyShadowMaterial;
+  const mat = new THREE.MeshBasicMaterial({ color: 0x000000 });
+  mat.colorWrite = false;
+  mat.depthWrite = false;
+  mat.depthTest = false;
+  treeCanopyShadowMaterial = mat;
+  return treeCanopyShadowMaterial;
 }
 
 function getLeafMaterial(color: number): THREE.MeshStandardMaterial {
