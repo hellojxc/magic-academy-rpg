@@ -1,0 +1,319 @@
+{
+  "assetId": "mature-senpai-commercial-v16",
+  "characterId": "mature_senpai",
+  "status": "dedicated-face-expression-production-preview",
+  "source": "public/assets/models/mature_senpai_commercial_v15.glb",
+  "blendSource": "assets/characters/mature_senpai/source/mature_senpai_commercial_v16.blend",
+  "output": "public/assets/models/mature_senpai_commercial_v16.glb",
+  "thumbnail": "public/assets/models/mature_senpai_commercial_v16.png",
+  "generatedBy": "remote Blender headless + assets/characters/mature_senpai/tools/build_final_v16.py",
+  "runtime": {
+    "defaultAsset": true,
+    "format": "glb",
+    "url": "/assets/models/mature_senpai_commercial_v16.glb",
+    "thumbnailUrl": "/assets/models/mature_senpai_commercial_v16.png",
+    "fallbackAssetId": "mature-senpai-commercial-v15",
+    "threeRuntimeFeatures": [
+      "multiple SkinnedMesh runtime parts",
+      "dedicated Face_Head morphTargetInfluences",
+      "AnimationMixer clips",
+      "Secondary_* bone spring overlay"
+    ]
+  },
+  "productionFlags": {
+    "physicalRuntimeSplitParts": true,
+    "dedicatedFaceExpressionMorphs": true,
+    "facialLandmarkVertexGroups": true,
+    "nonFaceMorphTargetsRemoved": true,
+    "sourceTopologyPreserved": true,
+    "uvsMaterialsAndWeightsPreserved": true,
+    "hairSecondaryBones": true,
+    "skirtSecondaryBones": true,
+    "webRuntimeReady": true
+  },
+  "faceMesh": {
+    "name": "MatureSenpai_V16_Face_Head",
+    "vertices": 4292,
+    "faces": 4582,
+    "morphTargets": [
+      "Blink",
+      "ConfidentSmile",
+      "WarmSmile",
+      "Teasing",
+      "Surprised",
+      "Thoughtful"
+    ],
+    "landmarkGroups": {
+      "Face_L_EyeLid": 545,
+      "Face_R_EyeLid": 602,
+      "Face_L_Brow": 172,
+      "Face_R_Brow": 186,
+      "Face_Mouth": 1332,
+      "Face_L_Cheek": 639,
+      "Face_R_Cheek": 636,
+      "Face_Jaw": 1177
+    },
+    "expressionVertexCounts": {
+      "Blink": 1120,
+      "ConfidentSmile": 2781,
+      "WarmSmile": 2781,
+      "Teasing": 3173,
+      "Surprised": 4186,
+      "Thoughtful": 3009
+    }
+  },
+  "runtimeParts": [
+    {
+      "name": "MatureSenpai_V16_Arms_Hands",
+      "vertices": 2116,
+      "faces": 2344,
+      "morphTargets": [],
+      "vertexGroups": 32,
+      "materials": [
+        "Material.001"
+      ]
+    },
+    {
+      "name": "MatureSenpai_V16_ChokerPendant",
+      "vertices": 7,
+      "faces": 3,
+      "morphTargets": [],
+      "vertexGroups": 32,
+      "materials": [
+        "CommercialV14_SoftGoldTrim",
+        "CommercialV14_PurplePendantGem"
+      ]
+    },
+    {
+      "name": "MatureSenpai_V16_Face_Head",
+      "vertices": 4292,
+      "faces": 4582,
+      "morphTargets": [
+        "Blink",
+        "ConfidentSmile",
+        "WarmSmile",
+        "Teasing",
+        "Surprised",
+        "Thoughtful"
+      ],
+      "vertexGroups": 40,
+      "materials": [
+        "Material.001"
+      ]
+    },
+    {
+      "name": "MatureSenpai_V16_Hair_Back",
+      "vertices": 7286,
+      "faces": 7755,
+      "morphTargets": [],
+      "vertexGroups": 32,
+      "materials": [
+        "Material.001"
+      ]
+    },
+    {
+      "name": "MatureSenpai_V16_Hair_LeftLock",
+      "vertices": 9843,
+      "faces": 9669,
+      "morphTargets": [],
+      "vertexGroups": 32,
+      "materials": [
+        "Material.001"
+      ]
+    },
+    {
+      "name": "MatureSenpai_V16_Hair_RightLock",
+      "vertices": 9937,
+      "faces": 10006,
+      "morphTargets": [],
+      "vertexGroups": 32,
+      "materials": [
+        "Material.001"
+      ]
+    },
+    {
+      "name": "MatureSenpai_V16_Legs",
+      "vertices": 4339,
+      "faces": 4691,
+      "morphTargets": [],
+      "vertexGroups": 32,
+      "materials": [
+        "Material.001"
+      ]
+    },
+    {
+      "name": "MatureSenpai_V16_Shoes",
+      "vertices": 3485,
+      "faces": 4004,
+      "morphTargets": [],
+      "vertexGroups": 32,
+      "materials": [
+        "Material.001"
+      ]
+    },
+    {
+      "name": "MatureSenpai_V16_Skirt_Center",
+      "vertices": 1139,
+      "faces": 1297,
+      "morphTargets": [],
+      "vertexGroups": 32,
+      "materials": [
+        "Material.001"
+      ]
+    },
+    {
+      "name": "MatureSenpai_V16_Skirt_LeftPanel",
+      "vertices": 2353,
+      "faces": 2406,
+      "morphTargets": [],
+      "vertexGroups": 32,
+      "materials": [
+        "Material.001"
+      ]
+    },
+    {
+      "name": "MatureSenpai_V16_Skirt_RightPanel",
+      "vertices": 2272,
+      "faces": 2393,
+      "morphTargets": [],
+      "vertexGroups": 32,
+      "materials": [
+        "Material.001"
+      ]
+    },
+    {
+      "name": "MatureSenpai_V16_Torso_Camisole",
+      "vertices": 10331,
+      "faces": 10775,
+      "morphTargets": [],
+      "vertexGroups": 32,
+      "materials": [
+        "Material.001"
+      ]
+    },
+    {
+      "name": "Icosphere",
+      "vertices": 42,
+      "faces": 80,
+      "morphTargets": [],
+      "vertexGroups": 0,
+      "materials": []
+    }
+  ],
+  "morphTargets": {
+    "MatureSenpai_V16_Face_Head": [
+      "Blink",
+      "ConfidentSmile",
+      "WarmSmile",
+      "Teasing",
+      "Surprised",
+      "Thoughtful"
+    ]
+  },
+  "removedNonFaceMorphMeshes": 10,
+  "armatureBones": [
+    "Hips",
+    "Spine",
+    "Chest",
+    "Neck",
+    "Head",
+    "Secondary_Hair_Back",
+    "Secondary_Hair_Back_Tip",
+    "Secondary_Hair_Left",
+    "Secondary_Hair_Left_Tip",
+    "Secondary_Hair_Right",
+    "Secondary_Hair_Right_Tip",
+    "Secondary_Pendant",
+    "LeftUpperArm",
+    "LeftLowerArm",
+    "LeftHand",
+    "RightUpperArm",
+    "RightLowerArm",
+    "RightHand",
+    "Secondary_Strap_Left",
+    "Secondary_Strap_Right",
+    "LeftUpperLeg",
+    "LeftLowerLeg",
+    "LeftFoot",
+    "RightUpperLeg",
+    "RightLowerLeg",
+    "RightFoot",
+    "Secondary_Skirt_Left",
+    "Secondary_Skirt_Left_Tip",
+    "Secondary_Skirt_Right",
+    "Secondary_Skirt_Right_Tip",
+    "Secondary_Skirt_Center",
+    "Secondary_Skirt_Center_Tip"
+  ],
+  "secondaryRig": {
+    "all": [
+      "Secondary_Hair_Back",
+      "Secondary_Hair_Back_Tip",
+      "Secondary_Hair_Left",
+      "Secondary_Hair_Left_Tip",
+      "Secondary_Hair_Right",
+      "Secondary_Hair_Right_Tip",
+      "Secondary_Pendant",
+      "Secondary_Strap_Left",
+      "Secondary_Strap_Right",
+      "Secondary_Skirt_Left",
+      "Secondary_Skirt_Left_Tip",
+      "Secondary_Skirt_Right",
+      "Secondary_Skirt_Right_Tip",
+      "Secondary_Skirt_Center",
+      "Secondary_Skirt_Center_Tip"
+    ],
+    "hair": [
+      "Secondary_Hair_Back",
+      "Secondary_Hair_Back_Tip",
+      "Secondary_Hair_Left",
+      "Secondary_Hair_Left_Tip",
+      "Secondary_Hair_Right",
+      "Secondary_Hair_Right_Tip"
+    ],
+    "skirt": [
+      "Secondary_Skirt_Left",
+      "Secondary_Skirt_Left_Tip",
+      "Secondary_Skirt_Right",
+      "Secondary_Skirt_Right_Tip",
+      "Secondary_Skirt_Center",
+      "Secondary_Skirt_Center_Tip"
+    ],
+    "accessory": [
+      "Secondary_Pendant",
+      "Secondary_Strap_Left",
+      "Secondary_Strap_Right"
+    ]
+  },
+  "acceptanceChecks": {
+    "keepsV15PhysicalRuntimeParts": true,
+    "onlyFaceMeshHasExpressionMorphs": true,
+    "hasSixSculptedFaceMorphs": true,
+    "hasMorphAffectedVertices": true,
+    "hasFacialLandmarkGroups": true,
+    "removedInertNonFaceMorphs": true,
+    "hasHairSecondaryBones": true,
+    "hasSkirtSecondaryBones": true,
+    "keepsCleanChokerPendant": true,
+    "webRuntimeBudgetTarget": true
+  },
+  "runtimeDecision": {
+    "defaultAsset": true,
+    "fallbackAssetId": "mature-senpai-commercial-v15",
+    "reason": "v16 keeps the accepted v15 physical split while moving expression playback to a dedicated Face_Head morph layer with explicit facial landmark groups. This is closer to a commercial JRPG character setup than carrying inherited body-wide shape keys on every split part."
+  },
+  "completedPasses": [
+    "imported the v15 physically split runtime asset",
+    "renamed runtime parts to v16 while preserving UVs, materials, skin weights, and animation clips",
+    "removed inherited non-face morph targets from hair, torso, arms, skirt, legs, shoes, and accessory meshes",
+    "added facial landmark vertex groups for eyelids, brows, mouth, cheeks, and jaw",
+    "rebuilt Blink, ConfidentSmile, WarmSmile, Teasing, Surprised, and Thoughtful as dedicated Face_Head geometry shape keys",
+    "exported GLB with multiple skinned parts, one face morph target carrier, skins, and animations"
+  ],
+  "limitations": [
+    "v16 still uses the accepted source triangle topology, not a final hand-authored quad retopology.",
+    "The face expressions are sculpted by authored coordinate masks; final commercial dialogue quality still benefits from artist-sculpted blendshapes on dedicated facial loops.",
+    "Skin weights are preserved/generated from earlier passes, not manually brush-painted.",
+    "The texture atlas is preserved from the Hunyuan source; final commercial polish still needs UV cleanup and texture repaint."
+  ]
+}
