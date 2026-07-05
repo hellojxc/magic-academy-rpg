@@ -79,6 +79,7 @@ export class ThreeAcademyGame {
 
     this.bindEvents();
     this.resize();
+    this.view.warmup();
     this.updateHud();
   }
 
