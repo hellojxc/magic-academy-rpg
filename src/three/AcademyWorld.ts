@@ -79,8 +79,8 @@ export class AcademyWorld {
   private readonly animatedObjects: AnimatedObject[] = [];
   private readonly lightGroups: LightGroup[] = [];
   private readonly pointLights: THREE.PointLight[] = [];
+  private readonly pointLightProxies: THREE.PointLight[] = [];
   private readonly pointLightRankBuffer: RankedPointLight[] = [];
-  private readonly selectedPointLights = new Set<THREE.PointLight>();
   private readonly regionUpdateGroups: RegionUpdateGroup[] = [];
   private readonly updatedRegionKeys = new Set<string>();
   private readonly sunTarget = new THREE.Object3D();
@@ -208,6 +208,7 @@ export class AcademyWorld {
     const lightsByRegion = new Map<string, THREE.PointLight[]>();
     this.scene.traverse((obj) => {
       if (!(obj instanceof THREE.PointLight)) return;
+      if (obj.userData.runtimePointLightProxy) return;
       this.pointLights.push(obj);
       // 找距光源最近的区域中心
       let bestId: string | null = null;
@@ -249,6 +250,8 @@ export class AcademyWorld {
     for (const light of this.pointLights) {
       light.visible = false;
     }
+
+    this.ensurePointLightProxies();
   }
 
   private updateSunFollow(): void {
@@ -293,15 +296,31 @@ export class AcademyWorld {
     }
 
     this.pointLightRankBuffer.sort((a, b) => a.distanceSq - b.distanceSq);
-    this.selectedPointLights.clear();
-    const activeCount = Math.min(POINT_LIGHT_BUDGET, this.pointLightRankBuffer.length);
-    for (let i = 0; i < activeCount; i += 1) {
-      this.selectedPointLights.add(this.pointLightRankBuffer[i].light);
-    }
+    for (let i = 0; i < this.pointLightProxies.length; i += 1) {
+      const proxy = this.pointLightProxies[i];
+      const source = this.pointLightRankBuffer[i]?.light;
+      if (!source) {
+        proxy.intensity = 0;
+        proxy.distance = 1;
+        continue;
+      }
 
-    for (const light of this.pointLights) {
-      const selected = this.selectedPointLights.has(light);
-      if (light.visible !== selected) light.visible = selected;
+      proxy.position.copy(source.position);
+      proxy.color.copy(source.color);
+      proxy.intensity = source.intensity;
+      proxy.distance = source.distance;
+      proxy.decay = source.decay;
+    }
+  }
+
+  private ensurePointLightProxies(): void {
+    while (this.pointLightProxies.length < POINT_LIGHT_BUDGET) {
+      const light = new THREE.PointLight(0xffffff, 0, 1, 2);
+      light.visible = true;
+      light.userData.runtimePointLightProxy = true;
+      light.name = `Runtime point light proxy ${this.pointLightProxies.length + 1}`;
+      this.pointLightProxies.push(light);
+      this.scene.add(light);
     }
   }
 
