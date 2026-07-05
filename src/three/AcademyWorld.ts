@@ -81,6 +81,7 @@ export class AcademyWorld {
   private lastSunFollowZ = Number.NaN;
   private lastPointLightUpdateX = Number.NaN;
   private lastPointLightUpdateZ = Number.NaN;
+  private lyraRigUpdateAccumulator = 0;
   private playerRig!: CharacterModel3D;
   private lyraRig!: CharacterModel3D;
   private player!: THREE.Object3D;
@@ -143,8 +144,7 @@ export class AcademyWorld {
   update(elapsedTime: number, delta: number, playerMoving: boolean): void {
     this.playerRig.setMoving(playerMoving);
     this.playerRig.update(elapsedTime, delta);
-    this.lyraRig.setMoving(false);
-    this.lyraRig.update(elapsedTime, delta, this.player.position);
+    this.updateLyraRig(elapsedTime, delta, playerMoving);
     this.updateStoryNpcs(elapsedTime, delta, playerMoving);
 
     this.updateSunFollow();
@@ -152,6 +152,30 @@ export class AcademyWorld {
     // 按距离裁剪区域动画 + 动态开关点光源
     this.updateRegions(elapsedTime, delta);
     this.updatePointLights();
+  }
+
+  private updateLyraRig(elapsedTime: number, delta: number, playerMoving: boolean): void {
+    this.lyraRig.setMoving(false);
+    const dx = this.player.position.x - this.lyra.position.x;
+    const dz = this.player.position.z - this.lyra.position.z;
+    const distanceSq = dx * dx + dz * dz;
+    const fullRate = distanceSq <= STORY_NPC_FULL_RATE_DISTANCE_SQ
+      || distanceSq <= STORY_NPC_LOOK_AT_DISTANCE_SQ;
+    if (fullRate) {
+      this.lyraRigUpdateAccumulator = 0;
+      this.lyraRig.update(elapsedTime, delta, this.player.position);
+      return;
+    }
+
+    this.lyraRigUpdateAccumulator += delta;
+    const updateInterval = playerMoving
+      ? STORY_NPC_FAR_UPDATE_INTERVAL_MOVING
+      : STORY_NPC_FAR_UPDATE_INTERVAL_IDLE;
+    if (this.lyraRigUpdateAccumulator < updateInterval) return;
+
+    const rigDelta = Math.min(this.lyraRigUpdateAccumulator, 0.12);
+    this.lyraRigUpdateAccumulator = 0;
+    this.lyraRig.update(elapsedTime, rigDelta, this.player.position);
   }
 
   getPlayerPosition(): THREE.Object3D {
