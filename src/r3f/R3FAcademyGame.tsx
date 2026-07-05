@@ -458,8 +458,8 @@ function R3FAcademyApp({ save, onNearbyNpcChange, onDebugState }: R3FAcademyAppP
         <Canvas
           shadows
           camera={{
-            position: libraryQaShot ? [10.6, 4.15, 3.1] : biomeQaShot ? [-2, 4.95, 24.6] : [6.8, 4.95, 10.6],
-            fov: libraryQaShot ? 39 : biomeQaShot ? 42 : 44,
+            position: libraryQaShot ? [8.35, 2.58, 0.35] : biomeQaShot ? [-2, 4.95, 24.6] : [6.8, 4.95, 10.6],
+            fov: libraryQaShot ? 43 : biomeQaShot ? 42 : 44,
             near: 0.1,
             far: 160,
           }}
@@ -478,7 +478,7 @@ function R3FAcademyApp({ save, onNearbyNpcChange, onDebugState }: R3FAcademyAppP
             gl.shadowMap.enabled = true;
             gl.shadowMap.type = THREE.PCFSoftShadowMap;
             camera.lookAt(libraryQaShot
-              ? new THREE.Vector3(6.15, 1.08, -3.95)
+              ? new THREE.Vector3(5.45, 1.02, -2.85)
               : biomeQaShot
                 ? new THREE.Vector3(-15.7, 0.9, 21.2)
                 : new THREE.Vector3(0.1, 0.86, 3.45));
@@ -1129,14 +1129,14 @@ function FixedOpeningCamera(): null {
   const biomeQaShot = shouldUseBiomeQaShot();
   const libraryQaShot = shouldUseLibraryQaShot();
   const biomeTarget = useMemo(() => new THREE.Vector3(-15.7, 0.9, 21.2), []);
-  const libraryTarget = useMemo(() => new THREE.Vector3(6.15, 1.08, -3.95), []);
+  const libraryTarget = useMemo(() => new THREE.Vector3(5.45, 1.02, -2.85), []);
 
   useLayoutEffect(() => {
     if (camera instanceof THREE.PerspectiveCamera) {
-      camera.fov = materialQaShot ? 38 : libraryQaShot ? 39 : biomeQaShot ? 42 : 44;
+      camera.fov = materialQaShot ? 38 : libraryQaShot ? 43 : biomeQaShot ? 42 : 44;
       camera.updateProjectionMatrix();
     }
-    if (libraryQaShot) camera.position.set(10.6, 4.15, 3.1);
+    if (libraryQaShot) camera.position.set(8.35, 2.58, 0.35);
     else if (biomeQaShot) camera.position.set(-2, 4.95, 24.6);
     else camera.position.set(6.8, 4.95, 10.6);
     camera.up.set(0, 1, 0);
@@ -1152,7 +1152,7 @@ function FixedOpeningCamera(): null {
 
   useFrame(() => {
     if (!biomeQaShot && !libraryQaShot) return;
-    if (libraryQaShot) camera.position.set(10.6, 4.15, 3.1);
+    if (libraryQaShot) camera.position.set(8.35, 2.58, 0.35);
     else camera.position.set(-2, 4.95, 24.6);
     camera.up.set(0, 1, 0);
     camera.lookAt(libraryQaShot ? libraryTarget : biomeTarget);
@@ -9342,7 +9342,7 @@ const NpcAvatar = memo(function NpcAvatar({
           <Sparkles count={14} speed={0.25} opacity={0.38} color={npc.color} size={0.8} scale={[1, 1.8, 1]} position={[0, 1.15, 0]} />
         </group>
       </Float>
-      <Html position={[0, 2.05, 0]} center distanceFactor={12} className="r3f-npc-label">
+      <Html position={[0, 2.05, 0]} center distanceFactor={6} className="r3f-npc-label">
         <strong>{npc.name}</strong>
         <span>{npc.title}</span>
       </Html>
