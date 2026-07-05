@@ -64,6 +64,10 @@ export class PlayerController3D {
   }
 
   updateIdle(_elapsedTime: number): void {
+    if (Math.abs(this.player.position.y) < 0.0001) {
+      if (this.player.position.y !== 0) this.player.position.y = 0;
+      return;
+    }
     this.player.position.y = THREE.MathUtils.lerp(this.player.position.y, 0, 0.22);
   }
 

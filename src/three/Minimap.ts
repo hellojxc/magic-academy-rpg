@@ -35,11 +35,19 @@ export class Minimap {
   }
 
   update(playerPos: THREE.Vector3, playerYaw: number): void {
-    const region = getRegion(playerPos.x, playerPos.z);
-    const regionId = region?.id ?? null;
     const moved = Math.abs(playerPos.x - this.lastPlayerX) > 0.3
       || Math.abs(playerPos.z - this.lastPlayerZ) > 0.3;
     const turned = Math.abs(playerYaw - this.lastYaw) > 0.02;
+    const outsideCurrentRegion = this.currentRegion
+      ? playerPos.x < this.currentRegion.bounds.minX
+        || playerPos.x > this.currentRegion.bounds.maxX
+        || playerPos.z < this.currentRegion.bounds.minZ
+        || playerPos.z > this.currentRegion.bounds.maxZ
+      : true;
+    const region = moved || outsideCurrentRegion
+      ? getRegion(playerPos.x, playerPos.z)
+      : this.currentRegion;
+    const regionId = region?.id ?? null;
     const regionChanged = regionId !== this.lastRegionId;
     if (!moved && !turned && !regionChanged) return;
 

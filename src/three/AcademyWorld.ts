@@ -30,6 +30,7 @@ interface LightGroup {
   center: THREE.Vector3;
   radiusSq: number;
   lights: THREE.PointLight[];
+  active: boolean | null;
 }
 
 interface RegionUpdateGroup {
@@ -71,6 +72,9 @@ export class AcademyWorld {
   private readonly sunTarget = new THREE.Object3D();
   private sun!: THREE.DirectionalLight;
   private readonly sunOffset = new THREE.Vector3(-8, 12, 6);
+  private lastSunFollowX = Number.NaN;
+  private lastSunFollowY = Number.NaN;
+  private lastSunFollowZ = Number.NaN;
   private lastPointLightUpdateX = Number.NaN;
   private lastPointLightUpdateZ = Number.NaN;
   private playerRig!: CharacterModel3D;
@@ -139,9 +143,7 @@ export class AcademyWorld {
     this.lyraRig.update(elapsedTime, delta, this.player.position);
     this.updateStoryNpcs(elapsedTime, delta, playerMoving);
 
-    // 阴影相机跟随玩家
-    this.sunTarget.position.copy(this.player.position);
-    this.sun.position.copy(this.player.position).add(this.sunOffset);
+    this.updateSunFollow();
 
     // 按距离裁剪区域动画 + 动态开关点光源
     this.updateRegions(elapsedTime, delta);
@@ -199,8 +201,20 @@ export class AcademyWorld {
         center: new THREE.Vector3(cx, 0, cz),
         radiusSq: radius * radius,
         lights,
+        active: null,
       });
     }
+  }
+
+  private updateSunFollow(): void {
+    const { x, y, z } = this.player.position;
+    if (x === this.lastSunFollowX && y === this.lastSunFollowY && z === this.lastSunFollowZ) return;
+
+    this.lastSunFollowX = x;
+    this.lastSunFollowY = y;
+    this.lastSunFollowZ = z;
+    this.sunTarget.position.copy(this.player.position);
+    this.sun.position.copy(this.player.position).add(this.sunOffset);
   }
 
   private updatePointLights(): void {
@@ -217,6 +231,8 @@ export class AcademyWorld {
       const dx = px - group.center.x;
       const dz = pz - group.center.z;
       const near = dx * dx + dz * dz < group.radiusSq;
+      if (near === group.active) continue;
+      group.active = near;
       for (const light of group.lights) {
         light.visible = near;
       }
