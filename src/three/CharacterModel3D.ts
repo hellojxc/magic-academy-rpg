@@ -111,6 +111,7 @@ export class CharacterModel3D {
   private gltfEyeFocusBindings: GLTFEyeFocusBinding[] = [];
   private readonly gltfBoneBasePoses = new Map<THREE.Object3D, GLTFBoneBasePose>();
   private activeGLTFAction?: THREE.AnimationAction;
+  private activeGLTFActionRequest = '';
   private buildPlan: CharacterBuildPlan;
   private moving = false;
   private blinkTimer = 0;
@@ -154,6 +155,7 @@ export class CharacterModel3D {
   }
 
   setMoving(moving: boolean): void {
+    if (this.moving === moving) return;
     this.moving = moving;
     this.animationState.setMoving(moving);
     this.fallback.setMoving(moving);
@@ -469,7 +471,8 @@ export class CharacterModel3D {
   }
 
   private updateGLTFAnimation(elapsedTime: number, delta: number, lookAtWorldPosition?: THREE.Vector3): void {
-    this.playGLTFAction(this.moving ? 'walk' : 'idle', 0.22);
+    const actionName = this.moving ? 'walk' : 'idle';
+    if (actionName !== this.activeGLTFActionRequest) this.playGLTFAction(actionName, 0.22);
     this.restoreGLTFBoneBasePoses();
     this.gltfMixer?.update(delta);
     this.applyGLTFPoseOverlay(elapsedTime);
@@ -481,7 +484,11 @@ export class CharacterModel3D {
 
   private playGLTFAction(name: string, fadeDuration: number): void {
     const next = this.gltfActions.get(name) ?? this.gltfActions.get('idle');
-    if (!next || next === this.activeGLTFAction) return;
+    if (!next) return;
+    if (next === this.activeGLTFAction) {
+      this.activeGLTFActionRequest = name;
+      return;
+    }
 
     next.enabled = true;
     next.setEffectiveTimeScale(1);
@@ -494,6 +501,7 @@ export class CharacterModel3D {
       next.reset().play();
     }
     this.activeGLTFAction = next;
+    this.activeGLTFActionRequest = name;
   }
 
   private prepareModelRoot(model: THREE.Object3D, targetHeight: number): void {
