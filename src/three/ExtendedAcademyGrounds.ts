@@ -30,6 +30,42 @@ interface AnimatedObject {
 const EXTENDED_ANIMATION_ZONES = ['greenhouse', 'training_ground', 'moonstone_grotto'] as const;
 type ExtendedAnimationZone = (typeof EXTENDED_ANIMATION_ZONES)[number];
 
+interface AnimatedInstance {
+  mesh: THREE.InstancedMesh;
+  index: number;
+  x: number;
+  z: number;
+  scaleX: number;
+  scaleY: number;
+  scaleZ: number;
+  rotationX: number;
+  rotationY: number;
+  rotationZ: number;
+  baseY: number;
+  amp: number;
+  speed: number;
+  phase: number;
+  rotateY?: number;
+  rotateZ?: number;
+}
+
+interface AnimatedInstanceSpec {
+  x: number;
+  z: number;
+  scaleX: number;
+  scaleY: number;
+  scaleZ: number;
+  rotationX: number;
+  rotationY: number;
+  rotationZ: number;
+  baseY: number;
+  amp: number;
+  speed: number;
+  phase: number;
+  rotateY?: number;
+  rotateZ?: number;
+}
+
 /**
  * Extra explorable academy spaces.
  *
@@ -43,6 +79,12 @@ export class ExtendedAcademyGrounds {
     training_ground: [],
     moonstone_grotto: [],
   };
+  private readonly animatedInstancesByZone: Record<ExtendedAnimationZone, AnimatedInstance[]> = {
+    greenhouse: [],
+    training_ground: [],
+    moonstone_grotto: [],
+  };
+  private readonly animatedInstanceMeshes: THREE.InstancedMesh[] = [];
   private readonly waterMaterialsByZone: Record<ExtendedAnimationZone, THREE.ShaderMaterial[]> = {
     greenhouse: [],
     training_ground: [],
@@ -53,6 +95,7 @@ export class ExtendedAcademyGrounds {
     training_ground: -1,
     moonstone_grotto: -1,
   };
+  private readonly instanceDummy = new THREE.Object3D();
 
   constructor(private readonly scene: THREE.Scene) {}
 
@@ -94,6 +137,7 @@ export class ExtendedAcademyGrounds {
       if (item.rotateY) item.obj.rotation.y += item.rotateY * frameScale;
       if (item.rotateZ) item.obj.rotation.z += item.rotateZ * frameScale;
     }
+    this.updateAnimatedInstances(this.animatedInstancesByZone[zone], elapsedTime, delta);
 
     for (const material of waterMaterials) {
       updateLakeWaterMaterial(material, elapsedTime);
@@ -101,13 +145,79 @@ export class ExtendedAcademyGrounds {
   }
 
   getDynamicObjects(): readonly THREE.Object3D[] {
-    return EXTENDED_ANIMATION_ZONES.flatMap((zone) =>
-      this.animatedObjectsByZone[zone].map((item) => item.obj)
-    );
+    return [
+      ...EXTENDED_ANIMATION_ZONES.flatMap((zone) =>
+        this.animatedObjectsByZone[zone].map((item) => item.obj)
+      ),
+      ...this.animatedInstanceMeshes,
+    ];
   }
 
   private addAnimatedObject(zone: ExtendedAnimationZone, item: AnimatedObject): void {
     this.animatedObjectsByZone[zone].push(item);
+  }
+
+  private addAnimatedInstance(zone: ExtendedAnimationZone, item: AnimatedInstance): void {
+    this.animatedInstancesByZone[zone].push(item);
+  }
+
+  private addAnimatedInstancedMesh(
+    zone: ExtendedAnimationZone,
+    geometry: THREE.BufferGeometry,
+    material: THREE.Material,
+    specs: readonly AnimatedInstanceSpec[],
+    castShadow: boolean,
+    receiveShadow: boolean
+  ): void {
+    if (specs.length === 0) return;
+    const mesh = new THREE.InstancedMesh(geometry, material, specs.length);
+    mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+    mesh.castShadow = castShadow;
+    mesh.receiveShadow = receiveShadow;
+    mesh.frustumCulled = false;
+    this.animatedInstanceMeshes.push(mesh);
+    this.scene.add(mesh);
+
+    specs.forEach((spec, index) => {
+      const item: AnimatedInstance = {
+        ...spec,
+        mesh,
+        index,
+      };
+      this.addAnimatedInstance(zone, item);
+      this.writeAnimatedInstanceMatrix(item, 0);
+    });
+    mesh.instanceMatrix.needsUpdate = true;
+    mesh.computeBoundingSphere();
+  }
+
+  private updateAnimatedInstances(
+    instances: readonly AnimatedInstance[],
+    elapsedTime: number,
+    delta: number
+  ): void {
+    const frameScale = delta * 60;
+    let changedMesh: THREE.InstancedMesh | null = null;
+    for (const item of instances) {
+      if (changedMesh && changedMesh !== item.mesh) changedMesh.instanceMatrix.needsUpdate = true;
+      changedMesh = item.mesh;
+      if (item.rotateY) item.rotationY += item.rotateY * frameScale;
+      if (item.rotateZ) item.rotationZ += item.rotateZ * frameScale;
+      this.writeAnimatedInstanceMatrix(item, elapsedTime);
+    }
+    if (changedMesh) changedMesh.instanceMatrix.needsUpdate = true;
+  }
+
+  private writeAnimatedInstanceMatrix(item: AnimatedInstance, elapsedTime: number): void {
+    this.instanceDummy.position.set(
+      item.x,
+      item.baseY + Math.sin(elapsedTime * item.speed + item.phase) * item.amp,
+      item.z
+    );
+    this.instanceDummy.rotation.set(item.rotationX, item.rotationY, item.rotationZ);
+    this.instanceDummy.scale.set(item.scaleX, item.scaleY, item.scaleZ);
+    this.instanceDummy.updateMatrix();
+    item.mesh.setMatrixAt(item.index, this.instanceDummy.matrix);
   }
 
   private addWaterMaterial(zone: ExtendedAnimationZone, material: THREE.ShaderMaterial): void {
@@ -557,12 +667,28 @@ export class ExtendedAcademyGrounds {
       obstacles.push({ minX: x - 0.3, maxX: x + 0.3, minZ: z - 0.3, maxZ: z + 0.3 });
     }
 
+    const boltSpecs: AnimatedInstanceSpec[] = [];
     for (let i = 0; i < 18; i += 1) {
-      const bolt = new THREE.Mesh(Geo.sphere(0.035, 6, 4), MatLib.crystal);
-      bolt.position.set(9.5 + seeded(i * 11) * 15, 0.6 + seeded(i * 17) * 1.8, 24.8 + seeded(i * 23) * 12.6);
-      this.scene.add(bolt);
-      this.addAnimatedObject('training_ground', { obj: bolt, baseY: bolt.position.y, amp: 0.1 + seeded(i * 29) * 0.16, speed: 1.3 + seeded(i * 31), phase: i, rotateY: 0.01 });
+      const x = 9.5 + seeded(i * 11) * 15;
+      const y = 0.6 + seeded(i * 17) * 1.8;
+      const z = 24.8 + seeded(i * 23) * 12.6;
+      boltSpecs.push({
+        x,
+        z,
+        scaleX: 1,
+        scaleY: 1,
+        scaleZ: 1,
+        rotationX: 0,
+        rotationY: 0,
+        rotationZ: 0,
+        baseY: y,
+        amp: 0.1 + seeded(i * 29) * 0.16,
+        speed: 1.3 + seeded(i * 31),
+        phase: i,
+        rotateY: 0.01,
+      });
     }
+    this.addAnimatedInstancedMesh('training_ground', Geo.sphere(0.035, 6, 4), MatLib.crystal, boltSpecs, false, false);
   }
 
   private addWeaponRacks(obstacles: Obstacle[]): void {
