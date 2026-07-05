@@ -61,6 +61,13 @@ export const Geo = {
     geoCache.set(key, g);
     return g;
   },
+  dodecahedron: (r: number, d: number): THREE.DodecahedronGeometry => {
+    const key = paramKey('dodeca', { r, d });
+    if (geoCache.has(key)) return geoCache.get(key) as THREE.DodecahedronGeometry;
+    const g = new THREE.DodecahedronGeometry(r, d);
+    geoCache.set(key, g);
+    return g;
+  },
   capsule: (r: number, len: number, cs: number, rs: number): THREE.CapsuleGeometry => {
     const key = paramKey('capsule', { r, len, cs, rs });
     if (geoCache.has(key)) return geoCache.get(key) as THREE.CapsuleGeometry;

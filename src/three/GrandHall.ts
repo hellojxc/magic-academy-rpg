@@ -28,7 +28,7 @@ export class GrandHall {
 
     // 地板
     const floor = new THREE.Mesh(
-      new THREE.BoxGeometry(26, 0.16, 15),
+      Geo.box(26, 0.16, 15),
       new THREE.MeshStandardMaterial({
         color: 0xd8ccb8,
         roughness: 0.42,
@@ -45,12 +45,12 @@ export class GrandHall {
 
     // 星图地板纹饰 — 中央魔法阵
     const circleMat = new THREE.MeshStandardMaterial({ color: 0xc7a060, roughness: 0.3, metalness: 0.5, emissive: 0xc7a060, emissiveIntensity: 0.08 });
-    const ring1 = new THREE.Mesh(new THREE.CylinderGeometry(3.5, 3.5, 0.02, 64), circleMat);
+    const ring1 = new THREE.Mesh(Geo.cylinder(3.5, 3.5, 0.02, 64), circleMat);
     ring1.position.set(0, 0.02, -14.5);
     ring1.receiveShadow = true;
     this.scene.add(ring1);
 
-    const ring2 = new THREE.Mesh(new THREE.CylinderGeometry(2.2, 2.2, 0.02, 48), circleMat);
+    const ring2 = new THREE.Mesh(Geo.cylinder(2.2, 2.2, 0.02, 48), circleMat);
     ring2.position.set(0, 0.02, -14.5);
     this.scene.add(ring2);
 
@@ -110,7 +110,7 @@ export class GrandHall {
 
     // 穹顶顶部水晶
     const crystal = new THREE.Mesh(
-      new THREE.OctahedronGeometry(0.6, 0),
+      Geo.octahedron(0.6, 0),
       MatLib.crystal
     );
     crystal.position.set(0, 5.8, -14.5);
@@ -137,7 +137,7 @@ export class GrandHall {
     // 灯笼 — 漂浮魔法灯
     for (const [x, z] of [[-7, -18], [7, -18], [-7, -11], [7, -11], [0, -14.5]] as Array<[number, number]>) {
       const lamp = new THREE.Mesh(
-        new THREE.OctahedronGeometry(0.2, 1),
+        Geo.octahedron(0.2, 1),
         MatLib.warmLight
       );
       lamp.position.set(x, 3.2, z);
@@ -239,7 +239,7 @@ export class GrandHall {
       [-12.78, 3.1, -18.0, 'side'],
       [12.78, 1.72, -11.8, 'side'],
     ] as Array<[number, number, number, 'back' | 'side']>) {
-      const chip = new THREE.Mesh(new THREE.DodecahedronGeometry(0.16, 0), stoneMat);
+      const chip = new THREE.Mesh(Geo.dodecahedron(0.16, 0), stoneMat);
       chip.scale.set(1, 0.34, 0.55);
       chip.position.set(x, y, z);
       chip.rotation.set(Math.random() * 0.4, Math.random() * Math.PI, Math.random() * 0.6);
@@ -252,7 +252,7 @@ export class GrandHall {
     for (const x of [-6.6, 0, 6.6]) {
       addBox(this.scene, new THREE.Vector3(x, 4.52, -22.02), new THREE.Vector3(1.6, 0.08, 0.08), trimMat, true, true);
       addBox(this.scene, new THREE.Vector3(x, 0.98, -22.0), new THREE.Vector3(1.2, 0.05, 0.08), lowerMat, true, true);
-      const medallion = new THREE.Mesh(new THREE.TorusGeometry(0.28, 0.022, 8, 28), reliefMat);
+      const medallion = new THREE.Mesh(Geo.torus(0.28, 0.022, 8, 28), reliefMat);
       medallion.position.set(x, 3.78, -21.96);
       medallion.rotation.x = Math.PI / 2;
       medallion.castShadow = true;
@@ -286,7 +286,7 @@ export class GrandHall {
     const segW = w / 5;
     for (let i = 0; i < 5; i++) {
       const seg = new THREE.Mesh(
-        new THREE.PlaneGeometry(segW * 0.95, h),
+        Geo.plane(segW * 0.95, h),
         segMats[i]
       );
       seg.position.set(x - w / 2 + segW * (i + 0.5), y, z);
