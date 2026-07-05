@@ -102,7 +102,7 @@ declare global {
 
 type R3FNpc = NpcSceneDefinition;
 type ThreeVec3Tuple = [number, number, number];
-type GlbLoadPriority = 'high' | 'normal';
+type GlbLoadPriority = 'critical' | 'high' | 'normal';
 
 interface R3FGameDebugState {
   readonly renderer: 'r3f';
@@ -135,13 +135,14 @@ const zeroVec = new THREE.Vector3();
 const worldTextureLoader = new THREE.TextureLoader();
 const playerSpawn = new THREE.Vector3(0, 1.25, 4.2);
 const maxAuthoredChunkCount = 8;
-const initialAuthoredChunkCount = 0;
-const authoredChunkStreamStepMs = 1600;
-const maxConcurrentGlbLoads = 2;
+const initialAuthoredChunkCount = 2;
+const authoredChunkStreamStepMs = 900;
+const maxConcurrentGlbLoads = 5;
 const enhancedMaterialCache = new Map<string, THREE.MeshStandardMaterial>();
 const lightmapCache = new Map<string, THREE.Texture>();
 const worldHdriUrl = '/assets/world/hdri/academy-night-atrium.hdr';
 let activeGlbLoadCount = 0;
+const pendingCriticalGlbLoadQueue: Array<() => void> = [];
 const pendingHighPriorityGlbLoadQueue: Array<() => void> = [];
 const pendingGlbLoadQueue: Array<() => void> = [];
 
@@ -1684,7 +1685,7 @@ function ThirdPartyAssetGroup({
   readonly placements: readonly ThirdPartyWorldPropPlacement[];
   readonly lodAnchor: ThirdPartyWorldLodAnchor;
 }): React.ReactElement {
-  const template = useOptionalGlb(source.url, false, undefined, 'high');
+  const template = useOptionalGlb(source.url);
   const objects = useMemo(() => {
     if (!template) return [];
     return placements
@@ -1758,7 +1759,7 @@ function shouldEnableThirdPartyGlbSource(
 
 function getChunkGlbLoadPriority(chunkId: WorldChunkId): GlbLoadPriority {
   return chunkId === 'lake-grotto' || chunkId === 'moonlit-lawn' || chunkId === 'arcane-library'
-    ? 'high'
+    ? 'critical'
     : 'normal';
 }
 
@@ -8775,7 +8776,8 @@ function scheduleGlbLoad(
           flushGlbLoadQueue();
         });
     };
-    if (priority === 'high') pendingHighPriorityGlbLoadQueue.push(run);
+    if (priority === 'critical') pendingCriticalGlbLoadQueue.push(run);
+    else if (priority === 'high') pendingHighPriorityGlbLoadQueue.push(run);
     else pendingGlbLoadQueue.push(run);
     flushGlbLoadQueue();
   });
@@ -8800,7 +8802,7 @@ async function loadGlbArrayBuffer(url: string): Promise<Awaited<ReturnType<GLTFL
 
 function flushGlbLoadQueue(): void {
   while (activeGlbLoadCount < maxConcurrentGlbLoads) {
-    const next = pendingHighPriorityGlbLoadQueue.shift() ?? pendingGlbLoadQueue.shift();
+    const next = pendingCriticalGlbLoadQueue.shift() ?? pendingHighPriorityGlbLoadQueue.shift() ?? pendingGlbLoadQueue.shift();
     if (!next) return;
     next();
   }
