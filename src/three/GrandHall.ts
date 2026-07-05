@@ -24,7 +24,7 @@ export class GrandHall {
     const marbleDetailTex = makeSharedSurfaceDetailTexture('grand-hall-marble', 4.8, 3.2);
     const plasterDetailTex = makeSharedSurfaceDetailTexture('grand-hall-plaster', 2.8, 1.4);
     const goldMat = MatLib.gold;
-    const stoneMat = new THREE.MeshStandardMaterial({ color: 0x80706a, roughness: 0.42, metalness: 0.12 });
+    const stoneMat = getStandardMaterial({ color: 0x80706a, roughness: 0.42, metalness: 0.12 });
 
     // 地板
     const floor = new THREE.Mesh(
@@ -44,7 +44,7 @@ export class GrandHall {
     this.scene.add(floor);
 
     // 星图地板纹饰 — 中央魔法阵
-    const circleMat = new THREE.MeshStandardMaterial({ color: 0xc7a060, roughness: 0.3, metalness: 0.5, emissive: 0xc7a060, emissiveIntensity: 0.08 });
+    const circleMat = getStandardMaterial({ color: 0xc7a060, roughness: 0.3, metalness: 0.5, emissive: 0xc7a060, emissiveIntensity: 0.08 });
     const ring1 = new THREE.Mesh(Geo.cylinder(3.5, 3.5, 0.02, 64), circleMat);
     ring1.position.set(0, 0.02, -14.5);
     ring1.receiveShadow = true;
@@ -65,7 +65,7 @@ export class GrandHall {
     }
     const star = new THREE.Mesh(
       new THREE.ExtrudeGeometry(starShape, { depth: 0.02, bevelEnabled: false }),
-      new THREE.MeshStandardMaterial({ color: 0xd6b45d, roughness: 0.25, metalness: 0.5, emissive: 0xffd700, emissiveIntensity: 0.15 })
+      getStandardMaterial({ color: 0xd6b45d, roughness: 0.25, metalness: 0.5, emissive: 0xffd700, emissiveIntensity: 0.15 })
     );
     star.rotation.x = -Math.PI / 2;
     star.position.set(0, 0.03, -14.5);
@@ -82,7 +82,7 @@ export class GrandHall {
       bumpScale: 0.036,
       roughnessMap: plasterDetailTex,
     });
-    const lowerMat = new THREE.MeshStandardMaterial({ color: 0x7b6a5e, roughness: 0.5, metalness: 0.08 });
+    const lowerMat = getStandardMaterial({ color: 0x7b6a5e, roughness: 0.5, metalness: 0.08 });
 
     // 后墙 (北)
     addBox(this.scene, new THREE.Vector3(0, 2.5, -22.4), new THREE.Vector3(26.5, 5, 0.45), wallMat, false, true);
@@ -124,8 +124,8 @@ export class GrandHall {
     }
 
     // 墙面装饰板
-    const panelMat = new THREE.MeshStandardMaterial({ color: 0x9f8e7a, roughness: 0.56, metalness: 0.04 });
-    const insetMat = new THREE.MeshStandardMaterial({ color: 0x6f5e4f, roughness: 0.62, metalness: 0.04 });
+    const panelMat = getStandardMaterial({ color: 0x9f8e7a, roughness: 0.56, metalness: 0.04 });
+    const insetMat = getStandardMaterial({ color: 0x6f5e4f, roughness: 0.62, metalness: 0.04 });
     for (const x of [-9, -5, 5, 9]) {
       this.addFramedPanel(new THREE.Vector3(x, 2.8, -22.1), 2.2, 3.2, 'back', panelMat, insetMat, goldMat);
     }
@@ -215,8 +215,8 @@ export class GrandHall {
   }
 
   private addWallStonework(stoneMat: THREE.Material, lowerMat: THREE.Material, trimMat: THREE.Material): void {
-    const seamMat = new THREE.MeshStandardMaterial({ color: 0x665a54, roughness: 0.72, metalness: 0.02 });
-    const reliefMat = new THREE.MeshStandardMaterial({ color: 0x9a8978, roughness: 0.58, metalness: 0.04 });
+    const seamMat = getStandardMaterial({ color: 0x665a54, roughness: 0.72, metalness: 0.02 });
+    const reliefMat = getStandardMaterial({ color: 0x9a8978, roughness: 0.58, metalness: 0.04 });
 
     for (const y of [1.2, 2.05, 2.9, 3.75]) {
       addBox(this.scene, new THREE.Vector3(0, y, -22.0), new THREE.Vector3(25.2, 0.026, 0.055), seamMat, false, true);
@@ -293,7 +293,7 @@ export class GrandHall {
       this.scene.add(seg);
     }
     // 窗框
-    const frameMat = new THREE.MeshStandardMaterial({ color: 0x5d3a59, roughness: 0.45, metalness: 0.12 });
+    const frameMat = getStandardMaterial({ color: 0x5d3a59, roughness: 0.45, metalness: 0.12 });
     addBox(this.scene, new THREE.Vector3(x, y - h / 2 - 0.1, z + 0.02), new THREE.Vector3(w + 0.2, 0.15, 0.1), frameMat, true, true);
     addBox(this.scene, new THREE.Vector3(x, y + h / 2 + 0.1, z + 0.02), new THREE.Vector3(w + 0.2, 0.15, 0.1), frameMat, true, true);
     for (let i = 0; i <= 5; i++) {
