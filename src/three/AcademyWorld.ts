@@ -33,6 +33,11 @@ interface LightGroup {
   active: boolean | null;
 }
 
+interface RankedPointLight {
+  light: THREE.PointLight;
+  distanceSq: number;
+}
+
 interface RegionUpdateGroup {
   id: string;
   updateKey: string;
@@ -64,6 +69,8 @@ const STORY_NPC_HEAVY_IDLE_PRELOAD_DELAY_SECONDS = 8;
 const STORY_NPC_FAR_UPDATE_INTERVAL_MOVING = 1 / 18;
 const STORY_NPC_FAR_UPDATE_INTERVAL_IDLE = 1 / 12;
 const POINT_LIGHT_UPDATE_DISTANCE_SQ = 0.35 * 0.35;
+const POINT_LIGHT_BUDGET = 8;
+const POINT_LIGHT_RELEVANCE_MARGIN = 2.5;
 
 export class AcademyWorld {
   private readonly obstacles: Obstacle[] = [];
@@ -71,6 +78,9 @@ export class AcademyWorld {
   private readonly storyNpcObjects: StoryNpcObject[] = [];
   private readonly animatedObjects: AnimatedObject[] = [];
   private readonly lightGroups: LightGroup[] = [];
+  private readonly pointLights: THREE.PointLight[] = [];
+  private readonly pointLightRankBuffer: RankedPointLight[] = [];
+  private readonly selectedPointLights = new Set<THREE.PointLight>();
   private readonly regionUpdateGroups: RegionUpdateGroup[] = [];
   private readonly updatedRegionKeys = new Set<string>();
   private readonly sunTarget = new THREE.Object3D();
@@ -193,9 +203,12 @@ export class AcademyWorld {
    * 运行时根据玩家位置动态开关光源，减少同时活跃的光源数量。
    */
   private collectPointLightsByRegion(): void {
+    this.pointLights.length = 0;
+    this.lightGroups.length = 0;
     const lightsByRegion = new Map<string, THREE.PointLight[]>();
     this.scene.traverse((obj) => {
       if (!(obj instanceof THREE.PointLight)) return;
+      this.pointLights.push(obj);
       // 找距光源最近的区域中心
       let bestId: string | null = null;
       let bestDistSq = Infinity;
@@ -232,6 +245,10 @@ export class AcademyWorld {
         active: null,
       });
     }
+
+    for (const light of this.pointLights) {
+      light.visible = false;
+    }
   }
 
   private updateSunFollow(): void {
@@ -255,15 +272,36 @@ export class AcademyWorld {
     this.lastPointLightUpdateX = px;
     this.lastPointLightUpdateZ = pz;
 
+    this.pointLightRankBuffer.length = 0;
     for (const group of this.lightGroups) {
       const dx = px - group.center.x;
       const dz = pz - group.center.z;
       const near = dx * dx + dz * dz < group.radiusSq;
-      if (near === group.active) continue;
       group.active = near;
+      if (!near) continue;
+
       for (const light of group.lights) {
-        light.visible = near;
+        const lightDx = px - light.position.x;
+        const lightDz = pz - light.position.z;
+        const distanceSq = lightDx * lightDx + lightDz * lightDz;
+        const relevanceRadius = light.distance > 0
+          ? light.distance + POINT_LIGHT_RELEVANCE_MARGIN
+          : Number.POSITIVE_INFINITY;
+        if (distanceSq > relevanceRadius * relevanceRadius) continue;
+        this.pointLightRankBuffer.push({ light, distanceSq });
       }
+    }
+
+    this.pointLightRankBuffer.sort((a, b) => a.distanceSq - b.distanceSq);
+    this.selectedPointLights.clear();
+    const activeCount = Math.min(POINT_LIGHT_BUDGET, this.pointLightRankBuffer.length);
+    for (let i = 0; i < activeCount; i += 1) {
+      this.selectedPointLights.add(this.pointLightRankBuffer[i].light);
+    }
+
+    for (const light of this.pointLights) {
+      const selected = this.selectedPointLights.has(light);
+      if (light.visible !== selected) light.visible = selected;
     }
   }
 
