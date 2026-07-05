@@ -1,0 +1,255 @@
+{
+  "assetId": "mature-senpai-commercial-v12",
+  "characterId": "mature_senpai",
+  "status": "source-preserving-retopo-and-motion-preview",
+  "source": "public/assets/models/mature_senpai_mcp_polish_v2.glb",
+  "blendSource": "assets/characters/mature_senpai/source/mature_senpai_commercial_v12.blend",
+  "output": "public/assets/models/mature_senpai_commercial_v12.glb",
+  "thumbnail": "public/assets/models/mature_senpai_commercial_v12.png",
+  "generatedBy": "remote Blender headless + assets/characters/mature_senpai/tools/build_final_v12.py",
+  "runtime": {
+    "defaultAsset": true,
+    "format": "glb",
+    "url": "/assets/models/mature_senpai_commercial_v12.glb",
+    "thumbnailUrl": "/assets/models/mature_senpai_commercial_v12.png",
+    "fallbackAssetId": "mature-senpai-mcp-polish-v2",
+    "threeRuntimeFeatures": [
+      "SkinnedMesh",
+      "AnimationMixer clips",
+      "morphTargetInfluences",
+      "Secondary_* bone spring overlay"
+    ]
+  },
+  "productionFlags": {
+    "sourcePreservedVisibleMesh": true,
+    "semanticPartGroups": true,
+    "splitRuntimeAccessoryParts": true,
+    "facialMorphs": true,
+    "explicitSupplementalWeights": true,
+    "hairSecondaryBones": true,
+    "skirtSecondaryBones": true,
+    "accessorySecondaryBones": true,
+    "webRuntimeReady": true
+  },
+  "bodyMesh": {
+    "name": "MatureSenpai_V12_SourcePreservedBody",
+    "vertices": 54863,
+    "faces": 59922,
+    "materials": [
+      "Material.001"
+    ],
+    "morphTargets": [
+      "Blink",
+      "ConfidentSmile",
+      "WarmSmile",
+      "Teasing",
+      "Surprised",
+      "Thoughtful"
+    ]
+  },
+  "detailParts": [
+    {
+      "name": "MatureSenpai_V12_CamisoleStrap_Left",
+      "vertices": 4,
+      "faces": 1,
+      "materials": [
+        "CommercialV12_IvoryFabricDetail"
+      ]
+    },
+    {
+      "name": "MatureSenpai_V12_CamisoleStrap_Right",
+      "vertices": 4,
+      "faces": 1,
+      "materials": [
+        "CommercialV12_IvoryFabricDetail"
+      ]
+    },
+    {
+      "name": "MatureSenpai_V12_ChokerPendant",
+      "vertices": 7,
+      "faces": 2,
+      "materials": [
+        "CommercialV12_SoftGoldTrim",
+        "CommercialV12_PurplePendantGem"
+      ]
+    }
+  ],
+  "semanticParts": {
+    "Face_Head": 4133,
+    "Hair_LeftLock": 9567,
+    "Hair_RightLock": 9647,
+    "Hair_Back": 6890,
+    "Torso_Camisole": 9869,
+    "Arms_Hands": 2057,
+    "Skirt_LeftPanel": 2135,
+    "Skirt_RightPanel": 2057,
+    "Skirt_Center": 989,
+    "Legs": 4086,
+    "Shoes": 3433
+  },
+  "semanticVertexGroups": {
+    "Semantic_Arms_Hands": 2057,
+    "Semantic_Face_Head": 4133,
+    "Semantic_Hair_Back": 6890,
+    "Semantic_Hair_LeftLock": 9567,
+    "Semantic_Hair_RightLock": 9647,
+    "Semantic_Legs": 4086,
+    "Semantic_Shoes": 3433,
+    "Semantic_Skirt_Center": 989,
+    "Semantic_Skirt_LeftPanel": 2135,
+    "Semantic_Skirt_RightPanel": 2057,
+    "Semantic_Torso_Camisole": 9869
+  },
+  "secondaryWeightCounts": {
+    "Secondary_Hair_Back": 11557,
+    "Secondary_Hair_Left": 10814,
+    "Secondary_Hair_Back_Tip": 907,
+    "Secondary_Hair_Left_Tip": 337,
+    "Secondary_Skirt_Left": 2216,
+    "Secondary_Skirt_Right": 2188,
+    "Secondary_Hair_Right": 11005,
+    "Secondary_Hair_Right_Tip": 361,
+    "Secondary_Skirt_Right_Tip": 871,
+    "Secondary_Skirt_Center": 592,
+    "Secondary_Skirt_Center_Tip": 136,
+    "Secondary_Skirt_Left_Tip": 901
+  },
+  "secondaryVertexGroups": {
+    "Secondary_Hair_Back": 14192,
+    "Secondary_Hair_Back_Tip": 907,
+    "Secondary_Hair_Left": 14727,
+    "Secondary_Hair_Left_Tip": 337,
+    "Secondary_Hair_Right": 14998,
+    "Secondary_Hair_Right_Tip": 361,
+    "Secondary_Skirt_Center": 592,
+    "Secondary_Skirt_Center_Tip": 136,
+    "Secondary_Skirt_Left": 5512,
+    "Secondary_Skirt_Left_Tip": 901,
+    "Secondary_Skirt_Right": 5409,
+    "Secondary_Skirt_Right_Tip": 871
+  },
+  "armatureBones": [
+    "Hips",
+    "Spine",
+    "Chest",
+    "Neck",
+    "Head",
+    "Secondary_Hair_Back",
+    "Secondary_Hair_Back_Tip",
+    "Secondary_Hair_Left",
+    "Secondary_Hair_Left_Tip",
+    "Secondary_Hair_Right",
+    "Secondary_Hair_Right_Tip",
+    "Secondary_Pendant",
+    "LeftUpperArm",
+    "LeftLowerArm",
+    "LeftHand",
+    "RightUpperArm",
+    "RightLowerArm",
+    "RightHand",
+    "Secondary_Strap_Left",
+    "Secondary_Strap_Right",
+    "LeftUpperLeg",
+    "LeftLowerLeg",
+    "LeftFoot",
+    "RightUpperLeg",
+    "RightLowerLeg",
+    "RightFoot",
+    "Secondary_Skirt_Left",
+    "Secondary_Skirt_Left_Tip",
+    "Secondary_Skirt_Right",
+    "Secondary_Skirt_Right_Tip",
+    "Secondary_Skirt_Center",
+    "Secondary_Skirt_Center_Tip"
+  ],
+  "secondaryRig": {
+    "all": [
+      "Secondary_Hair_Back",
+      "Secondary_Hair_Back_Tip",
+      "Secondary_Hair_Left",
+      "Secondary_Hair_Left_Tip",
+      "Secondary_Hair_Right",
+      "Secondary_Hair_Right_Tip",
+      "Secondary_Pendant",
+      "Secondary_Strap_Left",
+      "Secondary_Strap_Right",
+      "Secondary_Skirt_Left",
+      "Secondary_Skirt_Left_Tip",
+      "Secondary_Skirt_Right",
+      "Secondary_Skirt_Right_Tip",
+      "Secondary_Skirt_Center",
+      "Secondary_Skirt_Center_Tip"
+    ],
+    "hair": [
+      "Secondary_Hair_Back",
+      "Secondary_Hair_Back_Tip",
+      "Secondary_Hair_Left",
+      "Secondary_Hair_Left_Tip",
+      "Secondary_Hair_Right",
+      "Secondary_Hair_Right_Tip"
+    ],
+    "skirt": [
+      "Secondary_Skirt_Left",
+      "Secondary_Skirt_Left_Tip",
+      "Secondary_Skirt_Right",
+      "Secondary_Skirt_Right_Tip",
+      "Secondary_Skirt_Center",
+      "Secondary_Skirt_Center_Tip"
+    ],
+    "accessory": [
+      "Secondary_Pendant",
+      "Secondary_Strap_Left",
+      "Secondary_Strap_Right"
+    ]
+  },
+  "morphTargets": {
+    "MatureSenpai_V12_SourcePreservedBody": [
+      "Blink",
+      "ConfidentSmile",
+      "WarmSmile",
+      "Teasing",
+      "Surprised",
+      "Thoughtful"
+    ]
+  },
+  "morphVertexCounts": {
+    "Blink": 802,
+    "ConfidentSmile": 1384,
+    "WarmSmile": 1384,
+    "Teasing": 1384,
+    "Surprised": 1293,
+    "Thoughtful": 2159
+  },
+  "acceptanceChecks": {
+    "preservesHunyuanVisibleSource": true,
+    "hasSemanticPartGroups": true,
+    "hasSixNamedExpressionMorphs": true,
+    "hasMorphAffectedVertices": true,
+    "hasHairSecondaryBones": true,
+    "hasSkirtSecondaryBones": true,
+    "hasSecondaryWeights": true,
+    "hasVisibleDetailParts": true,
+    "webRuntimeBudgetTarget": true
+  },
+  "runtimeDecision": {
+    "defaultAsset": true,
+    "fallbackAssetId": "mature-senpai-mcp-polish-v2",
+    "reason": "v12 keeps the mcp-polish-v2 visible likeness as the runtime body, then layers morph targets, secondary-motion bones, semantic retopo groups, and lightweight visible accessory parts on top. This avoids the v11 problem where physical splitting and procedural replacement reduced the character's natural JRPG/anime silhouette."
+  },
+  "completedPasses": [
+    "preserved the mcp-polish-v2 body, UVs, texture atlas, and silhouette",
+    "added semantic vertex groups for face, hair locks, torso, arms, skirt panels, legs, and shoes",
+    "added Blink, ConfidentSmile, WarmSmile, Teasing, Surprised, and Thoughtful morph targets directly on the preserved body mesh",
+    "added supplemental Secondary_* weights for long hair and skirt regions without removing the source skin",
+    "added strap, pendant, hair-tip, and skirt-tip secondary bones recognized by CharacterModel3D",
+    "added visible skinned camisole straps, choker, and pendant as separate runtime detail parts",
+    "exported GLB with skins, morphs, and animations"
+  ],
+  "limitations": [
+    "This is a source-preserving hybrid retopo layer, not a full artist-authored quad retopology.",
+    "Physical runtime splitting is limited to lightweight accessories; body/hair/outfit remain one visible source mesh to preserve likeness.",
+    "Weights are generated by authored profiles, not manually brush-painted in Blender.",
+    "Facial morphs are subtle generated deltas, not sculpted expression blendshapes over a dedicated face topology.",
+    "Final commercial JRPG quality still needs manual quad retopo, UV cleanup, texture repaint, and artist expression sculpting."
+  ]
+}

@@ -22,8 +22,9 @@ cleanup, GLB/VRM export, and portrait comparison workflow. This is the path that
 should replace the procedural and Blender-template probes for final art.
 
 For `mature_senpai`, the current active asset is
-`mature-senpai-mcp-polish-v2`, with `mature-senpai-commercial-v11` retained as the
-engineered split-part/morph reference candidate.
+`mature-senpai-commercial-v12`, with `mature-senpai-mcp-polish-v2` retained as the
+visual fallback and `mature-senpai-commercial-v11` retained as the engineered
+split-part/morph reference candidate.
 
 Commercial-quality model replacement uses the explicit promotion command:
 
