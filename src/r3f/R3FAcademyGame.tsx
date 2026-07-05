@@ -2853,19 +2853,83 @@ function createLibraryBooks(): LibraryBookInstance[] {
 }
 
 function createLibraryPageBlocks(): LibraryPaperInstance[] {
-  return [];
+  return [
+    { key: 'table-open-folio-left-page-block', position: [5.28, 1.024, -1.14], rotation: [0, -0.2, 0], scale: [0.54, 0.026, 0.38], color: 0xd7c39b },
+    { key: 'table-open-folio-right-page-block', position: [5.72, 1.026, -1.2], rotation: [0, -0.2, 0], scale: [0.52, 0.024, 0.36], color: 0xcab589 },
+    { key: 'table-cross-reference-stack', position: [4.73, 1.024, -1.02], rotation: [0, 0.38, 0], scale: [0.44, 0.048, 0.32], color: 0xd4bf91 },
+    { key: 'table-small-index-card-stack', position: [5.86, 1.022, -1.62], rotation: [0, -0.5, 0], scale: [0.34, 0.038, 0.24], color: 0xe0cda5 },
+    { key: 'table-weighted-note-stack', position: [5.28, 1.024, -0.88], rotation: [0, 0.68, 0], scale: [0.36, 0.034, 0.22], color: 0xc8ad7d },
+    { key: 'catalog-drawer-exposed-cards', position: [6.78, 0.452, -0.96], rotation: [0, -0.2, 0], scale: [0.46, 0.028, 0.24], color: 0xd8c69d },
+    { key: 'north-west-shelf-pale-page-edge-a', position: [3.46, 0.93, -5.48], rotation: [0, 0.02, 0], scale: [0.22, 0.42, 0.035], color: 0xd2bc90 },
+    { key: 'north-west-shelf-pale-page-edge-b', position: [2.88, 1.31, -5.48], rotation: [0, 0.03, 0], scale: [0.18, 0.46, 0.034], color: 0xc0a778 },
+    { key: 'north-center-shelf-pale-page-edge-a', position: [5.04, 0.55, -5.56], rotation: [0, 0, 0], scale: [0.2, 0.38, 0.034], color: 0xd9c59c },
+    { key: 'north-center-shelf-pale-page-edge-b', position: [5.88, 1.69, -5.56], rotation: [0, -0.02, 0], scale: [0.24, 0.44, 0.032], color: 0xcbb184 },
+    { key: 'north-east-shelf-pale-page-edge-a', position: [7.36, 0.92, -5.46], rotation: [0, -0.04, 0], scale: [0.2, 0.42, 0.034], color: 0xdac79f },
+    { key: 'north-east-shelf-pale-page-edge-b', position: [8.06, 1.3, -5.46], rotation: [0, -0.04, 0], scale: [0.18, 0.45, 0.034], color: 0xc7af83 },
+    { key: 'east-wall-shelf-pale-page-edge-a', position: [8.98, 0.9, -4.48], rotation: [0, Math.PI / 2, 0], scale: [0.22, 0.4, 0.034], color: 0xd5c095 },
+    { key: 'east-wall-shelf-pale-page-edge-b', position: [8.98, 1.28, -3.7], rotation: [0, Math.PI / 2, 0], scale: [0.2, 0.44, 0.034], color: 0xc5ad83 },
+    { key: 'floor-stack-exposed-pages-a', position: [3.94, 0.43, -4.03], rotation: [0, 0.22, 0], scale: [0.28, 0.05, 0.22], color: 0xd4be91 },
+    { key: 'floor-stack-exposed-pages-b', position: [8.16, 0.43, -3.23], rotation: [0, -0.42, 0], scale: [0.3, 0.052, 0.21], color: 0xc8b082 },
+    { key: 'book-cart-loose-folio-stack', position: [7.05, 1.04, -2.66], rotation: [0, -1.0, 0], scale: [0.34, 0.035, 0.24], color: 0xdcc8a0 },
+    { key: 'shelf-ledger-forgotten-index-stack', position: [8.54, 0.48, -2.92], rotation: [0, 1.16, 0], scale: [0.36, 0.034, 0.22], color: 0xd0bb8d },
+  ];
 }
 
 function createLibraryPapers(): LibraryPaperInstance[] {
-  return [];
+  return [
+    { key: 'table-loose-parchment-under-quill', position: [5.48, 1.048, -1.18], rotation: [-Math.PI / 2, 0, -0.18], scale: [0.5, 0.36, 1], color: 0xf1deb6 },
+    { key: 'table-loose-parchment-side-note', position: [4.88, 1.049, -1.46], rotation: [-Math.PI / 2, 0, 0.28], scale: [0.34, 0.25, 1], color: 0xe3cea4 },
+    { key: 'table-loose-parchment-folded-corner', position: [5.98, 1.049, -1.08], rotation: [-Math.PI / 2, 0, -0.54], scale: [0.38, 0.28, 1], color: 0xd8c294 },
+    { key: 'table-small-catalog-slip-a', position: [5.02, 1.051, -0.96], rotation: [-Math.PI / 2, 0, 0.72], scale: [0.22, 0.13, 1], color: 0xe9d7af },
+    { key: 'table-small-catalog-slip-b', position: [5.92, 1.051, -1.48], rotation: [-Math.PI / 2, 0, -0.34], scale: [0.2, 0.12, 1], color: 0xcab385 },
+    { key: 'rug-dropped-page-near-chair', position: [4.18, 0.207, -0.92], rotation: [-Math.PI / 2, 0, 0.92], scale: [0.38, 0.28, 1], color: 0xdac49a },
+    { key: 'rug-dropped-page-near-table-leg', position: [4.84, 0.208, -0.62], rotation: [-Math.PI / 2, 0, -0.42], scale: [0.3, 0.22, 1], color: 0xe5d0a6 },
+    { key: 'rug-dropped-page-near-cart', position: [6.38, 0.208, -2.0], rotation: [-Math.PI / 2, 0, 0.16], scale: [0.34, 0.24, 1], color: 0xcdb78b },
+    { key: 'floor-reference-sheet-by-crates', position: [3.54, 0.205, -4.25], rotation: [-Math.PI / 2, 0, -0.62], scale: [0.42, 0.3, 1], color: 0xd9c398 },
+    { key: 'floor-reference-sheet-by-ladder', position: [4.28, 0.205, -5.05], rotation: [-Math.PI / 2, 0, 0.44], scale: [0.36, 0.26, 1], color: 0xe0cda5 },
+    { key: 'floor-reference-sheet-at-east-shelf', position: [8.66, 0.205, -3.72], rotation: [-Math.PI / 2, 0, 1.16], scale: [0.4, 0.28, 1], color: 0xc9b488 },
+    { key: 'floor-small-torn-note-at-book-stack', position: [7.04, 0.206, -0.74], rotation: [-Math.PI / 2, 0, -0.18], scale: [0.24, 0.16, 1], color: 0xe8d5ae },
+    { key: 'catalog-tray-card-overhang-a', position: [6.68, 0.488, -1.05], rotation: [-Math.PI / 2, 0, -0.18], scale: [0.28, 0.14, 1], color: 0xe0cea8 },
+    { key: 'catalog-tray-card-overhang-b', position: [6.92, 0.489, -0.88], rotation: [-Math.PI / 2, 0, -0.28], scale: [0.25, 0.13, 1], color: 0xcbb58b },
+    { key: 'shelf-paper-protruding-note-a', position: [3.08, 1.52, -5.31], rotation: [-Math.PI / 2, 0, 0.03], scale: [0.24, 0.16, 1], color: 0xe6d4af },
+    { key: 'shelf-paper-protruding-note-b', position: [5.54, 1.14, -5.38], rotation: [-Math.PI / 2, 0, -0.05], scale: [0.22, 0.14, 1], color: 0xcbb48a },
+    { key: 'east-shelf-protruding-note', position: [8.78, 1.14, -4.0], rotation: [-Math.PI / 2, 0, Math.PI / 2], scale: [0.22, 0.14, 1], color: 0xdcc7a0 },
+    { key: 'book-cart-misfiled-page', position: [7.08, 1.08, -2.72], rotation: [-Math.PI / 2, 0, -1.06], scale: [0.3, 0.2, 1], color: 0xe9d6ad },
+    { key: 'rug-tiny-torn-scrap-a', position: [5.92, 0.209, -0.62], rotation: [-Math.PI / 2, 0, 0.28], scale: [0.16, 0.1, 1], color: 0xd7c197 },
+    { key: 'rug-tiny-torn-scrap-b', position: [6.08, 0.209, -2.16], rotation: [-Math.PI / 2, 0, -0.74], scale: [0.18, 0.1, 1], color: 0xc9b186 },
+  ];
 }
 
 function createLibraryBookmarks(): LibraryPaperInstance[] {
-  return [];
+  return [
+    { key: 'table-book-red-ribbon-a', position: [4.58, 1.084, -1.42], rotation: [0, 0.42, 0], scale: [0.035, 0.008, 0.48], color: 0xb7394c },
+    { key: 'table-book-gold-ribbon-b', position: [5.82, 1.087, -1.72], rotation: [0, -0.36, 0], scale: [0.032, 0.008, 0.36], color: 0xc39342 },
+    { key: 'table-open-folio-blue-ribbon', position: [5.52, 1.048, -1.2], rotation: [0, -0.2, 0], scale: [0.028, 0.008, 0.44], color: 0x385c7f },
+    { key: 'north-west-shelf-dangling-ribbon-a', position: [3.18, 1.38, -5.39], rotation: [0, 0.03, 0], scale: [0.028, 0.34, 0.012], color: 0x9f3042 },
+    { key: 'north-west-shelf-dangling-ribbon-b', position: [3.68, 1.78, -5.39], rotation: [0, 0.03, 0], scale: [0.026, 0.3, 0.012], color: 0xc19237 },
+    { key: 'north-center-shelf-dangling-ribbon-a', position: [4.92, 1.02, -5.47], rotation: [0, 0, 0], scale: [0.026, 0.28, 0.012], color: 0x2e5672 },
+    { key: 'north-center-shelf-dangling-ribbon-b', position: [5.74, 1.42, -5.47], rotation: [0, 0, 0], scale: [0.028, 0.34, 0.012], color: 0xb23f50 },
+    { key: 'north-center-shelf-dangling-ribbon-c', position: [5.22, 1.82, -5.47], rotation: [0, 0, 0], scale: [0.024, 0.26, 0.012], color: 0xc6a14b },
+    { key: 'north-east-shelf-dangling-ribbon-a', position: [7.48, 1.0, -5.37], rotation: [0, -0.03, 0], scale: [0.026, 0.3, 0.012], color: 0x7f355e },
+    { key: 'north-east-shelf-dangling-ribbon-b', position: [8.18, 1.38, -5.37], rotation: [0, -0.03, 0], scale: [0.026, 0.32, 0.012], color: 0x356d57 },
+    { key: 'east-wall-shelf-dangling-ribbon-a', position: [8.88, 1.02, -4.42], rotation: [0, Math.PI / 2, 0], scale: [0.026, 0.3, 0.012], color: 0x9e3a47 },
+    { key: 'east-wall-shelf-dangling-ribbon-b', position: [8.88, 1.42, -3.76], rotation: [0, Math.PI / 2, 0], scale: [0.026, 0.32, 0.012], color: 0xc79b3f },
+    { key: 'floor-stack-red-ribbon-tail', position: [3.86, 0.52, -4.04], rotation: [0, 0.22, 0], scale: [0.024, 0.012, 0.32], color: 0xb03b4c },
+    { key: 'floor-stack-green-ribbon-tail', position: [8.16, 0.52, -3.26], rotation: [0, -0.42, 0], scale: [0.024, 0.012, 0.3], color: 0x34604f },
+    { key: 'book-cart-ribbon-marker', position: [7.18, 1.08, -2.7], rotation: [0, -1.02, 0], scale: [0.026, 0.01, 0.34], color: 0xb83d4d },
+  ];
 }
 
 function createLibraryLightShafts(): LibraryLightShaftInstance[] {
-  return [];
+  return [
+    { key: 'north-window-dust-shaft-wide-left', position: [3.82, 1.55, -4.62], rotation: [0.5, 0.03, 0.08], scale: [1.22, 2.25, 1], color: 0xd0aa80 },
+    { key: 'north-window-dust-shaft-reading-table', position: [5.2, 1.38, -4.28], rotation: [0.54, -0.02, -0.04], scale: [1.46, 2.42, 1], color: 0xe0b98a },
+    { key: 'north-window-dust-shaft-center-shelves', position: [6.38, 1.62, -4.54], rotation: [0.46, 0.04, 0.04], scale: [1.1, 2.0, 1], color: 0xc69e76 },
+    { key: 'north-window-dust-shaft-east-stack', position: [7.78, 1.48, -4.18], rotation: [0.5, -0.05, -0.08], scale: [1.12, 2.12, 1], color: 0xd6ad7f },
+    { key: 'east-clerestory-dust-shaft-cart', position: [8.54, 1.22, -3.12], rotation: [0.44, 0.22, -0.08], scale: [0.86, 1.74, 1], color: 0xcaa47d },
+    { key: 'thin-dust-shaft-over-ladder', position: [4.18, 1.7, -5.1], rotation: [0.42, 0.08, 0.14], scale: [0.62, 1.68, 1], color: 0xbf9670 },
+    { key: 'thin-dust-shaft-over-archive-crates', position: [3.62, 1.02, -3.88], rotation: [0.48, 0.02, -0.12], scale: [0.7, 1.5, 1], color: 0xcba27a },
+  ];
 }
 
 interface BiomeHeroInstance {
@@ -8864,8 +8928,15 @@ function enhanceAuthoredWorldMaterial(
   lightmapKey = 'none',
 ): THREE.MeshStandardMaterial {
   const materialLabel = `${source.name} ${objectName} ${lightmapKey}`;
+  const normalizedLabel = materialLabel.toLowerCase();
   const surface = classifyWorldSurface(materialLabel);
-  const isThirdPartyShelfWood = /vendor:ca-shelf-|ca-shelf/.test(materialLabel.toLowerCase()) && surface === 'wood';
+  const isThirdPartyShelfWood = /vendor:ca-shelf-|ca-shelf/.test(normalizedLabel) && surface === 'wood';
+  const isThirdPartyLibraryFurnitureWood = /vendor:(medieval-table|medieval-cart|ca-bench)/.test(normalizedLabel) && surface === 'wood';
+  const thirdPartyWoodTreatment = isThirdPartyShelfWood
+    ? 'dark-shelf-wood'
+    : isThirdPartyLibraryFurnitureWood
+      ? 'library-furniture-wood'
+      : 'default';
   const emissiveGroup = source.emissiveIntensity > 0.01 && source.emissive.getHex() !== 0
     ? source.emissive.getHexString()
     : 'none';
@@ -8876,7 +8947,7 @@ function enhanceAuthoredWorldMaterial(
     emissiveGroup,
     source.transparent ? 'transparent' : 'opaque',
     lightmapKey,
-    isThirdPartyShelfWood ? 'dark-shelf-wood' : 'default',
+    thirdPartyWoodTreatment,
   ].join(':');
   const cached = enhancedMaterialCache.get(cacheKey);
   if (cached) return cached;
@@ -8912,18 +8983,25 @@ function enhanceAuthoredWorldMaterial(
       );
       break;
     case 'wood':
+      const sourceWoodColor = new THREE.Color(color);
+      const sourceWoodLuminance = sourceWoodColor.r * 0.2126 + sourceWoodColor.g * 0.7152 + sourceWoodColor.b * 0.0722;
       const woodColor = isThirdPartyShelfWood
-        ? new THREE.Color(color).multiplyScalar(0.34).lerp(new THREE.Color(0x3a2419), 0.62).getHex()
-        : color;
+        ? sourceWoodColor.multiplyScalar(0.34).lerp(new THREE.Color(0x3a2419), 0.62).getHex()
+        : isThirdPartyLibraryFurnitureWood
+          ? sourceWoodColor
+            .multiplyScalar(sourceWoodLuminance > 0.72 ? 0.42 : 0.68)
+            .lerp(new THREE.Color(0x56321f), sourceWoodLuminance > 0.72 ? 0.74 : 0.48)
+            .getHex()
+          : color;
       material = createPbrMaterial(
         `${source.name || objectName}:wood-pbr`,
         createFilePbrSet('wood'),
         {
           color: woodColor,
-          roughness: isThirdPartyShelfWood ? 0.88 : 0.62,
-          metalness: isThirdPartyShelfWood ? 0.01 : 0.03,
-          envMapIntensity: isThirdPartyShelfWood ? 0.18 : 0.82,
-          normalScale: isThirdPartyShelfWood ? 0.34 : 0.52,
+          roughness: isThirdPartyShelfWood ? 0.88 : isThirdPartyLibraryFurnitureWood ? 0.78 : 0.62,
+          metalness: isThirdPartyShelfWood ? 0.01 : isThirdPartyLibraryFurnitureWood ? 0.02 : 0.03,
+          envMapIntensity: isThirdPartyShelfWood ? 0.18 : isThirdPartyLibraryFurnitureWood ? 0.32 : 0.82,
+          normalScale: isThirdPartyShelfWood ? 0.34 : isThirdPartyLibraryFurnitureWood ? 0.38 : 0.52,
         },
       );
       break;
@@ -9051,7 +9129,8 @@ function classifyWorldSurface(label: string): AuthoredSurface {
   if (/(leaf|leaves|canopy|foliage|frond|greenhouse_broad|individual_greenhouse_leaf|fallen_leaf_litter)/.test(value)) return 'foliage';
   if (/(grass|reed|blade|weed)/.test(value)) return 'grass';
   if (/(moss|mud|soil|ground_patch|organic_litter)/.test(value)) return 'ground';
-  if (/(wood|oak|walnut|shelf|book|table|bench|dock|plank|platform|barrel|cart|wheel|signpost|sign|booth|stall|rack|planter|counter|parchment|paper|scroll|wax|fabric|carpet|thread)/.test(value)) return 'wood';
+  if (/(parchment|paper|scroll|wax|fabric|carpet|rug|curtain|cloth|thread|banner|tapestry)/.test(value)) return 'organic';
+  if (/(wood|oak|walnut|shelf|book|table|bench|dock|plank|platform|barrel|cart|wheel|signpost|sign|booth|stall|rack|planter|counter)/.test(value)) return 'wood';
   if (/(brass|gold|metal|iron|silver|lamp|lantern|weapon|sword|chandelier|ring|trim|band|chain|dish)/.test(value)) return 'metal';
   if (/(tree|fern|plant|litter|root|vine)/.test(value)) return 'organic';
   if (/(crystal|glass|water|wet|puddle|mineral|sheen|glow|flame|portal|rune|arcane|emissive)/.test(value)) return 'crystal';

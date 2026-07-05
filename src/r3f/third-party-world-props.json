@@ -503,8 +503,8 @@
     { "id": "atrium-bench-west", "sourceId": "ca-bench-02", "chunkId": "atrium", "position": [-6.2, 0.2, 4.3], "rotation": [0, 1.56, 0], "scale": 0.9 },
     { "id": "atrium-bench-east", "sourceId": "ca-bench-02", "chunkId": "atrium", "position": [6.4, 0.2, 4.0], "rotation": [0, -1.52, 0], "scale": 0.9 },
 
-    { "id": "library-reading-table-main", "sourceId": "medieval-table-dinner", "chunkId": "arcane-library", "position": [5.25, 0.18, -1.35], "rotation": [0, 0.05, 0], "scale": 0.66 },
-    { "id": "library-reading-lamp-main", "sourceId": "medieval-lamp", "chunkId": "arcane-library", "position": [5.1, 0.18, -1.28], "rotation": [0, 0.35, 0], "scale": 0.42 },
+    { "id": "library-reading-table-main", "sourceId": "medieval-table-dinner", "chunkId": "arcane-library", "position": [4.05, 0.18, -2.72], "rotation": [0, 1.45, 0], "scale": 0.36 },
+    { "id": "library-reading-lamp-main", "sourceId": "medieval-lamp", "chunkId": "arcane-library", "position": [4.02, 0.18, -2.66], "rotation": [0, 1.25, 0], "scale": 0.28 },
     { "id": "library-window-bench", "sourceId": "ca-bench-02", "chunkId": "arcane-library", "position": [3.45, 0.2, -3.28], "rotation": [0, 1.55, 0], "scale": 0.68 },
     { "id": "library-reading-carpet", "sourceId": "ca-carpet-02", "chunkId": "arcane-library", "position": [6.0, 0.19, -2.1], "rotation": [0, -0.12, 0], "scale": 0.82 },
     { "id": "library-curtain-north", "sourceId": "ca-curtain-01", "chunkId": "arcane-library", "position": [6.4, 1.2, -6.85], "rotation": [0, 0, 0], "scale": 0.72 },
