@@ -138,7 +138,7 @@ const playerSpawn = new THREE.Vector3(0, 1.25, 4.2);
 const maxAuthoredChunkCount = 8;
 const initialAuthoredChunkCount = 2;
 const authoredChunkStreamStepMs = 900;
-const maxConcurrentGlbLoads = 6;
+const maxConcurrentGlbLoads = 12;
 const r3fPlayerStatePublishDistanceSq = 0.18 * 0.18;
 const r3fDebugStatePublishIntervalMs = 250;
 const r3fSceneDiagnosticsIntervalMs = 2500;
@@ -9478,10 +9478,10 @@ function useOptionalGlb(
             object.receiveShadow = true;
           }
         });
+        setAssetLoadState(url, 'loaded');
         flushSync(() => {
           setScene(clone);
         });
-        setAssetLoadState(url, 'loaded');
         if (enhanceWorldMaterials) {
           cancelEnhancement = scheduleAuthoredWorldMaterialEnhancement(clone, lightmapUrl);
         }
