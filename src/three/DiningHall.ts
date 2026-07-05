@@ -280,13 +280,13 @@ export class DiningHall {
     addBox(this.scene, new THREE.Vector3(x, 2.1, z), new THREE.Vector3(1.8, 0.3, 1.6), stoneMat, true, true);
     addBox(this.scene, new THREE.Vector3(x, 0.5, z), new THREE.Vector3(1.4, 0.2, 0.8), stoneMat, true, true);
 
-    const soot = new THREE.Mesh(new THREE.PlaneGeometry(1.25, 1.55), sootMat);
+    const soot = new THREE.Mesh(Geo.plane(1.25, 1.55), sootMat);
     soot.position.set(x - 0.03, 1.55, z);
     soot.rotation.y = Math.PI / 2;
     this.scene.add(soot);
 
     // 火焰
-    const fire = new THREE.Mesh(new THREE.SphereGeometry(0.25, 12, 8), fireMat);
+    const fire = new THREE.Mesh(Geo.sphere(0.25, 12, 8), fireMat);
     fire.position.set(x, 0.7, z);
     fire.scale.set(1, 1.5, 1);
     this.scene.add(fire);
@@ -299,12 +299,12 @@ export class DiningHall {
     const group = new THREE.Group();
 
     // 链
-    const chain = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 1.2, 6), mat);
+    const chain = new THREE.Mesh(Geo.cylinder(0.02, 0.02, 1.2, 6), mat);
     chain.position.set(0, -0.6, 0);
     group.add(chain);
 
     // 主体环
-    const ring = new THREE.Mesh(new THREE.TorusGeometry(0.35, 0.03, 8, 24), mat);
+    const ring = new THREE.Mesh(Geo.torus(0.35, 0.03, 8, 24), mat);
     ring.rotation.x = Math.PI / 2;
     group.add(ring);
 
@@ -314,7 +314,7 @@ export class DiningHall {
     for (let i = 0; i < 4; i++) {
       const angle = (i / 4) * Math.PI * 2;
       const candle = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.04, 0.04, 0.12, 8),
+        Geo.cylinder(0.04, 0.04, 0.12, 8),
         candleMat
       );
       candle.position.set(Math.cos(angle) * 0.35, -0.06, Math.sin(angle) * 0.35);
@@ -322,7 +322,7 @@ export class DiningHall {
 
       // 火焰
       const flame = new THREE.Mesh(
-        new THREE.SphereGeometry(0.03, 8, 6),
+        Geo.sphere(0.03, 8, 6),
         flameMat
       );
       flame.position.set(Math.cos(angle) * 0.35, 0.02, Math.sin(angle) * 0.35);
@@ -339,7 +339,7 @@ export class DiningHall {
     const frameMat = MatLib.goldFrame;
     const glassMat = MatLib.windowGlassDining;
 
-    const glass = new THREE.Mesh(new THREE.PlaneGeometry(1.4, 2.2), glassMat);
+    const glass = new THREE.Mesh(Geo.plane(1.4, 2.2), glassMat);
     glass.position.set(x - 0.05, y, z);
     glass.rotation.y = Math.PI / 2;
     this.scene.add(glass);
@@ -373,7 +373,7 @@ export class DiningHall {
 
     for (const [x, z, rot] of [[12.0, -6.02, 0], [16.3, -6.02, 0], [20.8, -6.02, 0], [23.48, -2.6, Math.PI / 2], [23.48, 4.2, Math.PI / 2]] as Array<[number, number, number]>) {
       const bracket = new THREE.Group();
-      const rail = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 0.82, 8), darkWoodMat);
+      const rail = new THREE.Mesh(Geo.cylinder(0.025, 0.025, 0.82, 8), darkWoodMat);
       rail.rotation.z = Math.PI / 2;
       bracket.add(rail);
       for (const dx of [-0.32, 0.32]) {
@@ -388,7 +388,7 @@ export class DiningHall {
     }
 
     for (const [x, z, rot] of [[13.6, -6.0, 0], [18.4, -6.0, 0], [23.46, -0.3, Math.PI / 2], [23.46, 2.5, Math.PI / 2]] as Array<[number, number, number]>) {
-      const plate = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.18, 0.018, 24), plateMat);
+      const plate = new THREE.Mesh(Geo.cylinder(0.18, 0.18, 0.018, 24), plateMat);
       plate.position.set(x, 2.74, z);
       plate.rotation.set(Math.PI / 2, rot, 0);
       plate.castShadow = true;
