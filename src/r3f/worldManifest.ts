@@ -71,16 +71,16 @@ export interface NpcSceneDefinition {
 }
 
 export const WORLD_ASSET_ROOT = '/assets/world';
-const MAX_STREAMED_CHUNKS = 4;
+const MAX_STREAMED_CHUNKS = 3;
 const FOCUS_STREAMED_CHUNKS: Partial<Record<WorldChunkId, ReadonlySet<WorldChunkId>>> = {
-  atrium: new Set<WorldChunkId>(['atrium', 'arcane-library', 'grand-hall', 'dining-hall']),
+  atrium: new Set<WorldChunkId>(['atrium']),
   'arcane-library': new Set<WorldChunkId>(['arcane-library', 'atrium']),
-  'grand-hall': new Set<WorldChunkId>(['grand-hall', 'atrium', 'arcane-library', 'dining-hall']),
-  'dining-hall': new Set<WorldChunkId>(['dining-hall', 'atrium', 'grand-hall', 'moonlit-lawn']),
-  'moonlit-lawn': new Set<WorldChunkId>(['moonlit-lawn', 'lake-grotto', 'atrium', 'training-yard']),
-  'lake-grotto': new Set<WorldChunkId>(['lake-grotto', 'moonlit-lawn', 'crystal-greenhouse', 'atrium']),
-  'training-yard': new Set<WorldChunkId>(['training-yard', 'moonlit-lawn', 'dining-hall']),
-  'crystal-greenhouse': new Set<WorldChunkId>(['crystal-greenhouse', 'lake-grotto', 'atrium']),
+  'grand-hall': new Set<WorldChunkId>(['grand-hall', 'atrium']),
+  'dining-hall': new Set<WorldChunkId>(['dining-hall', 'atrium']),
+  'moonlit-lawn': new Set<WorldChunkId>(['moonlit-lawn', 'lake-grotto', 'atrium']),
+  'lake-grotto': new Set<WorldChunkId>(['lake-grotto', 'moonlit-lawn', 'atrium']),
+  'training-yard': new Set<WorldChunkId>(['training-yard', 'moonlit-lawn']),
+  'crystal-greenhouse': new Set<WorldChunkId>(['crystal-greenhouse', 'lake-grotto']),
 };
 
 export const WORLD_CHUNKS: readonly WorldChunkDefinition[] = [
