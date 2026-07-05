@@ -6,6 +6,14 @@ const loader = new GLTFLoader();
 let packPromise: Promise<THREE.Group> | null = null;
 const appliedRegions = new WeakMap<THREE.Scene, Set<WorldRegionId>>();
 
+const NO_SHADOW_PREFABS = new Set([
+  'floor_inlay_tile',
+  'rug_runner',
+  'weathered_floor_slab',
+  'window_light_beam',
+]);
+const LIBRARY_BOOKSHELF_SHADOW_MESHES = new Set(['back', 'left_side', 'right_side', 'shelf']);
+
 export function addWorldPrefabRegion(
   scene: THREE.Scene,
   region: WorldRegionId,
@@ -37,7 +45,7 @@ export function addWorldPrefabRegion(
         applyScale(instance, placement.scale);
         instance.traverse((object) => {
           if (object instanceof THREE.Mesh) {
-            object.castShadow = true;
+            object.castShadow = shouldPrefabMeshCastShadow(placement.prefab, object);
             object.receiveShadow = true;
           }
         });
@@ -56,6 +64,14 @@ function getPrefabPack(): Promise<THREE.Group> {
   if (packPromise) return packPromise;
   packPromise = loader.loadAsync(WORLD_PREFAB_PACK_URL).then((gltf) => gltf.scene);
   return packPromise;
+}
+
+function shouldPrefabMeshCastShadow(prefab: string, mesh: THREE.Mesh): boolean {
+  if (NO_SHADOW_PREFABS.has(prefab)) return false;
+  if (prefab === 'library_bookshelf') {
+    return LIBRARY_BOOKSHELF_SHADOW_MESHES.has(mesh.name);
+  }
+  return true;
 }
 
 function applyScale(object: THREE.Object3D, scale: number | [number, number, number] | undefined): void {

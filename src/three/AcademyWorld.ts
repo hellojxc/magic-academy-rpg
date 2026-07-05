@@ -1402,9 +1402,9 @@ export class AcademyWorld {
     }
 
     for (const [color, matrices] of bookMatricesByColor) {
-      this.addInstancedBoxesToGroup(shelf, matrices, getStandardMaterial({ color, roughness: 0.5 }));
+      this.addInstancedBoxesToGroup(shelf, matrices, getStandardMaterial({ color, roughness: 0.5 }), false, true);
     }
-    this.addInstancedBoxesToGroup(shelf, stripeMatrices, goldMat);
+    this.addInstancedBoxesToGroup(shelf, stripeMatrices, goldMat, false, true);
 
     this.addBookshelfDetails(shelf, shelfLevels, width, depth, goldMat);
 
@@ -1429,8 +1429,8 @@ export class AcademyWorld {
     ];
 
     for (const level of [shelfLevels[1], shelfLevels[3]]) {
-      this.addBoxToGroup(shelf, new THREE.Vector3(-width / 2 - 0.01, level + 0.25, depth / 2 + 0.055), new THREE.Vector3(0.05, 0.22, 0.018), labelMat);
-      this.addBoxToGroup(shelf, new THREE.Vector3(width / 2 + 0.01, level + 0.25, depth / 2 + 0.055), new THREE.Vector3(0.05, 0.22, 0.018), labelMat);
+      this.addBoxToGroup(shelf, new THREE.Vector3(-width / 2 - 0.01, level + 0.25, depth / 2 + 0.055), new THREE.Vector3(0.05, 0.22, 0.018), labelMat, false, true);
+      this.addBoxToGroup(shelf, new THREE.Vector3(width / 2 + 0.01, level + 0.25, depth / 2 + 0.055), new THREE.Vector3(0.05, 0.22, 0.018), labelMat, false, true);
     }
 
     const scrollGeo = Geo.cylinder(0.035, 0.035, 0.42, 12);
@@ -1438,7 +1438,7 @@ export class AcademyWorld {
       const scroll = new THREE.Mesh(scrollGeo, parchmentMat);
       scroll.position.set(-0.38 + i * 0.18, shelfLevels[2] + 0.14, depth / 2 - 0.02);
       scroll.rotation.z = Math.PI / 2;
-      scroll.castShadow = true;
+      scroll.castShadow = false;
       scroll.receiveShadow = true;
       shelf.add(scroll);
     }
@@ -1448,12 +1448,12 @@ export class AcademyWorld {
     for (let i = 0; i < 3; i += 1) {
       const bottle = new THREE.Mesh(bottleGeo, glassMats[i]);
       bottle.position.set(0.28 + i * 0.16, shelfLevels[0] + 0.18, depth / 2 - 0.03);
-      bottle.castShadow = true;
+      bottle.castShadow = false;
       shelf.add(bottle);
 
       const stopper = new THREE.Mesh(stopperGeo, goldMat);
       stopper.position.set(bottle.position.x, bottle.position.y + 0.11, bottle.position.z);
-      stopper.castShadow = true;
+      stopper.castShadow = false;
       shelf.add(stopper);
     }
 
@@ -1462,7 +1462,7 @@ export class AcademyWorld {
       getStandardMaterial({ color: 0x8fc7ff, emissive: 0x4f8cff, emissiveIntensity: 0.65, roughness: 0.2 })
     );
     charm.position.set(0, shelfLevels[4] + 0.28, depth / 2 + 0.03);
-    charm.castShadow = true;
+    charm.castShadow = false;
     shelf.add(charm);
   }
 
@@ -1598,24 +1598,37 @@ export class AcademyWorld {
     return mesh;
   }
 
-  private addBoxToGroup(parent: THREE.Object3D, position: THREE.Vector3, scale: THREE.Vector3, material: THREE.Material): THREE.Mesh {
+  private addBoxToGroup(
+    parent: THREE.Object3D,
+    position: THREE.Vector3,
+    scale: THREE.Vector3,
+    material: THREE.Material,
+    castShadow = true,
+    receiveShadow = true
+  ): THREE.Mesh {
     const mesh = new THREE.Mesh(UNIT_BOX, material);
     mesh.position.copy(position);
     mesh.scale.set(scale.x, scale.y, scale.z);
-    mesh.castShadow = true;
-    mesh.receiveShadow = true;
+    mesh.castShadow = castShadow;
+    mesh.receiveShadow = receiveShadow;
     parent.add(mesh);
     return mesh;
   }
 
-  private addInstancedBoxesToGroup(parent: THREE.Object3D, matrices: THREE.Matrix4[], material: THREE.Material): void {
+  private addInstancedBoxesToGroup(
+    parent: THREE.Object3D,
+    matrices: THREE.Matrix4[],
+    material: THREE.Material,
+    castShadow = true,
+    receiveShadow = true
+  ): void {
     if (matrices.length === 0) return;
     const mesh = new THREE.InstancedMesh(UNIT_BOX, material, matrices.length);
     mesh.instanceMatrix.setUsage(THREE.StaticDrawUsage);
     matrices.forEach((matrix, index) => mesh.setMatrixAt(index, matrix));
     mesh.instanceMatrix.needsUpdate = true;
-    mesh.castShadow = true;
-    mesh.receiveShadow = true;
+    mesh.castShadow = castShadow;
+    mesh.receiveShadow = receiveShadow;
     mesh.computeBoundingSphere();
     parent.add(mesh);
   }
