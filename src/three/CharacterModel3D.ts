@@ -930,11 +930,12 @@ export class CharacterModel3D {
       blink = Math.sin(phase * Math.PI);
     }
 
-    const baseSmile = this.spec.id === 'player' ? 0.035 : this.spec.id === 'lyra' ? 0.18 : 0.08;
-    const smile = baseSmile + Math.sin(elapsedTime * 1.15) * (this.spec.id === 'lyra' ? 0.035 : 0.018);
     const isMatureSenpai = this.spec.id === 'mature_senpai';
-    const teasing = isMatureSenpai ? 0.018 + Math.max(0, Math.sin(elapsedTime * 0.48)) * 0.018 : 0;
-    const thoughtful = isMatureSenpai ? 0.012 + Math.max(0, Math.sin(elapsedTime * 0.31 + 1.4)) * 0.012 : 0;
+    const baseSmile = this.spec.id === 'player' ? 0.035 : this.spec.id === 'lyra' ? 0.18 : isMatureSenpai ? 0.22 : 0.08;
+    const smilePulse = this.spec.id === 'lyra' ? 0.035 : isMatureSenpai ? 0.052 : 0.018;
+    const smile = baseSmile + Math.sin(elapsedTime * 1.15) * smilePulse;
+    const teasing = isMatureSenpai ? 0.045 + Math.max(0, Math.sin(elapsedTime * 0.48)) * 0.04 : 0;
+    const thoughtful = isMatureSenpai ? 0.032 + Math.max(0, Math.sin(elapsedTime * 0.31 + 1.4)) * 0.026 : 0;
 
     const smileValue = Math.max(0, smile);
     for (const binding of this.gltfMorphBindings) {
