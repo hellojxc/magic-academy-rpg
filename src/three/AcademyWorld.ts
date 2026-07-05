@@ -68,6 +68,7 @@ const STORY_NPC_IDLE_PRELOAD_DELAY_SECONDS = 3.2;
 const STORY_NPC_HEAVY_IDLE_PRELOAD_DELAY_SECONDS = 8;
 const STORY_NPC_FAR_UPDATE_INTERVAL_MOVING = 1 / 18;
 const STORY_NPC_FAR_UPDATE_INTERVAL_IDLE = 1 / 12;
+const STORY_NPC_ASSET_LOAD_START_INTERVAL_SECONDS = 1.25;
 const POINT_LIGHT_UPDATE_DISTANCE_SQ = 0.35 * 0.35;
 const POINT_LIGHT_BUDGET = 8;
 const POINT_LIGHT_RELEVANCE_MARGIN = 2.5;
@@ -91,6 +92,7 @@ export class AcademyWorld {
   private lastSunFollowZ = Number.NaN;
   private lastPointLightUpdateX = Number.NaN;
   private lastPointLightUpdateZ = Number.NaN;
+  private lastStoryNpcAssetLoadStartTime = Number.NEGATIVE_INFINITY;
   private lyraRigUpdateAccumulator = 0;
   private playerRig!: CharacterModel3D;
   private lyraRig!: CharacterModel3D;
@@ -1040,7 +1042,8 @@ export class AcademyWorld {
       const dx = this.player.position.x - npc.object.position.x;
       const dz = this.player.position.z - npc.object.position.z;
       const distanceSq = dx * dx + dz * dz;
-      if (npc.rig && this.shouldLoadStoryNpcAsset(npc.id, distanceSq, elapsedTime, playerMoving)) {
+      if (this.shouldStartStoryNpcAssetLoad(npc, distanceSq, elapsedTime, playerMoving)) {
+        this.lastStoryNpcAssetLoadStartTime = elapsedTime;
         void npc.rig.startAssetLoad();
       }
 
@@ -1100,6 +1103,17 @@ export class AcademyWorld {
 
     return elapsedTime >= STORY_NPC_IDLE_PRELOAD_DELAY_SECONDS
       && distanceSq <= STORY_NPC_IDLE_ASSET_DISTANCE_SQ;
+  }
+
+  private shouldStartStoryNpcAssetLoad(
+    npc: StoryNpcObject,
+    distanceSq: number,
+    elapsedTime: number,
+    playerMoving: boolean
+  ): npc is StoryNpcObject & { rig: CharacterModel3D } {
+    if (!npc.rig || npc.rig.getModelState() !== 'fallback') return false;
+    if (elapsedTime - this.lastStoryNpcAssetLoadStartTime < STORY_NPC_ASSET_LOAD_START_INTERVAL_SECONDS) return false;
+    return this.shouldLoadStoryNpcAsset(npc.id, distanceSq, elapsedTime, playerMoving);
   }
 
   private updateMatureSenpaiShowcaseWalk(
