@@ -138,6 +138,9 @@ const maxAuthoredChunkCount = 8;
 const initialAuthoredChunkCount = 2;
 const authoredChunkStreamStepMs = 900;
 const maxConcurrentGlbLoads = 5;
+const r3fPlayerStatePublishDistanceSq = 0.18 * 0.18;
+const r3fDebugStatePublishIntervalMs = 250;
+const r3fSceneDiagnosticsIntervalMs = 2500;
 const enhancedMaterialCache = new Map<string, THREE.MeshStandardMaterial>();
 const lightmapCache = new Map<string, THREE.Texture>();
 const worldHdriUrl = '/assets/world/hdri/academy-night-atrium.hdr';
@@ -510,6 +513,8 @@ function AcademyR3FScene({
 }: AcademyR3FSceneProps): React.ReactElement {
   const activeIds = useMemo(() => new Set(activeChunks.map((chunk) => chunk.id)), [activeChunks]);
   const nearbyRef = useRef<R3FNpc | null>(null);
+  const lastPublishedPlayerPosition = useRef(playerPosition.clone());
+  const lastDebugStatePublishAt = useRef(0);
   const materialQaShot = shouldUseMaterialQaShot();
   const biomeQaShot = shouldUseBiomeQaShot();
   const libraryQaShot = shouldUseLibraryQaShot();
@@ -517,13 +522,28 @@ function AcademyR3FScene({
   const suppressFullPostprocessing = postprocessingDisabled || activeIds.has('lake-grotto') || activeIds.has('moonlit-lawn');
 
   const handlePlayerFrame = useCallback((position: THREE.Vector3) => {
-    onPlayerPosition(position.clone());
+    const dx = position.x - lastPublishedPlayerPosition.current.x;
+    const dy = position.y - lastPublishedPlayerPosition.current.y;
+    const dz = position.z - lastPublishedPlayerPosition.current.z;
+    const movedSq = dx * dx + dy * dy + dz * dz;
     const nearby = findNearbyNpc(position);
-    if (nearbyRef.current?.id !== nearby?.id) {
+    const nearbyChanged = nearbyRef.current?.id !== nearby?.id;
+    if (nearbyChanged) {
       nearbyRef.current = nearby;
       onNearbyNpcChange(nearby);
     }
-    onDebugState(nearby, position);
+
+    const movedEnough = movedSq >= r3fPlayerStatePublishDistanceSq;
+    if (movedEnough || nearbyChanged) {
+      lastPublishedPlayerPosition.current.copy(position);
+      onPlayerPosition(new THREE.Vector3(position.x, position.y, position.z));
+    }
+
+    const now = performance.now();
+    if (movedEnough || nearbyChanged || now - lastDebugStatePublishAt.current >= r3fDebugStatePublishIntervalMs) {
+      lastDebugStatePublishAt.current = now;
+      onDebugState(nearby, position);
+    }
   }, [onDebugState, onNearbyNpcChange, onPlayerPosition]);
 
   return (
@@ -1159,7 +1179,6 @@ function MaterialInspectionLighting(): React.ReactElement {
 
 function SceneDiagnostics(): null {
   const { scene, camera } = useThree();
-  const frame = useRef(0);
 
   const publish = useCallback(() => {
     let meshCount = 0;
@@ -1177,15 +1196,9 @@ function SceneDiagnostics(): null {
 
   useEffect(() => {
     publish();
-    const interval = window.setInterval(publish, 500);
+    const interval = window.setInterval(publish, r3fSceneDiagnosticsIntervalMs);
     return () => window.clearInterval(interval);
   }, [publish]);
-
-  useFrame(() => {
-    frame.current += 1;
-    if (frame.current % 30 !== 0) return;
-    publish();
-  });
 
   return null;
 }
