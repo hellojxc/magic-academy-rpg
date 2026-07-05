@@ -62,6 +62,7 @@ const STORY_NPC_IMMEDIATE_ASSET_DISTANCE_SQ = 6.2 * 6.2;
 const STORY_NPC_IDLE_ASSET_DISTANCE_SQ = 13 * 13;
 const STORY_NPC_HEAVY_IDLE_ASSET_DISTANCE_SQ = 8.5 * 8.5;
 const STORY_NPC_ACTIVE_DISTANCE_SQ = 18 * 18;
+const STORY_NPC_VISIBLE_DISTANCE_SQ = 20 * 20;
 const STORY_NPC_FULL_RATE_DISTANCE_SQ = 8.5 * 8.5;
 const STORY_NPC_LOOK_AT_DISTANCE_SQ = 4 * 4;
 const STORY_NPC_IDLE_PRELOAD_DELAY_SECONDS = 3.2;
@@ -981,8 +982,10 @@ export class AcademyWorld {
         onAssetInstalled: this.onSceneAssetInstalled,
       });
       const root = rig.root;
+      root.name = `story-npc:${npcData.id}`;
       root.position.set(npcData.worldX ?? 0, 0, npcData.worldZ ?? 0);
       root.rotation.y = npcData.rotationY ?? (Math.PI + index * 0.37);
+      root.visible = this.isStoryNpcVisible(root);
       this.scene.add(root);
       this.registerInteractiveNpc(npcData, root);
       this.storyNpcObjects.push({
@@ -1000,6 +1003,7 @@ export class AcademyWorld {
     }
 
     const root = new THREE.Group();
+    root.name = `story-npc:${npcData.id}`;
     const primary = this.parseNpcColor(npcData.color);
     const accent = new THREE.Color(primary).offsetHSL(0.08, 0.08, 0.18).getHex();
     const dark = new THREE.Color(primary).offsetHSL(-0.04, -0.08, -0.22).getHex();
@@ -1063,6 +1067,7 @@ export class AcademyWorld {
     root.position.set(npcData.worldX ?? 0, 0, npcData.worldZ ?? 0);
     root.rotation.y = npcData.rotationY ?? (Math.PI + index * 0.37);
     root.scale.setScalar(0.95 + (index % 5) * 0.035);
+    root.visible = this.isStoryNpcVisible(root);
     this.scene.add(root);
     this.registerInteractiveNpc(npcData, root);
     this.storyNpcObjects.push({
@@ -1098,12 +1103,15 @@ export class AcademyWorld {
       const dx = this.player.position.x - npc.object.position.x;
       const dz = this.player.position.z - npc.object.position.z;
       const distanceSq = dx * dx + dz * dz;
+      const visible = distanceSq <= STORY_NPC_VISIBLE_DISTANCE_SQ;
+      if (npc.object.visible !== visible) npc.object.visible = visible;
+
       if (this.shouldStartStoryNpcAssetLoad(npc, distanceSq, elapsedTime, playerMoving)) {
         this.lastStoryNpcAssetLoadStartTime = elapsedTime;
         void npc.rig.startAssetLoad();
       }
 
-      if (distanceSq > STORY_NPC_ACTIVE_DISTANCE_SQ) {
+      if (!visible || distanceSq > STORY_NPC_ACTIVE_DISTANCE_SQ) {
         npc.rig?.setMoving(false);
         npc.rigUpdateAccumulator = 0;
         continue;
@@ -1170,6 +1178,12 @@ export class AcademyWorld {
     if (!npc.rig || npc.rig.getModelState() !== 'fallback') return false;
     if (elapsedTime - this.lastStoryNpcAssetLoadStartTime < STORY_NPC_ASSET_LOAD_START_INTERVAL_SECONDS) return false;
     return this.shouldLoadStoryNpcAsset(npc.id, distanceSq, elapsedTime, playerMoving);
+  }
+
+  private isStoryNpcVisible(npc: THREE.Object3D): boolean {
+    const dx = this.player.position.x - npc.position.x;
+    const dz = this.player.position.z - npc.position.z;
+    return dx * dx + dz * dz <= STORY_NPC_VISIBLE_DISTANCE_SQ;
   }
 
   private updateMatureSenpaiShowcaseWalk(
