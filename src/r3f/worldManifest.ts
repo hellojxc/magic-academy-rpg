@@ -71,9 +71,9 @@ export interface NpcSceneDefinition {
 }
 
 export const WORLD_ASSET_ROOT = '/assets/world';
-const MAX_STREAMED_CHUNKS = 5;
+const MAX_STREAMED_CHUNKS = 4;
 const FOCUS_STREAMED_CHUNKS: Partial<Record<WorldChunkId, ReadonlySet<WorldChunkId>>> = {
-  atrium: new Set<WorldChunkId>(['atrium', 'arcane-library', 'grand-hall', 'dining-hall', 'moonlit-lawn']),
+  atrium: new Set<WorldChunkId>(['atrium', 'arcane-library', 'grand-hall', 'dining-hall']),
   'arcane-library': new Set<WorldChunkId>(['arcane-library', 'atrium']),
   'grand-hall': new Set<WorldChunkId>(['grand-hall', 'atrium', 'arcane-library', 'dining-hall']),
   'dining-hall': new Set<WorldChunkId>(['dining-hall', 'atrium', 'grand-hall', 'moonlit-lawn']),
