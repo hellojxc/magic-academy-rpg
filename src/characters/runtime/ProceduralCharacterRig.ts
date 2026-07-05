@@ -280,8 +280,8 @@ export class ProceduralCharacterRig {
 
     this.root.traverse((object) => {
       if (object instanceof THREE.Mesh) {
-        object.castShadow = true;
-        object.receiveShadow = true;
+        object.castShadow = this.shouldCastCharacterShadow(object);
+        object.receiveShadow = object.userData.proceduralCharacterOutline !== true;
       }
     });
 
@@ -818,6 +818,7 @@ export class ProceduralCharacterRig {
     mesh.position.set(...position);
     mesh.rotation.set(...rotation);
     mesh.scale.set(...scale);
+    mesh.userData.proceduralCharacterShadowCandidate = outline;
     parent.add(mesh);
 
     if (outline) {
@@ -828,11 +829,23 @@ export class ProceduralCharacterRig {
         outlineMesh.rotation.copy(mesh.rotation);
         outlineMesh.scale.set(scale[0] * outlineScale, scale[1] * outlineScale, scale[2] * outlineScale);
         outlineMesh.renderOrder = -1;
+        outlineMesh.castShadow = false;
+        outlineMesh.receiveShadow = false;
+        outlineMesh.userData.proceduralCharacterOutline = true;
+        outlineMesh.userData.proceduralCharacterShadowCandidate = false;
         parent.add(outlineMesh);
       }
     }
 
     return mesh;
+  }
+
+  private shouldCastCharacterShadow(mesh: THREE.Mesh): boolean {
+    if (mesh.userData.proceduralCharacterShadowCandidate !== true) return false;
+    if (!mesh.geometry.boundingSphere) mesh.geometry.computeBoundingSphere();
+    const radius = mesh.geometry.boundingSphere?.radius ?? 0;
+    const scale = Math.max(Math.abs(mesh.scale.x), Math.abs(mesh.scale.y), Math.abs(mesh.scale.z));
+    return radius * scale >= 0.04;
   }
 
   private findOutlineMaterial(material: THREE.Material): THREE.MeshBasicMaterial | undefined {
