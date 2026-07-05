@@ -370,8 +370,8 @@ function getLeafMaterial(color: number): THREE.MeshStandardMaterial {
     map: getLeafTexture(),
     roughness: 0.72,
     metalness: 0,
-    transparent: true,
     alphaTest: 0.24,
+    depthWrite: true,
     side: THREE.DoubleSide,
   });
   mat.color.setHex(color);
@@ -410,8 +410,8 @@ function getGrassBladeMaterial(color: number): THREE.MeshStandardMaterial {
     map: getGrassBladeTexture(),
     roughness: 0.88,
     metalness: 0,
-    transparent: true,
     alphaTest: 0.18,
+    depthWrite: true,
     side: THREE.DoubleSide,
   });
   grassMaterials.set(color, mat);
