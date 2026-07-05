@@ -14,7 +14,8 @@ import dialoguesData from '../data/dialogues.json';
 import type { DialogueTree, SaveData } from '../types';
 import type { AcademyWorldObjects, InteractiveNPC } from './WorldTypes';
 
-const ASYNC_SCENE_ASSET_SHADER_WARMUP_MIN_INTERVAL_MS = 300;
+const FRAME_DELTA_CAP_SECONDS = 0.05;
+const ASYNC_SCENE_ASSET_SHADER_WARMUP_MIN_INTERVAL_MS = 900;
 
 export class ThreeAcademyGame {
   private readonly view: ThreeGameView;
@@ -36,8 +37,10 @@ export class ThreeAcademyGame {
   private lastDebugDatasetAt = 0;
   private lastAsyncSceneAssetShaderWarmupAt = Number.NEGATIVE_INFINITY;
   private pendingAsyncSceneAssetShaderWarmup = false;
+  private asyncSceneAssetShaderWarmupScheduled = false;
   private currentNpc: InteractiveNPC | null = null;
   private frameListener: ((now: number) => void) | null = null;
+  private destroyed = false;
 
   constructor(private readonly container: HTMLElement) {
     this.container.classList.add('three-game');
@@ -96,6 +99,7 @@ export class ThreeAcademyGame {
   }
 
   destroy(): void {
+    this.destroyed = true;
     if (this.animationId !== 0) window.cancelAnimationFrame(this.animationId);
     this.frameListener = null;
     window.removeEventListener('resize', this.resize);
@@ -123,7 +127,7 @@ export class ThreeAcademyGame {
     }
 
     const now = performance.now();
-    const delta = Math.min((now - this.lastFrameTime) / 1000, 0.033);
+    const delta = Math.min((now - this.lastFrameTime) / 1000, FRAME_DELTA_CAP_SECONDS);
     this.lastFrameTime = now;
     this.elapsedTime += delta;
     this.update(delta);
@@ -171,12 +175,28 @@ export class ThreeAcademyGame {
 
   private warmupAsyncSceneAssetShadersWhenIdle(now: number): void {
     if (!this.pendingAsyncSceneAssetShaderWarmup) return;
+    if (this.asyncSceneAssetShaderWarmupScheduled) return;
     if (this.playerController.isMoving()) return;
     if (now - this.lastAsyncSceneAssetShaderWarmupAt < ASYNC_SCENE_ASSET_SHADER_WARMUP_MIN_INTERVAL_MS) return;
 
-    this.pendingAsyncSceneAssetShaderWarmup = false;
-    this.lastAsyncSceneAssetShaderWarmupAt = now;
-    this.view.compileScene();
+    this.asyncSceneAssetShaderWarmupScheduled = true;
+    const runWarmup = (): void => {
+      this.asyncSceneAssetShaderWarmupScheduled = false;
+      if (this.destroyed || document.hidden) return;
+      if (this.playerController.isMoving()) return;
+
+      const warmupNow = performance.now();
+      if (warmupNow - this.lastAsyncSceneAssetShaderWarmupAt < ASYNC_SCENE_ASSET_SHADER_WARMUP_MIN_INTERVAL_MS) return;
+      this.pendingAsyncSceneAssetShaderWarmup = false;
+      this.lastAsyncSceneAssetShaderWarmupAt = warmupNow;
+      this.view.compileScene();
+    };
+
+    if ('requestIdleCallback' in window) {
+      window.requestIdleCallback(runWarmup, { timeout: 1500 });
+    } else {
+      globalThis.setTimeout(runWarmup, 16);
+    }
   }
 
   private readonly onKeyDown = (event: KeyboardEvent): void => {

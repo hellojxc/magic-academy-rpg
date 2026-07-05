@@ -26,7 +26,9 @@ export class ThreeGameView {
 
     // 渲染器 — 高质量设置
     this.renderer = new THREE.WebGLRenderer({
-      antialias: !this.lowQuality,
+      // The EffectComposer renders into offscreen targets; SMAA handles final
+      // antialiasing, so canvas MSAA only adds allocation/resolve overhead here.
+      antialias: false,
       powerPreference: 'high-performance',
       stencil: false,
     });
@@ -96,6 +98,35 @@ export class ThreeGameView {
 
   compileScene(): void {
     this.renderer.compile(this.scene, this.camera);
+  }
+
+  getRenderStats(): {
+    pixelRatio: number;
+    lowQuality: boolean;
+    postprocessing: { ssao: boolean; bloom: boolean; smaa: boolean };
+    render: { calls: number; triangles: number; points: number; lines: number };
+    memory: { geometries: number; textures: number };
+  } {
+    const { render, memory } = this.renderer.info;
+    return {
+      pixelRatio: this.renderer.getPixelRatio(),
+      lowQuality: this.lowQuality,
+      postprocessing: {
+        ssao: this.ssaoPass !== null,
+        bloom: true,
+        smaa: !this.lowQuality,
+      },
+      render: {
+        calls: render.calls,
+        triangles: render.triangles,
+        points: render.points,
+        lines: render.lines,
+      },
+      memory: {
+        geometries: memory.geometries,
+        textures: memory.textures,
+      },
+    };
   }
 
   warmup(): void {
