@@ -1090,16 +1090,15 @@ export class AcademyWorld {
   }
 
   private shouldLoadStoryNpcAsset(id: string, distanceSq: number, elapsedTime: number, playerMoving: boolean): boolean {
+    if (playerMoving) return false;
     if (distanceSq <= STORY_NPC_IMMEDIATE_ASSET_DISTANCE_SQ) return true;
 
     if (id === 'mature_senpai') {
-      return !playerMoving
-        && elapsedTime >= STORY_NPC_HEAVY_IDLE_PRELOAD_DELAY_SECONDS
+      return elapsedTime >= STORY_NPC_HEAVY_IDLE_PRELOAD_DELAY_SECONDS
         && distanceSq <= STORY_NPC_HEAVY_IDLE_ASSET_DISTANCE_SQ;
     }
 
-    return !playerMoving
-      && elapsedTime >= STORY_NPC_IDLE_PRELOAD_DELAY_SECONDS
+    return elapsedTime >= STORY_NPC_IDLE_PRELOAD_DELAY_SECONDS
       && distanceSq <= STORY_NPC_IDLE_ASSET_DISTANCE_SQ;
   }
 
