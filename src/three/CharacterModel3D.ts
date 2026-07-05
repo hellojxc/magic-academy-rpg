@@ -11,6 +11,7 @@ import {
   type CharacterSpec,
 } from '../characters';
 import { CharacterAnimationStateMachine } from './CharacterAnimationStateMachine';
+import { Geo } from './RenderResources';
 
 interface BoneSet {
   hips?: THREE.Object3D;
@@ -99,6 +100,7 @@ export class CharacterModel3D {
   private static activeAssetLoads = 0;
   private static assetLoadSequence = 0;
   private static toonGradient?: THREE.DataTexture;
+  private static shadowProxyMaterial?: THREE.MeshBasicMaterial;
 
   readonly root = new THREE.Group();
   private readonly fallback: ProceduralCharacterRig;
@@ -337,6 +339,7 @@ export class CharacterModel3D {
     this.prepareModelRoot(vrm.scene, this.spec.body.heightMeters);
     vrm.scene.rotation.y = Math.PI;
     this.root.add(vrm.scene);
+    this.addRuntimeShadowProxy();
     this.bones = this.collectBones(vrm, vrmModule);
     this.setVRMShadows(vrm.scene);
     if (vrm.lookAt) {
@@ -352,6 +355,7 @@ export class CharacterModel3D {
     this.prepareModelRoot(scene, this.spec.body.heightMeters);
     scene.rotation.y = Math.PI;
     this.root.add(scene);
+    this.addRuntimeShadowProxy();
     this.setVRMShadows(scene);
     if (this.buildPlan.asset) this.applyGLTFVisualProfile(scene, this.buildPlan.asset);
     this.bones = this.collectNamedBones(scene);
@@ -463,20 +467,6 @@ export class CharacterModel3D {
     return radius >= 0.035;
   }
 
-  private shouldCharacterMeshCastShadow(mesh: THREE.Mesh | THREE.SkinnedMesh): boolean {
-    if (!mesh.geometry) return false;
-    const normalized = mesh.name.replace(/[^a-z0-9]/gi, '').toLowerCase();
-    if (normalized.includes('inkoutline') || normalized.includes('selectionring')) return false;
-    if (/(eye|iris|pupil|catchlight|eyelash|brow|mouth|lip|cheek|nose|tooth|teeth|tongue|blush|tear)/.test(normalized)) return false;
-    if (/(button|gem|crest|ring|finger|thumb|wand|paper|book|ribbon|lace|shadow)/.test(normalized)) return false;
-    const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
-    if (materials.some((material) => material.transparent || material.opacity < 0.9)) return false;
-
-    if (!mesh.geometry.boundingSphere) mesh.geometry.computeBoundingSphere();
-    const radius = mesh.geometry.boundingSphere?.radius ?? 0;
-    return radius >= 0.04;
-  }
-
   private addGLTFMeshOutline(
     mesh: THREE.Mesh | THREE.SkinnedMesh,
     material: THREE.MeshBasicMaterial,
@@ -511,6 +501,27 @@ export class CharacterModel3D {
   private detachFallbackRoot(): void {
     this.fallback.root.visible = false;
     this.fallback.root.removeFromParent();
+  }
+
+  private addRuntimeShadowProxy(): void {
+    const existing = this.root.getObjectByName('character-runtime-shadow-proxy');
+    if (existing) existing.removeFromParent();
+
+    const height = this.spec.body.heightMeters;
+    const radius = Math.max(0.18, height * 0.16);
+    const length = Math.max(0.42, height - radius * 2);
+    const proxy = new THREE.Mesh(
+      Geo.capsule(radius, length, 8, 16),
+      CharacterModel3D.getShadowProxyMaterial(),
+    );
+    proxy.name = 'character-runtime-shadow-proxy';
+    proxy.position.y = height * 0.5;
+    proxy.scale.set(0.78, 1, 0.62);
+    proxy.castShadow = true;
+    proxy.receiveShadow = false;
+    proxy.frustumCulled = false;
+    proxy.userData.characterShadowProxy = true;
+    this.root.add(proxy);
   }
 
   private createGLTFOutlineMaterial(): THREE.MeshBasicMaterial {
@@ -1026,7 +1037,7 @@ export class CharacterModel3D {
   private setVRMShadows(model: THREE.Object3D): void {
     model.traverse((object) => {
       if (object instanceof THREE.Mesh || object instanceof THREE.SkinnedMesh) {
-        object.castShadow = this.shouldCharacterMeshCastShadow(object);
+        object.castShadow = false;
         object.receiveShadow = true;
         object.frustumCulled = false;
       }
@@ -1062,5 +1073,16 @@ export class CharacterModel3D {
       CharacterModel3D.toonGradient = texture;
     }
     return CharacterModel3D.toonGradient;
+  }
+
+  private static getShadowProxyMaterial(): THREE.MeshBasicMaterial {
+    if (!CharacterModel3D.shadowProxyMaterial) {
+      const material = new THREE.MeshBasicMaterial({ color: 0x000000 });
+      material.colorWrite = false;
+      material.depthWrite = false;
+      material.depthTest = false;
+      CharacterModel3D.shadowProxyMaterial = material;
+    }
+    return CharacterModel3D.shadowProxyMaterial;
   }
 }
