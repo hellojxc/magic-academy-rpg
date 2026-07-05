@@ -729,7 +729,7 @@ export class CharacterModel3D {
     if (this.spec.id === 'player') {
       this.poseWalk(walk, opposite, blend);
     } else {
-      this.poseLyraIdle(breathe, soft, talkBlend);
+      this.poseLyraIdle(elapsedTime, breathe, soft, talkBlend);
     }
   }
 
@@ -746,14 +746,14 @@ export class CharacterModel3D {
     if (this.bones.rightLowerArm) this.bones.rightLowerArm.rotation.x = -0.18 - Math.max(0, opposite) * 0.12 * blend;
   }
 
-  private poseLyraIdle(breathe: number, soft: number, talkBlend: number): void {
+  private poseLyraIdle(elapsedTime: number, breathe: number, soft: number, talkBlend: number): void {
     if (this.bones.leftUpperArm) this.bones.leftUpperArm.rotation.set(-0.28 + breathe * 0.015, -0.16, -0.72 + soft * 0.012);
     if (this.bones.leftLowerArm) this.bones.leftLowerArm.rotation.set(-1.05 + breathe * 0.014, 0, 0.46);
     if (this.bones.rightUpperArm) this.bones.rightUpperArm.rotation.set(-0.34 - breathe * 0.012, 0.16, 0.72 - soft * 0.012);
     if (this.bones.rightLowerArm) this.bones.rightLowerArm.rotation.set(-1.08 - breathe * 0.014, 0, -0.42);
     if (this.bones.leftUpperLeg) this.bones.leftUpperLeg.rotation.x = -0.035 + breathe * 0.006;
     if (this.bones.rightUpperLeg) this.bones.rightUpperLeg.rotation.x = 0.03 - breathe * 0.006;
-    if (this.bones.head) this.bones.head.rotation.y += Math.sin(performance.now() * 0.009) * 0.035 * talkBlend;
+    if (this.bones.head) this.bones.head.rotation.y += Math.sin(elapsedTime * 9) * 0.035 * talkBlend;
   }
 
   private applyGLTFPoseOverlay(elapsedTime: number): void {
