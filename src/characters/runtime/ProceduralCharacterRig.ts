@@ -49,6 +49,7 @@ interface CharacterPalette {
 }
 
 type Vec3 = [number, number, number];
+type PaletteCacheKey = 'player' | 'npc';
 
 export class ProceduralCharacterRig {
   readonly root = new THREE.Group();
@@ -58,7 +59,7 @@ export class ProceduralCharacterRig {
 
   private static toonGradient: THREE.DataTexture | undefined;
   private static shadowProxyMaterial: THREE.MeshBasicMaterial | undefined;
-  private static readonly paletteCache = new Map<CharacterId, CharacterPalette>();
+  private static readonly paletteCache = new Map<PaletteCacheKey, CharacterPalette>();
   private static readonly clothPanelGeometryCache = new Map<string, THREE.ShapeGeometry>();
 
   constructor(private readonly kind: CharacterId) {
@@ -875,12 +876,17 @@ export class ProceduralCharacterRig {
   }
 
   private getPalette(kind: CharacterId): CharacterPalette {
-    const cached = ProceduralCharacterRig.paletteCache.get(kind);
+    const cacheKey = ProceduralCharacterRig.getPaletteCacheKey(kind);
+    const cached = ProceduralCharacterRig.paletteCache.get(cacheKey);
     if (cached) return cached;
 
     const palette = this.createPalette(kind);
-    ProceduralCharacterRig.paletteCache.set(kind, palette);
+    ProceduralCharacterRig.paletteCache.set(cacheKey, palette);
     return palette;
+  }
+
+  private static getPaletteCacheKey(kind: CharacterId): PaletteCacheKey {
+    return kind === 'player' ? 'player' : 'npc';
   }
 
   private createPalette(kind: CharacterId): CharacterPalette {
