@@ -20,7 +20,7 @@ export class DiningHall {
     const plasterTex = makePlasterTexture({ light: '#d4c4b0', mid: '#b8a690', dark: '#d0c0a8' });
     const woodDetailTex = makeSharedSurfaceDetailTexture('dining-wood', 3, 3);
     const plasterDetailTex = makeSharedSurfaceDetailTexture('dining-plaster', 2.4, 1.2);
-    const woodMat = new THREE.MeshStandardMaterial({
+    const woodMat = getStandardMaterial({
       color: 0x5b3324,
       roughness: 0.48,
       metalness: 0.1,
@@ -29,8 +29,8 @@ export class DiningHall {
       bumpScale: 0.02,
       roughnessMap: woodDetailTex,
     });
-    const darkWoodMat = new THREE.MeshStandardMaterial({ color: 0x3a211a, roughness: 0.5, metalness: 0.08 });
-    const wallMat = new THREE.MeshStandardMaterial({
+    const darkWoodMat = getStandardMaterial({ color: 0x3a211a, roughness: 0.5, metalness: 0.08 });
+    const wallMat = getStandardMaterial({
       color: 0xc4b4a0,
       roughness: 0.64,
       metalness: 0.03,
@@ -39,24 +39,26 @@ export class DiningHall {
       bumpScale: 0.034,
       roughnessMap: plasterDetailTex,
     });
-    const lowerMat = new THREE.MeshStandardMaterial({ color: 0x7b6a5e, roughness: 0.5, metalness: 0.08 });
+    const lowerMat = getStandardMaterial({ color: 0x7b6a5e, roughness: 0.5, metalness: 0.08 });
     const goldMat = MatLib.gold;
-    const clothMat = new THREE.MeshStandardMaterial({ color: 0xe8dcc0, roughness: 0.72, metalness: 0.02 });
+    const clothMat = getStandardMaterial({ color: 0xe8dcc0, roughness: 0.72, metalness: 0.02 });
+    const wallDetailWoodMat = getStandardMaterial({ color: 0x3d2418, roughness: 0.58, metalness: 0.06, map: woodTex });
+    const floorWoodTex = woodTex.clone();
+    floorWoodTex.repeat.set(3, 3);
 
     // 地板
     const floor = new THREE.Mesh(
       Geo.box(14, 0.16, 14),
-      new THREE.MeshStandardMaterial({
+      getStandardMaterial({
         color: 0x8a6b4e,
         roughness: 0.46,
         metalness: 0.06,
-        map: woodTex.clone(),
+        map: floorWoodTex,
         bumpMap: woodDetailTex,
         bumpScale: 0.022,
         roughnessMap: woodDetailTex,
       })
     );
-    (floor.material as THREE.MeshStandardMaterial).map!.repeat.set(3, 3);
     floor.position.set(17, -0.08, 1);
     floor.receiveShadow = true;
     this.scene.add(floor);
@@ -74,10 +76,10 @@ export class DiningHall {
     // 南墙 (部分 — 留通道)
     addBox(this.scene, new THREE.Vector3(22, 2.3, 7.6), new THREE.Vector3(4.5, 4.6, 0.45), wallMat, false, true);
     addBox(this.scene, new THREE.Vector3(22, 0.6, 7.35), new THREE.Vector3(4, 0.9, 0.28), lowerMat, true, true);
-    this.addWallDetails(lowerMat, goldMat);
+    this.addWallDetails(lowerMat, goldMat, wallDetailWoodMat);
 
     // 天花板
-    const ceilMat = new THREE.MeshStandardMaterial({ color: 0x6a5a4e, roughness: 0.62, metalness: 0.03 });
+    const ceilMat = getStandardMaterial({ color: 0x6a5a4e, roughness: 0.62, metalness: 0.03 });
     const ceiling = new THREE.Mesh(Geo.box(14, 0.12, 14), ceilMat);
     ceiling.position.set(17, 4.6, 1);
     ceiling.receiveShadow = true;
@@ -270,7 +272,7 @@ export class DiningHall {
   }
 
   private addFireplace(x: number, z: number): void {
-    const stoneMat = new THREE.MeshStandardMaterial({ color: 0x5a4a3e, roughness: 0.6, metalness: 0.06 });
+    const stoneMat = getStandardMaterial({ color: 0x5a4a3e, roughness: 0.6, metalness: 0.06 });
     const fireMat = MatLib.fire;
     const sootMat = new THREE.MeshBasicMaterial({ color: 0x1f1714, transparent: true, opacity: 0.28, depthWrite: false });
 
@@ -349,10 +351,9 @@ export class DiningHall {
     addBox(this.scene, new THREE.Vector3(x, y, z - 0.75), new THREE.Vector3(0.06, 0.08, 1.8), frameMat, true, true);
   }
 
-  private addWallDetails(lowerMat: THREE.Material, goldMat: THREE.Material): void {
-    const seamMat = new THREE.MeshStandardMaterial({ color: 0x756656, roughness: 0.72, metalness: 0.02 });
-    const darkWoodMat = new THREE.MeshStandardMaterial({ color: 0x3d2418, roughness: 0.58, metalness: 0.06, map: makeWoodTexture() });
-    const plateMat = new THREE.MeshStandardMaterial({ color: 0xe8dcc0, roughness: 0.38, metalness: 0.04 });
+  private addWallDetails(lowerMat: THREE.Material, goldMat: THREE.Material, darkWoodMat: THREE.Material): void {
+    const seamMat = getStandardMaterial({ color: 0x756656, roughness: 0.72, metalness: 0.02 });
+    const plateMat = getStandardMaterial({ color: 0xe8dcc0, roughness: 0.38, metalness: 0.04 });
 
     for (const y of [1.35, 2.3, 3.25]) {
       addBox(this.scene, new THREE.Vector3(23.56, y, 1), new THREE.Vector3(0.05, 0.022, 13.2), seamMat, false, true);
@@ -371,13 +372,14 @@ export class DiningHall {
       addBox(this.scene, new THREE.Vector3(23.43, 1.36, z), new THREE.Vector3(0.08, 0.045, 0.9), goldMat, true, true);
     }
 
+    const hookGeo = Geo.torusArc(0.06, 0.01, 6, 14, Math.PI);
     for (const [x, z, rot] of [[12.0, -6.02, 0], [16.3, -6.02, 0], [20.8, -6.02, 0], [23.48, -2.6, Math.PI / 2], [23.48, 4.2, Math.PI / 2]] as Array<[number, number, number]>) {
       const bracket = new THREE.Group();
       const rail = new THREE.Mesh(Geo.cylinder(0.025, 0.025, 0.82, 8), darkWoodMat);
       rail.rotation.z = Math.PI / 2;
       bracket.add(rail);
       for (const dx of [-0.32, 0.32]) {
-        const hook = new THREE.Mesh(new THREE.TorusGeometry(0.06, 0.01, 6, 14, Math.PI), goldMat);
+        const hook = new THREE.Mesh(hookGeo, goldMat);
         hook.position.x = dx;
         hook.rotation.z = Math.PI;
         bracket.add(hook);

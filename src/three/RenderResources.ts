@@ -47,6 +47,13 @@ export const Geo = {
     geoCache.set(key, g);
     return g;
   },
+  torusArc: (r: number, tube: number, rs: number, ts: number, arc: number): THREE.TorusGeometry => {
+    const key = paramKey('torusArc', { r, tube, rs, ts, arc });
+    if (geoCache.has(key)) return geoCache.get(key) as THREE.TorusGeometry;
+    const g = new THREE.TorusGeometry(r, tube, rs, ts, arc);
+    geoCache.set(key, g);
+    return g;
+  },
   cone: (r: number, h: number, s: number): THREE.ConeGeometry => {
     const key = paramKey('cone', { r, h, s });
     if (geoCache.has(key)) return geoCache.get(key) as THREE.ConeGeometry;
