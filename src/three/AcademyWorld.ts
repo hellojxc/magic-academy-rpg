@@ -83,6 +83,7 @@ const POINT_LIGHT_UPDATE_DISTANCE_SQ = 0.35 * 0.35;
 const POINT_LIGHT_BUDGET = 8;
 const POINT_LIGHT_RELEVANCE_MARGIN = 2.5;
 const DYNAMIC_OBJECT_SHADOW_DISTANCE_SQ = 14 * 14;
+const STATIC_OBJECT_SHADOW_DISTANCE_SQ = 18 * 18;
 const DYNAMIC_SHADOW_UPDATE_DISTANCE_SQ = 0.5 * 0.5;
 const RUNTIME_DYNAMIC_OBJECT = 'runtimeDynamicObject';
 const DISTANCE_SHADOW_DEFAULT = 'distanceShadowDefault';
@@ -97,6 +98,7 @@ export class AcademyWorld {
   private readonly pointLightProxies: THREE.PointLight[] = [];
   private readonly pointLightRankBuffer: RankedPointLight[] = [];
   private readonly distanceShadowObjects: DistanceShadowObject[] = [];
+  private readonly distanceShadowObjectSet = new Set<THREE.Object3D>();
   private readonly regionUpdateGroups: RegionUpdateGroup[] = [];
   private readonly updatedRegionKeys = new Set<string>();
   private readonly distanceShadowWorldPosition = new THREE.Vector3();
@@ -476,6 +478,7 @@ export class AcademyWorld {
     for (const object of this.extendedGrounds.getDynamicObjects()) this.markRuntimeDynamicWithDistanceShadows(object);
     for (const object of this.equipmentShowcase.getDynamicObjects()) this.markRuntimeDynamicWithDistanceShadows(object);
     for (const light of this.pointLightProxies) this.markRuntimeDynamic(light);
+    this.registerStaticDistanceShadowObjects();
     this.updateDistanceShadows(true);
   }
 
@@ -487,9 +490,28 @@ export class AcademyWorld {
   private markRuntimeDynamicWithDistanceShadows(object: THREE.Object3D | undefined): void {
     if (!object) return;
     this.markRuntimeDynamic(object);
+    this.registerDistanceShadowObject(object, DYNAMIC_OBJECT_SHADOW_DISTANCE_SQ);
+  }
+
+  private registerStaticDistanceShadowObjects(): void {
+    const visit = (object: THREE.Object3D, dynamicAncestor: boolean): void => {
+      const dynamicSubtree = dynamicAncestor || object.userData[RUNTIME_DYNAMIC_OBJECT] === true;
+      if (!dynamicSubtree && object instanceof THREE.Mesh && object.castShadow) {
+        this.registerDistanceShadowObject(object, STATIC_OBJECT_SHADOW_DISTANCE_SQ);
+      }
+
+      for (const child of object.children) visit(child, dynamicSubtree);
+    };
+
+    visit(this.scene, false);
+  }
+
+  private registerDistanceShadowObject(object: THREE.Object3D, shadowDistanceSq: number): void {
+    if (this.distanceShadowObjectSet.has(object)) return;
+    this.distanceShadowObjectSet.add(object);
     this.distanceShadowObjects.push({
       object,
-      shadowDistanceSq: DYNAMIC_OBJECT_SHADOW_DISTANCE_SQ,
+      shadowDistanceSq,
       shadowsEnabled: null,
     });
   }
