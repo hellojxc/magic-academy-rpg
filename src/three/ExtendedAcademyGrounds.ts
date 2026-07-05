@@ -27,6 +27,9 @@ interface AnimatedObject {
   rotateZ?: number;
 }
 
+const EXTENDED_ANIMATION_ZONES = ['greenhouse', 'training_ground', 'moonstone_grotto'] as const;
+type ExtendedAnimationZone = (typeof EXTENDED_ANIMATION_ZONES)[number];
+
 /**
  * Extra explorable academy spaces.
  *
@@ -35,9 +38,21 @@ interface AnimatedObject {
  * asset pipeline burden.
  */
 export class ExtendedAcademyGrounds {
-  private readonly animatedObjects: AnimatedObject[] = [];
-  private readonly waterMaterials: THREE.ShaderMaterial[] = [];
-  private lastUpdateTime = -1;
+  private readonly animatedObjectsByZone: Record<ExtendedAnimationZone, AnimatedObject[]> = {
+    greenhouse: [],
+    training_ground: [],
+    moonstone_grotto: [],
+  };
+  private readonly waterMaterialsByZone: Record<ExtendedAnimationZone, THREE.ShaderMaterial[]> = {
+    greenhouse: [],
+    training_ground: [],
+    moonstone_grotto: [],
+  };
+  private readonly lastUpdateTimeByZone: Record<ExtendedAnimationZone, number> = {
+    greenhouse: -1,
+    training_ground: -1,
+    moonstone_grotto: -1,
+  };
 
   constructor(private readonly scene: THREE.Scene) {}
 
@@ -50,23 +65,53 @@ export class ExtendedAcademyGrounds {
   }
 
   update(elapsedTime: number, delta: number): void {
-    if (elapsedTime === this.lastUpdateTime) return;
-    this.lastUpdateTime = elapsedTime;
+    for (const zone of EXTENDED_ANIMATION_ZONES) {
+      this.updateZone(zone, elapsedTime, delta);
+    }
+  }
 
+  updateGreenhouse(elapsedTime: number, delta: number): void {
+    this.updateZone('greenhouse', elapsedTime, delta);
+  }
+
+  updateTrainingGround(elapsedTime: number, delta: number): void {
+    this.updateZone('training_ground', elapsedTime, delta);
+  }
+
+  updateMoonstoneGrotto(elapsedTime: number, delta: number): void {
+    this.updateZone('moonstone_grotto', elapsedTime, delta);
+  }
+
+  private updateZone(zone: ExtendedAnimationZone, elapsedTime: number, delta: number): void {
+    if (elapsedTime === this.lastUpdateTimeByZone[zone]) return;
+    this.lastUpdateTimeByZone[zone] = elapsedTime;
+
+    const animatedObjects = this.animatedObjectsByZone[zone];
+    const waterMaterials = this.waterMaterialsByZone[zone];
     const frameScale = delta * 60;
-    for (const item of this.animatedObjects) {
+    for (const item of animatedObjects) {
       item.obj.position.y = item.baseY + Math.sin(elapsedTime * item.speed + item.phase) * item.amp;
       if (item.rotateY) item.obj.rotation.y += item.rotateY * frameScale;
       if (item.rotateZ) item.obj.rotation.z += item.rotateZ * frameScale;
     }
 
-    for (const material of this.waterMaterials) {
+    for (const material of waterMaterials) {
       updateLakeWaterMaterial(material, elapsedTime);
     }
   }
 
   getDynamicObjects(): readonly THREE.Object3D[] {
-    return this.animatedObjects.map((item) => item.obj);
+    return EXTENDED_ANIMATION_ZONES.flatMap((zone) =>
+      this.animatedObjectsByZone[zone].map((item) => item.obj)
+    );
+  }
+
+  private addAnimatedObject(zone: ExtendedAnimationZone, item: AnimatedObject): void {
+    this.animatedObjectsByZone[zone].push(item);
+  }
+
+  private addWaterMaterial(zone: ExtendedAnimationZone, material: THREE.ShaderMaterial): void {
+    this.waterMaterialsByZone[zone].push(material);
   }
 
   private addCrystalGreenhouse(obstacles: Obstacle[]): void {
@@ -106,9 +151,9 @@ export class ExtendedAcademyGrounds {
     this.addGreenhousePlanters(stoneMat, darkSoilMat, obstacles);
     this.addGreenhousePond(obstacles);
     this.addGreenhousePlants();
-    this.addCrystalCluster(-17.2, 0.35, 0.9, 0.9, 1121, 0x93e6ff, 0x5f9fff);
-    this.addCrystalCluster(-22.3, 0.08, -4.5, 0.52, 1122, 0xc6a6ff, 0x8560ff);
-    this.addCrystalCluster(-11.7, 0.08, 6.0, 0.58, 1123, 0xaef5c8, 0x54c979);
+    this.addCrystalCluster('greenhouse', -17.2, 0.35, 0.9, 0.9, 1121, 0x93e6ff, 0x5f9fff);
+    this.addCrystalCluster('greenhouse', -22.3, 0.08, -4.5, 0.52, 1122, 0xc6a6ff, 0x8560ff);
+    this.addCrystalCluster('greenhouse', -11.7, 0.08, 6.0, 0.58, 1123, 0xaef5c8, 0x54c979);
     this.addHangingPlanters();
     this.addSpecimenBenches(stoneMat, obstacles);
 
@@ -240,7 +285,7 @@ export class ExtendedAcademyGrounds {
   private addGreenhousePond(obstacles: Obstacle[]): void {
     const rimMat = getStandardMaterial({ color: 0x829089, roughness: 0.72, metalness: 0.04 });
     const waterMat = createLakeWaterMaterial(0x0d4759, 0x7fe2d6, 0xe5ffff);
-    this.waterMaterials.push(waterMat);
+    this.addWaterMaterial('greenhouse', waterMat);
 
     const rim = new THREE.Mesh(Geo.cylinder(1.55, 1.75, 0.22, 42), rimMat);
     rim.position.set(-18.4, 0.08, -4.2);
@@ -266,7 +311,7 @@ export class ExtendedAcademyGrounds {
     ];
     for (const tree of trees) {
       const group = addNaturalTree(this.scene, tree);
-      this.animatedObjects.push({ obj: group, baseY: 0, amp: 0.004, speed: 0.42, phase: tree.seed * 0.1, rotateY: 0.0009 });
+      this.addAnimatedObject('greenhouse', { obj: group, baseY: 0, amp: 0.004, speed: 0.42, phase: tree.seed * 0.1, rotateY: 0.0009 });
     }
 
     const fields: FoliageFieldSpec[] = [
@@ -302,7 +347,7 @@ export class ExtendedAcademyGrounds {
       }
       group.position.set(x, 3.55, z);
       this.scene.add(group);
-      this.animatedObjects.push({ obj: group, baseY: 3.55, amp: 0.04, speed: 0.75 + i * 0.04, phase: i, rotateY: 0.0016 });
+      this.addAnimatedObject('greenhouse', { obj: group, baseY: 3.55, amp: 0.04, speed: 0.75 + i * 0.04, phase: i, rotateY: 0.0016 });
     }
   }
 
@@ -398,7 +443,7 @@ export class ExtendedAcademyGrounds {
       const brazier = new THREE.Mesh(Geo.octahedron(0.16, 1), MatLib.warmLight);
       brazier.position.set(x, 2.22, z);
       this.scene.add(brazier);
-      this.animatedObjects.push({ obj: brazier, baseY: 2.22, amp: 0.035, speed: 1.5, phase: x + z, rotateY: 0.006 });
+      this.addAnimatedObject('training_ground', { obj: brazier, baseY: 2.22, amp: 0.035, speed: 1.5, phase: x + z, rotateY: 0.006 });
       addPointLight(this.scene, x, 2.1, z, 0xffb45f, 0.72, 4.6);
     }
 
@@ -464,7 +509,7 @@ export class ExtendedAcademyGrounds {
     }));
     core.position.set(17, 1.25, 31);
     this.scene.add(core);
-    this.animatedObjects.push({ obj: core, baseY: 1.25, amp: 0.18, speed: 1.2, phase: 0, rotateY: 0.012 });
+    this.addAnimatedObject('training_ground', { obj: core, baseY: 1.25, amp: 0.18, speed: 1.2, phase: 0, rotateY: 0.012 });
     addPointLight(this.scene, 17, 1.4, 31, 0x8fc7ff, 2.0, 7.5);
 
     obstacles.push({ minX: 16.58, maxX: 17.42, minZ: 30.58, maxZ: 31.42 });
@@ -516,7 +561,7 @@ export class ExtendedAcademyGrounds {
       const bolt = new THREE.Mesh(Geo.sphere(0.035, 6, 4), MatLib.crystal);
       bolt.position.set(9.5 + seeded(i * 11) * 15, 0.6 + seeded(i * 17) * 1.8, 24.8 + seeded(i * 23) * 12.6);
       this.scene.add(bolt);
-      this.animatedObjects.push({ obj: bolt, baseY: bolt.position.y, amp: 0.1 + seeded(i * 29) * 0.16, speed: 1.3 + seeded(i * 31), phase: i, rotateY: 0.01 });
+      this.addAnimatedObject('training_ground', { obj: bolt, baseY: bolt.position.y, amp: 0.1 + seeded(i * 29) * 0.16, speed: 1.3 + seeded(i * 31), phase: i, rotateY: 0.01 });
     }
   }
 
@@ -674,7 +719,7 @@ export class ExtendedAcademyGrounds {
 
   private addGrottoPools(obstacles: Obstacle[]): void {
     const waterMat = createLakeWaterMaterial(0x062c43, 0x3aaeb2, 0xd9ffff);
-    this.waterMaterials.push(waterMat);
+    this.addWaterMaterial('moonstone_grotto', waterMat);
     for (const [x, z, sx, sz] of [
       [-34.8, 20.6, 3.9, 2.1],
       [-38.5, 26.0, 2.2, 1.25],
@@ -702,7 +747,7 @@ export class ExtendedAcademyGrounds {
       fall.position.set(-41.72, 1.5, 18.8 + i * 0.28);
       fall.rotation.y = Math.PI / 2 + (seeded(i * 19) - 0.5) * 0.08;
       this.scene.add(fall);
-      this.animatedObjects.push({ obj: fall, baseY: 1.5, amp: 0.05, speed: 2.4 + i * 0.2, phase: i * 0.7 });
+      this.addAnimatedObject('moonstone_grotto', { obj: fall, baseY: 1.5, amp: 0.05, speed: 2.4 + i * 0.2, phase: i * 0.7 });
     }
   }
 
@@ -715,7 +760,7 @@ export class ExtendedAcademyGrounds {
       [-35.4, 0.05, 24.8, 0.52, 3005, 0xffe6a2],
     ];
     for (const [x, y, z, scale, seed, color] of clusters) {
-      this.addCrystalCluster(x, y, z, scale, seed, color, color);
+      this.addCrystalCluster('moonstone_grotto', x, y, z, scale, seed, color, color);
     }
   }
 
@@ -763,11 +808,12 @@ export class ExtendedAcademyGrounds {
       mist.scale.set(1.8 + seeded(i * 11) * 2.6, 0.5 + seeded(i * 13) * 0.8, 1);
       mist.position.set(-41 + seeded(i * 17) * 14.2, 0.07 + i * 0.0004, 13.4 + seeded(i * 19) * 16.2);
       this.scene.add(mist);
-      this.animatedObjects.push({ obj: mist, baseY: mist.position.y, amp: 0.012, speed: 0.35 + seeded(i * 23) * 0.45, phase: i, rotateZ: 0.0009 + seeded(i * 29) * 0.0008 });
+      this.addAnimatedObject('moonstone_grotto', { obj: mist, baseY: mist.position.y, amp: 0.012, speed: 0.35 + seeded(i * 23) * 0.45, phase: i, rotateZ: 0.0009 + seeded(i * 29) * 0.0008 });
     }
   }
 
   private addCrystalCluster(
+    zone: ExtendedAnimationZone,
     x: number,
     y: number,
     z: number,
@@ -795,7 +841,7 @@ export class ExtendedAcademyGrounds {
       crystal.rotation.set((seeded(seed + i * 59) - 0.5) * 0.42, angle, (seeded(seed + i * 61) - 0.5) * 0.42);
       crystal.castShadow = true;
       this.scene.add(crystal);
-      this.animatedObjects.push({ obj: crystal, baseY: crystal.position.y, amp: 0.012 + seeded(seed + i * 67) * 0.018, speed: 0.7 + seeded(seed + i * 71) * 0.7, phase: seed * 0.01 + i, rotateY: 0.0018 });
+      this.addAnimatedObject(zone, { obj: crystal, baseY: crystal.position.y, amp: 0.012 + seeded(seed + i * 67) * 0.018, speed: 0.7 + seeded(seed + i * 71) * 0.7, phase: seed * 0.01 + i, rotateY: 0.0018 });
     }
     addPointLight(this.scene, x, y + 0.9 * scale, z, lightColor, 0.8 + scale * 0.52, 4.5 + scale * 3.0);
   }

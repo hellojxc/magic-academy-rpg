@@ -409,10 +409,10 @@ export class AcademyWorld {
       make('dining_hall', 'diningHall', (t, d) => this.diningHall.update(t, d)),
       make('lawn', 'outdoorLawn', (t, d) => this.outdoor.updateLawn(t, d)),
       make('lake', 'outdoorLake', (t, d) => this.outdoor.updateLake(t, d)),
-      make('greenhouse', 'extendedGrounds', (t, d) => this.extendedGrounds.update(t, d)),
-      make('training_ground', 'extendedGrounds', (t, d) => this.extendedGrounds.update(t, d)),
+      make('greenhouse', 'extendedGrounds:greenhouse', (t, d) => this.extendedGrounds.updateGreenhouse(t, d)),
+      make('training_ground', 'extendedGrounds:trainingGround', (t, d) => this.extendedGrounds.updateTrainingGround(t, d)),
       make('training_ground', 'equipmentShowcase', (t) => this.equipmentShowcase.update(t)),
-      make('moonstone_grotto', 'extendedGrounds', (t, d) => this.extendedGrounds.update(t, d)),
+      make('moonstone_grotto', 'extendedGrounds:moonstoneGrotto', (t, d) => this.extendedGrounds.updateMoonstoneGrotto(t, d)),
     );
   }
 
