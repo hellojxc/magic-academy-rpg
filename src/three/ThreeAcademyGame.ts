@@ -33,6 +33,7 @@ export class ThreeAcademyGame {
   private lastCharacterModelState = '';
   private lastDebugDatasetAt = 0;
   private currentNpc: InteractiveNPC | null = null;
+  private frameListener: ((now: number) => void) | null = null;
 
   constructor(private readonly container: HTMLElement) {
     this.container.classList.add('three-game');
@@ -85,8 +86,13 @@ export class ThreeAcademyGame {
     this.animate();
   }
 
+  setFrameListener(listener: ((now: number) => void) | null): void {
+    this.frameListener = listener;
+  }
+
   destroy(): void {
     if (this.animationId !== 0) window.cancelAnimationFrame(this.animationId);
+    this.frameListener = null;
     window.removeEventListener('resize', this.resize);
     window.removeEventListener('keydown', this.onKeyDown);
     window.removeEventListener('keyup', this.onKeyUp);
@@ -117,6 +123,7 @@ export class ThreeAcademyGame {
     this.elapsedTime += delta;
     this.update(delta);
     this.view.render();
+    this.frameListener?.(now);
     this.animationId = window.requestAnimationFrame(this.animate);
   };
 

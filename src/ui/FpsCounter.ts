@@ -17,6 +17,7 @@ export class FpsCounter {
   private lastSample = performance.now();
   private firstSample = this.lastSample;
   private frames = 0;
+  private ownLoop = false;
   private stats: FpsStats = {
     current: 0,
     average: 0,
@@ -27,7 +28,7 @@ export class FpsCounter {
     stable: false,
   };
 
-  constructor(parent: HTMLElement) {
+  constructor(parent: HTMLElement, autoStart = true) {
     this.root = document.createElement('div');
     this.root.className = 'fps-counter';
     this.root.textContent = '-- FPS';
@@ -35,16 +36,28 @@ export class FpsCounter {
 
     this.publishStats();
     document.addEventListener('visibilitychange', this.onVisibilityChange);
-    this.frameId = window.requestAnimationFrame(this.update);
+    if (autoStart) this.start();
   }
 
   destroy(): void {
-    if (this.frameId !== 0) window.cancelAnimationFrame(this.frameId);
+    this.stop();
     document.removeEventListener('visibilitychange', this.onVisibilityChange);
     this.root.remove();
   }
 
-  private readonly update = (now: number): void => {
+  start(): void {
+    this.ownLoop = true;
+    if (this.frameId !== 0 || document.hidden) return;
+    this.frameId = window.requestAnimationFrame(this.update);
+  }
+
+  stop(): void {
+    if (this.frameId !== 0) window.cancelAnimationFrame(this.frameId);
+    this.frameId = 0;
+  }
+
+  frame(now: number): void {
+    if (document.hidden) return;
     this.frames += 1;
     const elapsed = now - this.lastSample;
     if (elapsed >= 500) {
@@ -72,25 +85,25 @@ export class FpsCounter {
       this.frames = 0;
       this.lastSample = now;
     }
+  }
 
+  private readonly update = (now: number): void => {
+    this.frame(now);
     this.frameId = window.requestAnimationFrame(this.update);
   };
 
   private readonly onVisibilityChange = (): void => {
     if (document.hidden) {
-      if (this.frameId !== 0) {
-        window.cancelAnimationFrame(this.frameId);
-        this.frameId = 0;
-      }
+      this.stop();
       return;
     }
 
-    if (this.frameId !== 0) return;
     const now = performance.now();
     this.lastSample = now;
     this.firstSample = now;
     this.frames = 0;
     this.samples.length = 0;
+    if (!this.ownLoop || this.frameId !== 0) return;
     this.frameId = window.requestAnimationFrame(this.update);
   };
 

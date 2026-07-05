@@ -5,6 +5,7 @@ interface GameInstance {
   start(): void;
   destroy(): void;
   getDebugState?(): unknown;
+  setFrameListener?(listener: ((now: number) => void) | null): void;
 }
 
 const container = document.getElementById('game-container');
@@ -12,8 +13,13 @@ if (!container) {
   throw new Error('Missing #game-container');
 }
 
-const fpsCounter = new FpsCounter(container);
+const fpsCounter = new FpsCounter(container, false);
 const game = await createGame(container);
+if (game.setFrameListener) {
+  game.setFrameListener((now) => fpsCounter.frame(now));
+} else {
+  fpsCounter.start();
+}
 game.start();
 
 if (typeof window !== 'undefined') {
