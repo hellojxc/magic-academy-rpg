@@ -1,0 +1,319 @@
+{
+  "assetId": "mature-senpai-commercial-v26",
+  "characterId": "mature_senpai",
+  "status": "stable-source-torso-and-anatomical-hands-preview",
+  "source": "public/assets/models/mature_senpai_commercial_v17.glb",
+  "blendSource": "assets/characters/mature_senpai/source/mature_senpai_commercial_v26.blend",
+  "output": "public/assets/models/mature_senpai_commercial_v26.glb",
+  "thumbnail": "public/assets/models/mature_senpai_commercial_v26.png",
+  "generatedBy": "remote Blender headless + assets/characters/mature_senpai/tools/build_final_v26.py",
+  "runtime": {
+    "defaultAsset": true,
+    "format": "glb",
+    "url": "/assets/models/mature_senpai_commercial_v26.glb",
+    "thumbnailUrl": "/assets/models/mature_senpai_commercial_v26.png",
+    "fallbackAssetId": "mature-senpai-commercial-v17",
+    "threeRuntimeFeatures": [
+      "v17 face, hair, skirt, legs, shoes, choker, expression layer, and QA clips",
+      "source Torso_Camisole preservation after destructive cleanup exposed shoulder seam artifacts",
+      "higher-density procedural anime arms and segmented hands",
+      "dedicated Face_Head morphTargetInfluences",
+      "Secondary_* bone spring overlay"
+    ]
+  },
+  "productionFlags": {
+    "physicalRuntimeSplitParts": true,
+    "dedicatedFaceExpressionMorphs": true,
+    "sourcePreservedV17VisualCore": true,
+    "sourceTorsoPreservedForStablePreview": true,
+    "legacyTorsoArmSleeveFragmentsRemoved": false,
+    "fragmentedSourceArmsRemoved": true,
+    "higherDensityAnatomicalHands": true,
+    "hairSecondaryBones": true,
+    "skirtSecondaryBones": true,
+    "webRuntimeReady": true
+  },
+  "runtimeParts": [
+    {
+      "name": "MatureSenpai_V26_ChokerPendant",
+      "vertices": 7,
+      "faces": 3,
+      "morphTargets": [],
+      "vertexGroups": 32,
+      "materials": [
+        "CommercialV14_SoftGoldTrim",
+        "CommercialV14_PurplePendantGem"
+      ]
+    },
+    {
+      "name": "MatureSenpai_V26_Face_Head",
+      "vertices": 4310,
+      "faces": 4582,
+      "morphTargets": [
+        "Blink",
+        "ConfidentSmile",
+        "WarmSmile",
+        "Teasing",
+        "Surprised",
+        "Thoughtful"
+      ],
+      "vertexGroups": 32,
+      "materials": [
+        "Material.001"
+      ]
+    },
+    {
+      "name": "MatureSenpai_V26_Hair_Back",
+      "vertices": 7294,
+      "faces": 7755,
+      "morphTargets": [],
+      "vertexGroups": 32,
+      "materials": [
+        "Material.001"
+      ]
+    },
+    {
+      "name": "MatureSenpai_V26_Hair_LeftLock",
+      "vertices": 9861,
+      "faces": 9669,
+      "morphTargets": [],
+      "vertexGroups": 32,
+      "materials": [
+        "Material.001"
+      ]
+    },
+    {
+      "name": "MatureSenpai_V26_Hair_RightLock",
+      "vertices": 9948,
+      "faces": 10006,
+      "morphTargets": [],
+      "vertexGroups": 32,
+      "materials": [
+        "Material.001"
+      ]
+    },
+    {
+      "name": "MatureSenpai_V26_Legs",
+      "vertices": 4349,
+      "faces": 4691,
+      "morphTargets": [],
+      "vertexGroups": 32,
+      "materials": [
+        "Material.001"
+      ]
+    },
+    {
+      "name": "MatureSenpai_V26_Shoes",
+      "vertices": 3485,
+      "faces": 4004,
+      "morphTargets": [],
+      "vertexGroups": 32,
+      "materials": [
+        "Material.001"
+      ]
+    },
+    {
+      "name": "MatureSenpai_V26_Skirt_Center",
+      "vertices": 1140,
+      "faces": 1297,
+      "morphTargets": [],
+      "vertexGroups": 32,
+      "materials": [
+        "Material.001"
+      ]
+    },
+    {
+      "name": "MatureSenpai_V26_Skirt_LeftPanel",
+      "vertices": 2356,
+      "faces": 2406,
+      "morphTargets": [],
+      "vertexGroups": 32,
+      "materials": [
+        "Material.001"
+      ]
+    },
+    {
+      "name": "MatureSenpai_V26_Skirt_RightPanel",
+      "vertices": 2275,
+      "faces": 2393,
+      "morphTargets": [],
+      "vertexGroups": 32,
+      "materials": [
+        "Material.001"
+      ]
+    },
+    {
+      "name": "MatureSenpai_V26_Torso_Camisole",
+      "vertices": 10344,
+      "faces": 10775,
+      "morphTargets": [],
+      "vertexGroups": 32,
+      "materials": [
+        "Material.001"
+      ]
+    },
+    {
+      "name": "MatureSenpai_V26_Arms_Hands_Left",
+      "vertices": 564,
+      "faces": 524,
+      "morphTargets": [],
+      "vertexGroups": 4,
+      "materials": [
+        "CommercialV26_NaturalAnimeSkin_ArmsHands",
+        "CommercialV26_ElbowPalmSoftShade",
+        "CommercialV26_SoftNails"
+      ]
+    },
+    {
+      "name": "MatureSenpai_V26_Arms_Hands_Right",
+      "vertices": 564,
+      "faces": 524,
+      "morphTargets": [],
+      "vertexGroups": 4,
+      "materials": [
+        "CommercialV26_NaturalAnimeSkin_ArmsHands",
+        "CommercialV26_ElbowPalmSoftShade",
+        "CommercialV26_SoftNails"
+      ]
+    }
+  ],
+  "replacedSourceParts": [
+    {
+      "name": "MatureSenpai_V17_Arms_Hands",
+      "vertices": 2119,
+      "faces": 2344
+    }
+  ],
+  "torsoCleanup": {
+    "MatureSenpai_V26_Torso_Camisole": {
+      "skipped": true,
+      "reason": "source torso preserved for stable preview; destructive arm/sleeve cleanup exposed shoulder seam artifacts",
+      "removedFaces": 0,
+      "removedLooseVertices": 0
+    }
+  },
+  "authoredArmHandParts": [
+    "MatureSenpai_V26_Arms_Hands_Left",
+    "MatureSenpai_V26_Arms_Hands_Right"
+  ],
+  "morphTargets": {
+    "MatureSenpai_V26_Face_Head": [
+      "Blink",
+      "ConfidentSmile",
+      "WarmSmile",
+      "Teasing",
+      "Surprised",
+      "Thoughtful"
+    ]
+  },
+  "armatureBones": [
+    "Hips",
+    "Spine",
+    "Chest",
+    "Neck",
+    "Head",
+    "Secondary_Hair_Back",
+    "Secondary_Hair_Back_Tip",
+    "Secondary_Hair_Left",
+    "Secondary_Hair_Left_Tip",
+    "Secondary_Hair_Right",
+    "Secondary_Hair_Right_Tip",
+    "Secondary_Pendant",
+    "LeftUpperArm",
+    "LeftLowerArm",
+    "LeftHand",
+    "RightUpperArm",
+    "RightLowerArm",
+    "RightHand",
+    "Secondary_Strap_Left",
+    "Secondary_Strap_Right",
+    "LeftUpperLeg",
+    "LeftLowerLeg",
+    "LeftFoot",
+    "RightUpperLeg",
+    "RightLowerLeg",
+    "RightFoot",
+    "Secondary_Skirt_Left",
+    "Secondary_Skirt_Left_Tip",
+    "Secondary_Skirt_Right",
+    "Secondary_Skirt_Right_Tip",
+    "Secondary_Skirt_Center",
+    "Secondary_Skirt_Center_Tip"
+  ],
+  "secondaryRig": {
+    "all": [
+      "Secondary_Hair_Back",
+      "Secondary_Hair_Back_Tip",
+      "Secondary_Hair_Left",
+      "Secondary_Hair_Left_Tip",
+      "Secondary_Hair_Right",
+      "Secondary_Hair_Right_Tip",
+      "Secondary_Pendant",
+      "Secondary_Strap_Left",
+      "Secondary_Strap_Right",
+      "Secondary_Skirt_Left",
+      "Secondary_Skirt_Left_Tip",
+      "Secondary_Skirt_Right",
+      "Secondary_Skirt_Right_Tip",
+      "Secondary_Skirt_Center",
+      "Secondary_Skirt_Center_Tip"
+    ],
+    "hair": [
+      "Secondary_Hair_Back",
+      "Secondary_Hair_Back_Tip",
+      "Secondary_Hair_Left",
+      "Secondary_Hair_Left_Tip",
+      "Secondary_Hair_Right",
+      "Secondary_Hair_Right_Tip"
+    ],
+    "skirt": [
+      "Secondary_Skirt_Left",
+      "Secondary_Skirt_Left_Tip",
+      "Secondary_Skirt_Right",
+      "Secondary_Skirt_Right_Tip",
+      "Secondary_Skirt_Center",
+      "Secondary_Skirt_Center_Tip"
+    ],
+    "accessory": [
+      "Secondary_Pendant",
+      "Secondary_Strap_Left",
+      "Secondary_Strap_Right"
+    ]
+  },
+  "binding": {
+    "totalVertices": 56497,
+    "weightedVertices": 56497,
+    "zeroWeightVertices": 0,
+    "maxInfluencesPerVertex": 4
+  },
+  "animationClips": [
+    "idle_MatureSenpai_V17_ProductionArmature",
+    "talk_MatureSenpai_V17_ProductionArmature",
+    "v17_deformation_stress_MatureSenpai_V17_ProductionArmature",
+    "v17_secondary_sway_test_MatureSenpai_V17_ProductionArmature",
+    "walk_MatureSenpai_V17_ProductionArmature"
+  ],
+  "acceptanceChecks": {
+    "keepsV17VisualCore": true,
+    "preservesSourceTorsoAfterCleanupRegression": true,
+    "replacesFragmentedSourceArms": true,
+    "hasHigherDensityAnatomicalArmHands": true,
+    "keepsFaceOnlyExpressionMorphs": true,
+    "keepsHairSecondaryBones": true,
+    "keepsSkirtSecondaryBones": true,
+    "keepsDeformationQaClips": true,
+    "hasWeightedRuntimeMeshes": true,
+    "webRuntimeBudgetTarget": true
+  },
+  "runtimeDecision": {
+    "defaultAsset": true,
+    "fallbackAssetId": "mature-senpai-commercial-v17",
+    "reason": "v26 is the current stable preview default: it keeps the visually stable v17 source torso after destructive torso cleanup exposed shoulder seams, while replacing the fragmented source arms with higher-density procedural anime arms/hands. v17 remains the deformation-production fallback."
+  },
+  "limitations": [
+    "v26 still uses a procedural arm/hand reconstruction rather than a sculptor-authored full quad retopology.",
+    "The inherited source torso still contains some sleeve/arm artifact texture islands; a destructive automated cleanup was rejected because it exposed worse shoulder seams.",
+    "The replacement arms use procedural materials and will need UV/texture repaint to perfectly match the Hunyuan atlas.",
+    "Skirt panel texture islands remain source-preserved; final commercial polish still needs an artist cloth-retopo and brush-painted secondary weights."
+  ]
+}

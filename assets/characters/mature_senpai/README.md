@@ -8,6 +8,7 @@ Current target: v7 mature senpai concept, used as an adult academy NPC.
 - `references/hunyuan-multiview-v7/`: Hunyuan3D multi-view upload images.
 - `character-model-brief.json`: source-of-truth model brief.
 - `tools/rig_hunyuan_preview.py`: Blender batch rigging script for the current preview asset.
+- `tools/build_final_v26.py`: Blender headless stable source-torso plus anatomical-hands script that imports v17, preserves the visually stable source torso after destructive cleanup exposed worse shoulder seams, replaces the fragmented source arm/hand mesh with higher-density procedural anime arms and segmented hands, keeps Face_Head morphs, secondary bones, and deformation QA clips, and exports the current preview asset.
 - `tools/build_final_v17.py`: Blender headless deformation-production script that imports v16, removes the orphan runtime mesh, keeps the dedicated Face_Head expression layer, normalizes stable source weights, rebinds skirt, legs, shoes, and pendant to deterministic runtime-safe profiles, adds retopo/deformation QA vertex groups, and exports deformation audit clips.
 - `tools/render_deformation_audit.py`: Blender headless QA renderer for bind pose, deformation stress, and hair/skirt secondary sway frames.
 - `tools/build_final_v16.py`: Blender headless dedicated face-expression script that imports v15, keeps the physical runtime split, limits expression morph targets to `Face_Head`, adds facial landmark vertex groups, and removes inert non-face morph targets.
@@ -25,7 +26,8 @@ Current target: v7 mature senpai concept, used as an adult academy NPC.
 - `tools/build_retopo_v3.py`: BlenderMCP production-structure script that rebuilds the Hunyuan mesh into named skinned submeshes, rule-painted weights, facial morph targets, and secondary-motion hooks.
 - `mature_senpai_rigged_v1.report.json`: generated rig and animation audit.
 - `mature_senpai_production_v1.report.json`: disabled procedural template audit and decision record.
-- `mature_senpai_commercial_v17.report.json`: active deformation-production preview audit and runtime default decision record.
+- `mature_senpai_commercial_v26.report.json`: active stable source-torso/anatomical-hands preview audit and runtime default decision record.
+- `mature_senpai_commercial_v17.report.json`: deformation-production preview audit and runtime fallback decision record.
 - `mature_senpai_commercial_v16.report.json`: previous dedicated face-expression production-preview audit and fallback decision record.
 - `mature_senpai_commercial_v15.report.json`: previous physical split production-preview audit and fallback decision record.
 - `mature_senpai_commercial_v14.report.json`: previous clean production-preview audit and fallback decision record.
@@ -42,7 +44,8 @@ Current target: v7 mature senpai concept, used as an adult academy NPC.
 - `mature_senpai_mcp_polish_v2.report.json`: previous BlenderMCP polish audit and visual fallback.
 - `mature_senpai_mcp_retouch_v1.report.json`: previous BlenderMCP retouch audit and runtime fallback.
 - `source/mature_senpai.blend`: procedural Blender reference template for rigging and modular cleanup experiments.
-- `source/mature_senpai_commercial_v17.blend`: active deformation-production preview source scene.
+- `source/mature_senpai_commercial_v26.blend`: active stable source-torso/anatomical-hands preview source scene.
+- `source/mature_senpai_commercial_v17.blend`: deformation-production preview fallback source scene.
 - `source/mature_senpai_commercial_v16.blend`: previous dedicated face-expression production-preview source scene.
 - `source/mature_senpai_commercial_v15.blend`: previous physical split production-preview source scene.
 - `source/mature_senpai_commercial_v14.blend`: previous clean production-preview source scene.
@@ -63,7 +66,8 @@ Current target: v7 mature senpai concept, used as an adult academy NPC.
 
 Runtime export registered for preview:
 
-- `mature_senpai_commercial_v17.glb`: active deformation-production runtime default. It preserves the v16 dedicated Face_Head expression layer and accepted visible likeness, removes the orphan unskinned runtime mesh, exports 12 named runtime parts, keeps 32 armature bones and hair/skirt secondary bones, normalizes stable source weights to top-4 influences, rebinds skirt, legs, shoes, and pendant to deterministic runtime-safe profiles, and includes `v17_deformation_stress` plus `v17_secondary_sway_test` QA clips.
+- `mature_senpai_commercial_v26.glb`: active stable runtime preview default. It preserves the v17 face, hair, torso, skirt, legs, shoes, choker, Face_Head expression morphs, hair/skirt secondary bones, and deformation QA clips while replacing the unstable source arm/hand mesh with higher-density procedural anime arms and segmented hands. The source Torso_Camisole is deliberately preserved because automated destructive sleeve cleanup exposed worse shoulder seam artifacts.
+- `mature_senpai_commercial_v17.glb`: deformation-production fallback. It preserves the v16 dedicated Face_Head expression layer and accepted visible likeness, removes the orphan unskinned runtime mesh, exports 12 named runtime parts, keeps 32 armature bones and hair/skirt secondary bones, normalizes stable source weights to top-4 influences, rebinds skirt, legs, shoes, and pendant to deterministic runtime-safe profiles, and includes `v17_deformation_stress` plus `v17_secondary_sway_test` QA clips.
 - `mature_senpai_commercial_v16.glb`: previous dedicated face-expression fallback. It preserves the v15 physical runtime split, source UVs/materials/weights, 13 runtime parts, 32 armature bones, hair/skirt secondary bones, and the clean choker/pendant part while moving six expression shape keys onto `MatureSenpai_V16_Face_Head` only and adding facial landmark vertex groups for eyelids, brows, mouth, cheeks, and jaw.
 - `mature_senpai_commercial_v15.glb`: previous physical split fallback with the accepted v14 visible source split into named skinned face, hair, torso, arms, skirt panels, legs, and shoe meshes. It preserves source UVs, material slots, vertex groups, skin weights, six expression shape keys, 15 secondary bones, no flat expression overlay artifacts, no hard straight strap panels, and one real skinned choker/pendant detail part.
 - `mature_senpai_commercial_v14.glb`: previous clean production-preview fallback with the `mcp-polish-v2` visible body/UV/texture intact, semantic part vertex groups, six amplified body morph targets, supplemental Secondary_* hair/skirt weights, 15 secondary bones, no flat expression overlay artifacts, no hard straight strap panels, and one real skinned choker/pendant detail part.
@@ -90,21 +94,20 @@ Local inspection exports not intended for the runtime commit:
 
 ## Current Gate
 
-The `mature_senpai_commercial_v17.glb` output is the active runtime preview.
-It keeps the v16 dedicated Face_Head expression layer and accepted
-Hunyuan/BlenderMCP likeness, then adds a deformation-production pass: the orphan
-unskinned runtime mesh is removed, stable source weights are normalized to
-top-4 influences, skirt panels, legs, shoes, and pendant are rebound to
-deterministic runtime-safe profiles, and V17 deformation/retopo guide groups
-are recorded for QA. The current production hooks are 12 runtime parts, 32
-armature bones, six Face_Head expression morphs, hair/skirt secondary bones,
-and two explicit deformation audit clips. The `mature_senpai_commercial_v16.glb`
-file remains the dedicated face-expression fallback, and v15 remains the
-physical split fallback.
+The `mature_senpai_commercial_v26.glb` output is the active runtime preview.
+It keeps the v17 Face_Head expression layer, accepted Hunyuan/BlenderMCP
+likeness, 13 runtime parts, 32 armature bones, six Face_Head expression morphs,
+hair/skirt secondary bones, and two explicit deformation audit clips, then
+replaces the unstable source arm/hand mesh with higher-density procedural anime
+arms and segmented hands. The source Torso_Camisole is preserved because an
+automated destructive cleanup removed sleeve fragments but exposed worse
+shoulder seam artifacts in motion. The `mature_senpai_commercial_v17.glb` file
+remains the deformation fallback, v16 remains the dedicated face-expression
+fallback, and v15 remains the physical split fallback.
 
 Remaining production blockers:
 
-- v17 is a deformation-production pass over the v16 face-expression asset, not a
+- v26 is still a procedural/runtime stabilization pass over the v17 asset, not a
   hand-authored quad retopology:
   the runtime now has named parts, but the triangles still come from the
   accepted source mesh to preserve likeness.
@@ -119,25 +122,30 @@ Remaining production blockers:
   expose stable semantic facial landmarks; final face quality still needs
   actual UV/texture repaint, landmark detection, or sculpted eyelid/mouth
   topology.
-- The v9/v10/v11 arm/hand meshes are more natural than v6/v8 and include rounded
-  segmented fingers, but they are still generated anatomy, not final
+- The v26 arm/hand meshes are higher-density and more stable than v17 source
+  arms, and v9/v10/v11 also provide useful rounded-finger references, but they
+  are still generated anatomy, not final
   hand-authored arms, knuckles, fingers, and nails.
+- The inherited source torso still has visible sleeve/arm artifact islands;
+  destructive automated cleanup is currently rejected because it exposes worse
+  shoulder seams during arm motion.
 - Hair and skirt secondary motion now has tip bones, but the movement remains a
   runtime spring overlay rather than a tuned cloth/hair simulation.
 - The character still needs artist retopology, texture cleanup, and final
   expression sculpting before it should be treated as final mainstream
   JRPG-quality runtime art.
 
-The `mature_senpai_commercial_v17.glb` file is the current in-game animated
+The `mature_senpai_commercial_v26.glb` file is the current in-game animated
 preview NPC. It keeps the better Hunyuan v7 visible source while adding runtime
 morphs, face landmark groups, secondary-motion hooks, physical split parts,
-clean accessory parts, and a targeted deformation binding pass, but it should
-not be considered final until artist retopology, brush-painted weights,
-sculpted expression blendshapes, and final material polish are complete.
+clean accessory parts, a targeted deformation binding pass, and higher-density
+procedural arms/hands, but it should not be considered final until artist
+retopology, brush-painted weights, sculpted expression blendshapes, and final
+material polish are complete.
 
 ## Next Production Step
 
-1. Use the v17 deformation-production asset as the visual and structural lock for the
+1. Use the v26 stable runtime-preview asset as the visual and structural lock for the
    next manual retopo pass.
 2. Build artist-authored quad topology over the preserved v17 body, hair,
    outfit, hands, and shoes.

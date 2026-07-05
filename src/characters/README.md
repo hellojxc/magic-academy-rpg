@@ -22,11 +22,12 @@ cleanup, GLB/VRM export, and portrait comparison workflow. This is the path that
 should replace the procedural and Blender-template probes for final art.
 
 For `mature_senpai`, the current active asset is
-`mature-senpai-commercial-v17`, with `mature-senpai-commercial-v16` retained as
-the dedicated Face_Head expression fallback and `mature-senpai-commercial-v15`
-retained as the physical split fallback. v17 keeps the accepted v16 visible
-likeness while adding a deformation-production pass for cloth, legs, shoes,
-pendant binding, retopo guide groups, and deformation QA clips.
+`mature-senpai-commercial-v26`, with `mature-senpai-commercial-v17` retained as
+the deformation-production fallback, `mature-senpai-commercial-v16` retained as
+the dedicated Face_Head expression fallback, and `mature-senpai-commercial-v15`
+retained as the physical split fallback. v26 keeps the accepted v17 visible
+likeness and deformation QA hooks while replacing the unstable source arm/hand
+mesh with higher-density procedural anime arms and segmented hands.
 
 Commercial-quality model replacement uses the explicit promotion command:
 
