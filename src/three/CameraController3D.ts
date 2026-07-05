@@ -1,6 +1,8 @@
 import * as THREE from 'three';
 
 export class CameraController3D {
+  private static readonly settleEpsilon = 0.0001;
+  private static readonly settleDistanceSq = 0.000001;
   private readonly targetOffset = new THREE.Vector3(0, 1.12, 0);
   private readonly desiredPosition = new THREE.Vector3();
   private readonly desiredLookTarget = new THREE.Vector3();
@@ -14,6 +16,9 @@ export class CameraController3D {
   private dragging = false;
   private lastPointerX = 0;
   private lastPointerY = 0;
+  private lastTargetX = Number.NaN;
+  private lastTargetY = Number.NaN;
+  private lastTargetZ = Number.NaN;
 
   constructor(
     private readonly camera: THREE.PerspectiveCamera,
@@ -47,9 +52,21 @@ export class CameraController3D {
     );
     this.camera.position.copy(this.desiredPosition);
     this.camera.lookAt(this.lookTarget);
+    this.lastTargetX = this.target.position.x;
+    this.lastTargetY = this.target.position.y;
+    this.lastTargetZ = this.target.position.z;
   }
 
   update(delta: number): void {
+    const targetMoved = this.target.position.x !== this.lastTargetX
+      || this.target.position.y !== this.lastTargetY
+      || this.target.position.z !== this.lastTargetZ;
+    if (!targetMoved && this.isSettled()) return;
+
+    this.lastTargetX = this.target.position.x;
+    this.lastTargetY = this.target.position.y;
+    this.lastTargetZ = this.target.position.z;
+
     this.yaw = CameraController3D.dampAngle(this.yaw, this.targetYaw, 18, delta);
     this.pitch += (this.targetPitch - this.pitch) * (1 - Math.exp(-18 * delta));
     this.distance += (this.targetDistance - this.distance) * (1 - Math.exp(-14 * delta));
@@ -65,6 +82,7 @@ export class CameraController3D {
 
     this.camera.position.lerp(this.desiredPosition, 1 - Math.exp(-14 * delta));
     this.camera.lookAt(this.lookTarget);
+    this.snapIfSettled();
   }
 
   destroy(): void {
@@ -109,7 +127,29 @@ export class CameraController3D {
   };
 
   private static dampAngle(current: number, target: number, lambda: number, delta: number): number {
-    const wrapped = THREE.MathUtils.euclideanModulo(target - current + Math.PI, Math.PI * 2) - Math.PI;
+    const wrapped = CameraController3D.angleDelta(current, target);
     return current + wrapped * (1 - Math.exp(-lambda * delta));
+  }
+
+  private isSettled(): boolean {
+    return Math.abs(CameraController3D.angleDelta(this.yaw, this.targetYaw)) < CameraController3D.settleEpsilon
+      && Math.abs(this.pitch - this.targetPitch) < CameraController3D.settleEpsilon
+      && Math.abs(this.distance - this.targetDistance) < CameraController3D.settleEpsilon
+      && this.lookTarget.distanceToSquared(this.desiredLookTarget) < CameraController3D.settleDistanceSq
+      && this.camera.position.distanceToSquared(this.desiredPosition) < CameraController3D.settleDistanceSq;
+  }
+
+  private snapIfSettled(): void {
+    if (!this.isSettled()) return;
+    this.yaw = this.targetYaw;
+    this.pitch = this.targetPitch;
+    this.distance = this.targetDistance;
+    this.lookTarget.copy(this.desiredLookTarget);
+    this.camera.position.copy(this.desiredPosition);
+    this.camera.lookAt(this.lookTarget);
+  }
+
+  private static angleDelta(current: number, target: number): number {
+    return THREE.MathUtils.euclideanModulo(target - current + Math.PI, Math.PI * 2) - Math.PI;
   }
 }
