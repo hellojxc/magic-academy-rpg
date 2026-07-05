@@ -45,7 +45,7 @@ export class DiningHall {
 
     // 地板
     const floor = new THREE.Mesh(
-      new THREE.BoxGeometry(14, 0.16, 14),
+      Geo.box(14, 0.16, 14),
       new THREE.MeshStandardMaterial({
         color: 0x8a6b4e,
         roughness: 0.46,
@@ -78,7 +78,7 @@ export class DiningHall {
 
     // 天花板
     const ceilMat = new THREE.MeshStandardMaterial({ color: 0x6a5a4e, roughness: 0.62, metalness: 0.03 });
-    const ceiling = new THREE.Mesh(new THREE.BoxGeometry(14, 0.12, 14), ceilMat);
+    const ceiling = new THREE.Mesh(Geo.box(14, 0.12, 14), ceilMat);
     ceiling.position.set(17, 4.6, 1);
     ceiling.receiveShadow = true;
     this.scene.add(ceiling);
@@ -137,13 +137,13 @@ export class DiningHall {
 
   private addDiningTable(centerX: number, centerZ: number, length: number, woodMat: THREE.Material, clothMat: THREE.Material, darkWoodMat: THREE.Material): void {
     // 桌面
-    const top = new THREE.Mesh(new THREE.BoxGeometry(length, 0.08, 1.2), woodMat);
+    const top = new THREE.Mesh(Geo.box(length, 0.08, 1.2), woodMat);
     top.position.set(centerX, 0.74, centerZ);
     top.castShadow = true; top.receiveShadow = true;
     this.scene.add(top);
 
     // 桌布
-    const cloth = new THREE.Mesh(new THREE.BoxGeometry(length * 0.98, 0.04, 1.1), clothMat);
+    const cloth = new THREE.Mesh(Geo.box(length * 0.98, 0.04, 1.1), clothMat);
     cloth.position.set(centerX, 0.78, centerZ);
     cloth.castShadow = true; cloth.receiveShadow = true;
     this.scene.add(cloth);
@@ -161,7 +161,7 @@ export class DiningHall {
 
     // 板凳 (两侧)
     for (const dz of [-0.85, 0.85]) {
-      const bench = new THREE.Mesh(new THREE.BoxGeometry(length * 0.9, 0.06, 0.3), darkWoodMat);
+      const bench = new THREE.Mesh(Geo.box(length * 0.9, 0.06, 0.3), darkWoodMat);
       bench.position.set(centerX, 0.42, centerZ + dz);
       bench.castShadow = true; bench.receiveShadow = true;
       this.scene.add(bench);
@@ -203,13 +203,13 @@ export class DiningHall {
   }
 
   private addFoodCounter(x: number, z: number, woodMat: THREE.Material, goldMat: THREE.Material): void {
-    const counter = new THREE.Mesh(new THREE.BoxGeometry(3, 0.9, 0.6), woodMat);
+    const counter = new THREE.Mesh(Geo.box(3, 0.9, 0.6), woodMat);
     counter.position.set(x, 0.45, z);
     counter.castShadow = true; counter.receiveShadow = true;
     this.scene.add(counter);
 
     // 顶部金色边
-    const trim = new THREE.Mesh(new THREE.BoxGeometry(3.1, 0.04, 0.7), goldMat);
+    const trim = new THREE.Mesh(Geo.box(3.1, 0.04, 0.7), goldMat);
     trim.position.set(x, 0.92, z);
     trim.castShadow = true;
     this.scene.add(trim);
@@ -218,23 +218,36 @@ export class DiningHall {
     const bowlMat = getStandardMaterial({ color: 0xd4a76a, roughness: 0.3 });
     const fruitColors = [0xd85f5f, 0xf1c45f, 0x6b9e4a, 0xd85f9e];
     const fruitMats = fruitColors.map((c) => getStandardMaterial({ color: c, roughness: 0.4 }));
+    const bowlMatrices: THREE.Matrix4[] = [];
+    const fruitMatricesByMaterial = fruitMats.map((): THREE.Matrix4[] => []);
+    const dummy = new THREE.Object3D();
     for (let i = 0; i < 3; i++) {
       const dx = (i - 1) * 0.8;
-      const bowl = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.12, 0.08, 16), bowlMat);
-      bowl.position.set(x + dx, 0.96, z);
-      bowl.castShadow = true;
-      this.scene.add(bowl);
+      dummy.position.set(x + dx, 0.96, z);
+      dummy.rotation.set(0, 0, 0);
+      dummy.scale.set(1, 1, 1);
+      dummy.updateMatrix();
+      bowlMatrices.push(dummy.matrix.clone());
 
       // 水果
       for (let j = 0; j < 4; j++) {
-        const fruit = new THREE.Mesh(
-          new THREE.SphereGeometry(0.05 + Math.random() * 0.03, 8, 6),
-          fruitMats[Math.floor(Math.random() * fruitMats.length)]
+        const fruitScale = 0.05 + Math.random() * 0.03;
+        const materialIndex = Math.floor(Math.random() * fruitMats.length);
+        dummy.position.set(
+          x + dx + (Math.random() - 0.5) * 0.2,
+          1.0 + Math.random() * 0.05,
+          z + (Math.random() - 0.5) * 0.15
         );
-        fruit.position.set(x + dx + (Math.random() - 0.5) * 0.2, 1.0 + Math.random() * 0.05, z + (Math.random() - 0.5) * 0.15);
-        fruit.castShadow = true;
-        this.scene.add(fruit);
+        dummy.rotation.set(0, 0, 0);
+        dummy.scale.setScalar(fruitScale);
+        dummy.updateMatrix();
+        fruitMatricesByMaterial[materialIndex].push(dummy.matrix.clone());
       }
+    }
+
+    this.addInstancedStaticMesh(Geo.cylinder(0.18, 0.12, 0.08, 16), bowlMat, bowlMatrices, true, false);
+    for (let i = 0; i < fruitMats.length; i += 1) {
+      this.addInstancedStaticMesh(Geo.sphere(1, 8, 6), fruitMats[i], fruitMatricesByMaterial[i], true, false);
     }
   }
 
