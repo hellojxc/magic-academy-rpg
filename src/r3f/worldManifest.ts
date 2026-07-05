@@ -71,9 +71,17 @@ export interface NpcSceneDefinition {
 }
 
 export const WORLD_ASSET_ROOT = '/assets/world';
-const MAX_STREAMED_CHUNKS = 8;
-const LIBRARY_FOCUS_STREAMED_CHUNKS = new Set<WorldChunkId>(['arcane-library', 'atrium']);
-const BIOME_FOCUS_STREAMED_CHUNKS = new Set<WorldChunkId>(['moonlit-lawn', 'lake-grotto', 'atrium']);
+const MAX_STREAMED_CHUNKS = 5;
+const FOCUS_STREAMED_CHUNKS: Partial<Record<WorldChunkId, ReadonlySet<WorldChunkId>>> = {
+  atrium: new Set<WorldChunkId>(['atrium', 'arcane-library', 'grand-hall', 'dining-hall', 'moonlit-lawn']),
+  'arcane-library': new Set<WorldChunkId>(['arcane-library', 'atrium']),
+  'grand-hall': new Set<WorldChunkId>(['grand-hall', 'atrium', 'arcane-library', 'dining-hall']),
+  'dining-hall': new Set<WorldChunkId>(['dining-hall', 'atrium', 'grand-hall', 'moonlit-lawn']),
+  'moonlit-lawn': new Set<WorldChunkId>(['moonlit-lawn', 'lake-grotto', 'atrium', 'training-yard']),
+  'lake-grotto': new Set<WorldChunkId>(['lake-grotto', 'moonlit-lawn', 'crystal-greenhouse', 'atrium']),
+  'training-yard': new Set<WorldChunkId>(['training-yard', 'moonlit-lawn', 'dining-hall']),
+  'crystal-greenhouse': new Set<WorldChunkId>(['crystal-greenhouse', 'lake-grotto', 'atrium']),
+};
 
 export const WORLD_CHUNKS: readonly WorldChunkDefinition[] = [
   {
@@ -427,11 +435,7 @@ export function getActiveChunks(player: { x: number; z: number }): readonly Worl
       const centerB = getChunkCenter(b);
       return Math.hypot(centerA.x - player.x, centerA.z - player.z) - Math.hypot(centerB.x - player.x, centerB.z - player.z);
     })[0];
-  const focusChunkIds = containingChunk?.id === 'arcane-library'
-    ? LIBRARY_FOCUS_STREAMED_CHUNKS
-    : containingChunk?.id === 'moonlit-lawn' || containingChunk?.id === 'lake-grotto'
-      ? BIOME_FOCUS_STREAMED_CHUNKS
-      : null;
+  const focusChunkIds = containingChunk ? FOCUS_STREAMED_CHUNKS[containingChunk.id] : null;
   const streamableChunks = focusChunkIds
     ? WORLD_CHUNKS.filter((chunk) => focusChunkIds.has(chunk.id))
     : WORLD_CHUNKS;
