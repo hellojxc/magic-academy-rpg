@@ -34,7 +34,7 @@ interface LightGroup {
 }
 
 interface RankedPointLight {
-  light: THREE.PointLight;
+  light: THREE.PointLight | null;
   distanceSq: number;
 }
 
@@ -99,7 +99,10 @@ export class AcademyWorld {
   private readonly lightGroups: LightGroup[] = [];
   private readonly pointLights: THREE.PointLight[] = [];
   private readonly pointLightProxies: THREE.PointLight[] = [];
-  private readonly pointLightRankBuffer: RankedPointLight[] = [];
+  private readonly pointLightRankBuffer: RankedPointLight[] = Array.from(
+    { length: POINT_LIGHT_BUDGET },
+    () => ({ light: null, distanceSq: Infinity })
+  );
   private readonly distanceShadowObjects: DistanceShadowObject[] = [];
   private readonly distanceShadowObjectSet = new Set<THREE.Object3D>();
   private readonly regionUpdateGroups: RegionUpdateGroup[] = [];
@@ -305,7 +308,11 @@ export class AcademyWorld {
     this.lastPointLightUpdateX = px;
     this.lastPointLightUpdateZ = pz;
 
-    this.pointLightRankBuffer.length = 0;
+    for (const entry of this.pointLightRankBuffer) {
+      entry.light = null;
+      entry.distanceSq = Infinity;
+    }
+    let rankedLightCount = 0;
     for (const group of this.lightGroups) {
       const dx = px - group.center.x;
       const dz = pz - group.center.z;
@@ -321,14 +328,31 @@ export class AcademyWorld {
           ? light.distance + POINT_LIGHT_RELEVANCE_MARGIN
           : Number.POSITIVE_INFINITY;
         if (distanceSq > relevanceRadius * relevanceRadius) continue;
-        this.pointLightRankBuffer.push({ light, distanceSq });
+        if (
+          rankedLightCount === POINT_LIGHT_BUDGET
+          && distanceSq >= this.pointLightRankBuffer[POINT_LIGHT_BUDGET - 1].distanceSq
+        ) {
+          continue;
+        }
+
+        let insertAt = Math.min(rankedLightCount, POINT_LIGHT_BUDGET - 1);
+        while (insertAt > 0 && distanceSq < this.pointLightRankBuffer[insertAt - 1].distanceSq) {
+          if (insertAt < POINT_LIGHT_BUDGET) {
+            this.pointLightRankBuffer[insertAt].light = this.pointLightRankBuffer[insertAt - 1].light;
+            this.pointLightRankBuffer[insertAt].distanceSq = this.pointLightRankBuffer[insertAt - 1].distanceSq;
+          }
+          insertAt -= 1;
+        }
+
+        this.pointLightRankBuffer[insertAt].light = light;
+        this.pointLightRankBuffer[insertAt].distanceSq = distanceSq;
+        if (rankedLightCount < POINT_LIGHT_BUDGET) rankedLightCount += 1;
       }
     }
 
-    this.pointLightRankBuffer.sort((a, b) => a.distanceSq - b.distanceSq);
     for (let i = 0; i < this.pointLightProxies.length; i += 1) {
       const proxy = this.pointLightProxies[i];
-      const source = this.pointLightRankBuffer[i]?.light;
+      const source = i < rankedLightCount ? this.pointLightRankBuffer[i].light : null;
       if (!source) {
         proxy.intensity = 0;
         proxy.distance = 1;
