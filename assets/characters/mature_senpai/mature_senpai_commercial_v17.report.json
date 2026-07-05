@@ -1,0 +1,380 @@
+{
+  "assetId": "mature-senpai-commercial-v17",
+  "characterId": "mature_senpai",
+  "status": "deformation-weight-production-preview",
+  "source": "public/assets/models/mature_senpai_commercial_v16.glb",
+  "blendSource": "assets/characters/mature_senpai/source/mature_senpai_commercial_v17.blend",
+  "output": "public/assets/models/mature_senpai_commercial_v17.glb",
+  "thumbnail": "public/assets/models/mature_senpai_commercial_v17.png",
+  "generatedBy": "remote Blender headless + assets/characters/mature_senpai/tools/build_final_v17.py",
+  "runtime": {
+    "defaultAsset": true,
+    "format": "glb",
+    "url": "/assets/models/mature_senpai_commercial_v17.glb",
+    "thumbnailUrl": "/assets/models/mature_senpai_commercial_v17.png",
+    "fallbackAssetId": "mature-senpai-commercial-v16",
+    "threeRuntimeFeatures": [
+      "multiple SkinnedMesh runtime parts",
+      "dedicated Face_Head morphTargetInfluences",
+      "normalized top-4 source bone weights",
+      "targeted deterministic cloth, leg, shoe, and pendant binding",
+      "AnimationMixer clips",
+      "Secondary_* bone spring overlay"
+    ]
+  },
+  "productionFlags": {
+    "physicalRuntimeSplitParts": true,
+    "dedicatedFaceExpressionMorphs": true,
+    "facialLandmarkVertexGroups": true,
+    "deformationZoneWeightPass": true,
+    "normalizedBoneWeights": true,
+    "targetedClothLegBinding": true,
+    "retopoGuideLoopGroups": true,
+    "orphanRuntimeMeshRemoved": true,
+    "hairSecondaryBones": true,
+    "skirtSecondaryBones": true,
+    "webRuntimeReady": true
+  },
+  "runtimeParts": [
+    {
+      "name": "MatureSenpai_V17_Arms_Hands",
+      "vertices": 2119,
+      "faces": 2344,
+      "morphTargets": [],
+      "vertexGroups": 40,
+      "materials": [
+        "Material.001"
+      ]
+    },
+    {
+      "name": "MatureSenpai_V17_ChokerPendant",
+      "vertices": 7,
+      "faces": 3,
+      "morphTargets": [],
+      "vertexGroups": 35,
+      "materials": [
+        "CommercialV14_SoftGoldTrim",
+        "CommercialV14_PurplePendantGem"
+      ]
+    },
+    {
+      "name": "MatureSenpai_V17_Face_Head",
+      "vertices": 4309,
+      "faces": 4582,
+      "morphTargets": [
+        "Blink",
+        "ConfidentSmile",
+        "WarmSmile",
+        "Teasing",
+        "Surprised",
+        "Thoughtful"
+      ],
+      "vertexGroups": 36,
+      "materials": [
+        "Material.001"
+      ]
+    },
+    {
+      "name": "MatureSenpai_V17_Hair_Back",
+      "vertices": 7291,
+      "faces": 7755,
+      "morphTargets": [],
+      "vertexGroups": 37,
+      "materials": [
+        "Material.001"
+      ]
+    },
+    {
+      "name": "MatureSenpai_V17_Hair_LeftLock",
+      "vertices": 9857,
+      "faces": 9669,
+      "morphTargets": [],
+      "vertexGroups": 37,
+      "materials": [
+        "Material.001"
+      ]
+    },
+    {
+      "name": "MatureSenpai_V17_Hair_RightLock",
+      "vertices": 9945,
+      "faces": 10006,
+      "morphTargets": [],
+      "vertexGroups": 37,
+      "materials": [
+        "Material.001"
+      ]
+    },
+    {
+      "name": "MatureSenpai_V17_Legs",
+      "vertices": 4349,
+      "faces": 4691,
+      "morphTargets": [],
+      "vertexGroups": 41,
+      "materials": [
+        "Material.001"
+      ]
+    },
+    {
+      "name": "MatureSenpai_V17_Shoes",
+      "vertices": 3485,
+      "faces": 4004,
+      "morphTargets": [],
+      "vertexGroups": 37,
+      "materials": [
+        "Material.001"
+      ]
+    },
+    {
+      "name": "MatureSenpai_V17_Skirt_Center",
+      "vertices": 1140,
+      "faces": 1297,
+      "morphTargets": [],
+      "vertexGroups": 37,
+      "materials": [
+        "Material.001"
+      ]
+    },
+    {
+      "name": "MatureSenpai_V17_Skirt_LeftPanel",
+      "vertices": 2354,
+      "faces": 2406,
+      "morphTargets": [],
+      "vertexGroups": 37,
+      "materials": [
+        "Material.001"
+      ]
+    },
+    {
+      "name": "MatureSenpai_V17_Skirt_RightPanel",
+      "vertices": 2275,
+      "faces": 2393,
+      "morphTargets": [],
+      "vertexGroups": 37,
+      "materials": [
+        "Material.001"
+      ]
+    },
+    {
+      "name": "MatureSenpai_V17_Torso_Camisole",
+      "vertices": 10342,
+      "faces": 10775,
+      "morphTargets": [],
+      "vertexGroups": 38,
+      "materials": [
+        "Material.001"
+      ]
+    }
+  ],
+  "removedOrphanMeshes": [
+    "Icosphere"
+  ],
+  "morphTargets": {
+    "MatureSenpai_V17_Face_Head": [
+      "Blink",
+      "ConfidentSmile",
+      "WarmSmile",
+      "Teasing",
+      "Surprised",
+      "Thoughtful"
+    ]
+  },
+  "armatureBones": [
+    "Hips",
+    "Spine",
+    "Chest",
+    "Neck",
+    "Head",
+    "Secondary_Hair_Back",
+    "Secondary_Hair_Back_Tip",
+    "Secondary_Hair_Left",
+    "Secondary_Hair_Left_Tip",
+    "Secondary_Hair_Right",
+    "Secondary_Hair_Right_Tip",
+    "Secondary_Pendant",
+    "LeftUpperArm",
+    "LeftLowerArm",
+    "LeftHand",
+    "RightUpperArm",
+    "RightLowerArm",
+    "RightHand",
+    "Secondary_Strap_Left",
+    "Secondary_Strap_Right",
+    "LeftUpperLeg",
+    "LeftLowerLeg",
+    "LeftFoot",
+    "RightUpperLeg",
+    "RightLowerLeg",
+    "RightFoot",
+    "Secondary_Skirt_Left",
+    "Secondary_Skirt_Left_Tip",
+    "Secondary_Skirt_Right",
+    "Secondary_Skirt_Right_Tip",
+    "Secondary_Skirt_Center",
+    "Secondary_Skirt_Center_Tip"
+  ],
+  "secondaryRig": {
+    "all": [
+      "Secondary_Hair_Back",
+      "Secondary_Hair_Back_Tip",
+      "Secondary_Hair_Left",
+      "Secondary_Hair_Left_Tip",
+      "Secondary_Hair_Right",
+      "Secondary_Hair_Right_Tip",
+      "Secondary_Pendant",
+      "Secondary_Strap_Left",
+      "Secondary_Strap_Right",
+      "Secondary_Skirt_Left",
+      "Secondary_Skirt_Left_Tip",
+      "Secondary_Skirt_Right",
+      "Secondary_Skirt_Right_Tip",
+      "Secondary_Skirt_Center",
+      "Secondary_Skirt_Center_Tip"
+    ],
+    "hair": [
+      "Secondary_Hair_Back",
+      "Secondary_Hair_Back_Tip",
+      "Secondary_Hair_Left",
+      "Secondary_Hair_Left_Tip",
+      "Secondary_Hair_Right",
+      "Secondary_Hair_Right_Tip"
+    ],
+    "skirt": [
+      "Secondary_Skirt_Left",
+      "Secondary_Skirt_Left_Tip",
+      "Secondary_Skirt_Right",
+      "Secondary_Skirt_Right_Tip",
+      "Secondary_Skirt_Center",
+      "Secondary_Skirt_Center_Tip"
+    ],
+    "accessory": [
+      "Secondary_Pendant",
+      "Secondary_Strap_Left",
+      "Secondary_Strap_Right"
+    ]
+  },
+  "deformationBinding": {
+    "normalizedVertices": 57473,
+    "sourceBoundVertices": 43863,
+    "proceduralBoundVertices": 13610,
+    "proceduralBindingParts": [
+      "Skirt_",
+      "Legs",
+      "Shoes",
+      "ChokerPendant"
+    ],
+    "maxInfluencesPerProfile": 4,
+    "boneAssignmentCounts": {
+      "Chest": 31665,
+      "Head": 24557,
+      "Hips": 9529,
+      "LeftFoot": 2397,
+      "LeftLowerArm": 835,
+      "LeftLowerLeg": 2904,
+      "LeftUpperArm": 1820,
+      "LeftUpperLeg": 1471,
+      "Neck": 24564,
+      "RightFoot": 2412,
+      "RightLowerArm": 941,
+      "RightLowerLeg": 3032,
+      "RightUpperArm": 1927,
+      "RightUpperLeg": 1587,
+      "Secondary_Hair_Back": 13337,
+      "Secondary_Hair_Back_Tip": 391,
+      "Secondary_Hair_Left": 12314,
+      "Secondary_Hair_Left_Tip": 121,
+      "Secondary_Hair_Right": 12592,
+      "Secondary_Hair_Right_Tip": 129,
+      "Secondary_Pendant": 7,
+      "Secondary_Skirt_Center": 1140,
+      "Secondary_Skirt_Center_Tip": 1140,
+      "Secondary_Skirt_Left": 2364,
+      "Secondary_Skirt_Left_Tip": 2344,
+      "Secondary_Skirt_Right": 2288,
+      "Secondary_Skirt_Right_Tip": 2265,
+      "Spine": 15525
+    },
+    "deformZoneCounts": {
+      "V17_DeformZone_BackHair": 7291,
+      "V17_DeformZone_BackHairTip": 417,
+      "V17_DeformZone_Bust": 8779,
+      "V17_DeformZone_CenterSkirt": 1140,
+      "V17_DeformZone_CenterSkirtTip": 600,
+      "V17_DeformZone_JawNeckBlend": 1315,
+      "V17_DeformZone_LeftAnkle": 1866,
+      "V17_DeformZone_LeftElbow": 921,
+      "V17_DeformZone_LeftFoot": 2297,
+      "V17_DeformZone_LeftHair": 9852,
+      "V17_DeformZone_LeftHairTip": 645,
+      "V17_DeformZone_LeftHip": 234,
+      "V17_DeformZone_LeftKnee": 997,
+      "V17_DeformZone_LeftShoulder": 82,
+      "V17_DeformZone_LeftSkirt": 2333,
+      "V17_DeformZone_LeftSkirtTip": 991,
+      "V17_DeformZone_NeckBase": 6045,
+      "V17_DeformZone_Pendant": 7,
+      "V17_DeformZone_RightAnkle": 1847,
+      "V17_DeformZone_RightElbow": 818,
+      "V17_DeformZone_RightFoot": 2297,
+      "V17_DeformZone_RightHair": 9941,
+      "V17_DeformZone_RightHairTip": 601,
+      "V17_DeformZone_RightHip": 215,
+      "V17_DeformZone_RightKnee": 1155,
+      "V17_DeformZone_RightShoulder": 88,
+      "V17_DeformZone_RightSkirt": 2262,
+      "V17_DeformZone_RightSkirtTip": 985,
+      "V17_DeformZone_Waist": 1749
+    },
+    "retopoLoopCounts": {
+      "V17_RetopoLoop_AnkleRing": 1997,
+      "V17_RetopoLoop_BustRing": 5120,
+      "V17_RetopoLoop_EyeLine": 1618,
+      "V17_RetopoLoop_HipRing": 335,
+      "V17_RetopoLoop_KneeRing": 209,
+      "V17_RetopoLoop_MouthLine": 1835,
+      "V17_RetopoLoop_NeckRing": 3089,
+      "V17_RetopoLoop_WaistRing": 856
+    },
+    "zeroWeightVertexSample": [],
+    "zeroWeightVertices": 0
+  },
+  "animationClipsAdded": [
+    "v17_deformation_stress",
+    "v17_secondary_sway_test"
+  ],
+  "acceptanceChecks": {
+    "keepsV16PhysicalRuntimeParts": true,
+    "removesUnskinnedOrphanMeshes": true,
+    "keepsFaceOnlyExpressionMorphs": true,
+    "hasMajorJointDeformationZones": true,
+    "hasRetopoGuideLoops": true,
+    "hasNormalizedBoneWeights": true,
+    "hasTargetedClothLegBinding": true,
+    "coversArmsLegsTorsoHairSkirt": true,
+    "addsDeformationTestClips": true,
+    "hasHairSecondaryBones": true,
+    "hasSkirtSecondaryBones": true,
+    "webRuntimeBudgetTarget": true
+  },
+  "runtimeDecision": {
+    "defaultAsset": true,
+    "fallbackAssetId": "mature-senpai-commercial-v16",
+    "reason": "v17 keeps the v16 accepted visual and Face_Head expression layer, removes the orphan unskinned mesh from export, normalizes stable source skin weights to a web-friendly top-4 profile, replaces unstable cloth/leg/shoe/pendant bindings with deterministic runtime-safe profiles, and adds deformation-zone QA groups with explicit QA clips. This moves the character closer to commercial runtime behavior during movement and interaction without breaking the accepted likeness."
+  },
+  "completedPasses": [
+    "imported the v16 dedicated face-expression runtime asset",
+    "renamed runtime parts to v17 while preserving UVs, materials, morphs, and visible likeness",
+    "removed the orphan unskinned Icosphere mesh from the runtime export",
+    "normalized stable source skin weights to top-4 bone influences",
+    "rebound skirt panels, legs, shoes, and pendant to deterministic runtime-safe profiles to reduce action-time tearing and cross-part contamination",
+    "added V17_DeformZone_* vertex groups for shoulders, elbows, wrists, hands, hips, knees, ankles, feet, torso, hair, skirt, and pendant QA",
+    "added V17_RetopoLoop_* guide groups for future artist quad-retopo transfer",
+    "added v17_deformation_stress and v17_secondary_sway_test animation clips for deformation QA",
+    "exported GLB with multiple skinned parts, Face_Head morphs, skins, and animations"
+  ],
+  "limitations": [
+    "v17 still uses the accepted source triangle topology; it is not a final hand-authored quad retopology.",
+    "The skin weights are normalized source weights plus targeted procedural cloth/leg binding, not artist brush-painted weights reviewed vertex by vertex.",
+    "Facial morphs remain authored coordinate-mask deltas from v16 rather than sculpted expression blendshapes on dedicated facial loops.",
+    "The texture atlas is preserved from the Hunyuan source; final commercial polish still needs UV cleanup and texture repaint."
+  ]
+}

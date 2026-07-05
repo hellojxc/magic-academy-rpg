@@ -52,7 +52,17 @@ def look_at(obj: bpy.types.Object, target: Vector) -> None:
 
 def import_asset(path: Path) -> tuple[list[bpy.types.Object], list[bpy.types.Object]]:
     bpy.ops.import_scene.gltf(filepath=str(path))
-    meshes = [obj for obj in bpy.context.scene.objects if obj.type == "MESH"]
+    meshes = []
+    for obj in [item for item in bpy.context.scene.objects if item.type == "MESH"]:
+        is_import_proxy = (
+            not obj.name.startswith("MatureSenpai_")
+            and len(obj.data.materials) == 0
+            and len(obj.modifiers) == 0
+        )
+        if is_import_proxy:
+            bpy.data.objects.remove(obj, do_unlink=True)
+            continue
+        meshes.append(obj)
     armatures = [obj for obj in bpy.context.scene.objects if obj.type == "ARMATURE"]
     if not meshes:
         raise RuntimeError(f"No meshes imported from {path}")
