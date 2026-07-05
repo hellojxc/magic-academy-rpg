@@ -2037,6 +2037,14 @@ interface LibraryLightShaftInstance {
   readonly color: number;
 }
 
+interface LibraryPhysicalDetailInstance {
+  readonly key: string;
+  readonly position: ThreeVec3Tuple;
+  readonly rotation: ThreeVec3Tuple;
+  readonly scale: ThreeVec3Tuple;
+  readonly color: number;
+}
+
 function LibraryHeroLayer({ activeIds }: { readonly activeIds: ReadonlySet<WorldChunkId> }): React.ReactElement | null {
   const enabled = activeIds.has('arcane-library');
   const books = useMemo(() => createLibraryBooks(), []);
@@ -2126,6 +2134,7 @@ function LibraryHeroLayer({ activeIds }: { readonly activeIds: ReadonlySet<World
       <LibraryArchiveClutterLayer />
       <LibraryReadingLampCluster />
       <LibraryDeskObjectLayer />
+      <LibraryPhysicalMaterialDetailLayer />
       <LibraryLadderAndRails />
       <Instances name="instanced-library-book-covers" limit={books.length} range={books.length} material={bookMaterial} castShadow receiveShadow>
         <boxGeometry args={[1, 1, 1, 1, 1, 1]} />
@@ -2709,6 +2718,305 @@ function LibraryDeskObjectLayer(): React.ReactElement {
       </mesh>
     </group>
   );
+}
+
+function LibraryPhysicalMaterialDetailLayer(): React.ReactElement {
+  const contactDust = useMemo(() => createLibraryContactDustDecals(), []);
+  const inkSmudges = useMemo(() => createLibraryInkSmudges(), []);
+  const polishedWear = useMemo(() => createLibraryPolishedWoodWear(), []);
+  const labelPlates = useMemo(() => createLibraryShelfLabelPlates(), []);
+  const labelGlyphs = useMemo(() => createLibraryShelfLabelGlyphs(), []);
+  const pageInkLines = useMemo(() => createLibraryPageInkLines(), []);
+  const dustMaterial = useMemo(() => {
+    const material = createPbrMaterial(
+      'runtime-library-settled-contact-dust-pbr',
+      createFilePbrSet('organic'),
+      { color: 0xc7b897, roughness: 0.98, metalness: 0, envMapIntensity: 0.06, normalScale: 0.05 },
+    );
+    material.transparent = true;
+    material.opacity = 0.44;
+    material.alphaMap = getBiomeSoftAlphaMap('library-contact-dust-alpha');
+    material.alphaTest = 0.012;
+    material.depthWrite = false;
+    material.side = THREE.DoubleSide;
+    material.vertexColors = true;
+    material.polygonOffset = true;
+    material.polygonOffsetFactor = -14;
+    return material;
+  }, []);
+  const inkSmudgeMaterial = useMemo(() => {
+    const material = createPbrMaterial(
+      'runtime-library-dried-ink-smudge-pbr',
+      createFilePbrSet('organic'),
+      { color: 0x17120f, roughness: 0.88, metalness: 0, envMapIntensity: 0.02, normalScale: 0.04 },
+    );
+    material.transparent = true;
+    material.opacity = 0.68;
+    material.alphaMap = getBiomeSoftAlphaMap('library-ink-smudge-alpha');
+    material.alphaTest = 0.018;
+    material.depthWrite = false;
+    material.side = THREE.DoubleSide;
+    material.vertexColors = true;
+    material.polygonOffset = true;
+    material.polygonOffsetFactor = -16;
+    return material;
+  }, []);
+  const polishedWearMaterial = useMemo(() => new THREE.MeshBasicMaterial({
+    name: 'runtime-library-hand-polished-wood-wear',
+    color: 0xe1b77a,
+    alphaMap: getBiomeSoftAlphaMap('library-polished-wood-alpha'),
+    transparent: true,
+    opacity: 0.16,
+    depthWrite: false,
+    side: THREE.DoubleSide,
+    vertexColors: true,
+    polygonOffset: true,
+    polygonOffsetFactor: -15,
+  }), []);
+  const brassPlateMaterial = useMemo(() => {
+    const material = createPbrMaterial(
+      'runtime-library-shelf-label-aged-brass-pbr',
+      createFilePbrSet('metal'),
+      { color: 0xb58a48, roughness: 0.54, metalness: 0.5, envMapIntensity: 0.46, normalScale: 0.06 },
+    );
+    material.vertexColors = true;
+    return material;
+  }, []);
+  const labelGlyphMaterial = useMemo(() => new THREE.MeshBasicMaterial({
+    name: 'runtime-library-shelf-label-engraved-glyphs',
+    color: 0x2a1b10,
+    transparent: true,
+    opacity: 0.78,
+    vertexColors: true,
+  }), []);
+  const pageInkMaterial = useMemo(() => new THREE.MeshBasicMaterial({
+    name: 'runtime-library-visible-page-ink-lines',
+    color: 0x251a12,
+    transparent: true,
+    opacity: 0.66,
+    vertexColors: true,
+  }), []);
+
+  useEffect(() => {
+    window.__r3fChunkRenderState = {
+      ...(window.__r3fChunkRenderState ?? {}),
+      libraryPhysicalDetails: `contactDust:${contactDust.length},inkSmudges:${inkSmudges.length},polishedWear:${polishedWear.length},labels:${labelPlates.length},inkLines:${pageInkLines.length}`,
+    };
+  }, [contactDust.length, inkSmudges.length, labelPlates.length, pageInkLines.length, polishedWear.length]);
+
+  return (
+    <group name="library-physical-material-detail-layer">
+      <Instances name="instanced-library-settled-contact-dust" limit={contactDust.length} range={contactDust.length} material={dustMaterial} receiveShadow renderOrder={9}>
+        <planeGeometry args={[1, 1, 1, 1]} />
+        {contactDust.map((detail) => (
+          <Instance key={detail.key} position={detail.position} rotation={detail.rotation} scale={detail.scale} color={detail.color} />
+        ))}
+      </Instances>
+      <Instances name="instanced-library-dried-ink-smudges" limit={inkSmudges.length} range={inkSmudges.length} material={inkSmudgeMaterial} receiveShadow renderOrder={10}>
+        <planeGeometry args={[1, 1, 1, 1]} />
+        {inkSmudges.map((detail) => (
+          <Instance key={detail.key} position={detail.position} rotation={detail.rotation} scale={detail.scale} color={detail.color} />
+        ))}
+      </Instances>
+      <Instances name="instanced-library-hand-polished-wood-wear" limit={polishedWear.length} range={polishedWear.length} material={polishedWearMaterial} renderOrder={11}>
+        <planeGeometry args={[1, 1, 1, 1]} />
+        {polishedWear.map((detail) => (
+          <Instance key={detail.key} position={detail.position} rotation={detail.rotation} scale={detail.scale} color={detail.color} />
+        ))}
+      </Instances>
+      <Instances name="instanced-library-brass-shelf-label-plates" limit={labelPlates.length} range={labelPlates.length} material={brassPlateMaterial} castShadow receiveShadow>
+        <boxGeometry args={[1, 1, 1, 1, 1, 1]} />
+        {labelPlates.map((detail) => (
+          <Instance key={detail.key} position={detail.position} rotation={detail.rotation} scale={detail.scale} color={detail.color} />
+        ))}
+      </Instances>
+      <Instances name="instanced-library-engraved-label-glyphs" limit={labelGlyphs.length} range={labelGlyphs.length} material={labelGlyphMaterial} renderOrder={12}>
+        <boxGeometry args={[1, 1, 1, 1, 1, 1]} />
+        {labelGlyphs.map((detail) => (
+          <Instance key={detail.key} position={detail.position} rotation={detail.rotation} scale={detail.scale} color={detail.color} />
+        ))}
+      </Instances>
+      <Instances name="instanced-library-readable-page-ink-lines" limit={pageInkLines.length} range={pageInkLines.length} material={pageInkMaterial} renderOrder={13}>
+        <boxGeometry args={[1, 1, 1, 1, 1, 1]} />
+        {pageInkLines.map((detail) => (
+          <Instance key={detail.key} position={detail.position} rotation={detail.rotation} scale={detail.scale} color={detail.color} />
+        ))}
+      </Instances>
+    </group>
+  );
+}
+
+function createLibraryContactDustDecals(): LibraryPhysicalDetailInstance[] {
+  const tableDust = [
+    [4.38, 1.058, -1.78, 0.12, 0x7e715e, 0.58, 0.18],
+    [5.2, 1.059, -0.88, -0.38, 0xb6a88a, 0.5, 0.15],
+    [6.02, 1.059, -1.46, 0.42, 0x8d7e64, 0.46, 0.14],
+    [5.78, 1.058, -0.98, -0.18, 0xd0c29f, 0.34, 0.11],
+  ] as const;
+  const floorDust = [
+    [3.7, 0.211, -4.54, -0.18, 0x6f614e, 0.72, 0.36],
+    [4.12, 0.212, -5.18, 0.36, 0x8a7a5f, 0.62, 0.22],
+    [8.2, 0.212, -3.12, 0.62, 0x675947, 0.74, 0.3],
+    [6.88, 0.212, -0.72, -0.34, 0x9a8767, 0.58, 0.24],
+    [4.18, 0.212, -0.52, 0.46, 0x7b6f59, 0.5, 0.22],
+    [6.52, 0.212, -2.26, -0.74, 0x6f604e, 0.66, 0.24],
+  ] as const;
+  const shelfDust = [
+    [3.16, 0.64, -5.42, 0.02, 0xb7aa8e, 1.04, 0.12],
+    [3.16, 1.04, -5.42, -0.04, 0x8f826c, 0.92, 0.1],
+    [5.32, 1.02, -5.5, 0, 0xb8ac90, 1.08, 0.11],
+    [5.34, 1.42, -5.5, 0.03, 0x857760, 1.14, 0.11],
+    [7.58, 0.64, -5.42, -0.04, 0xa89978, 0.98, 0.12],
+    [7.64, 1.42, -5.42, 0.02, 0x766852, 0.94, 0.1],
+    [8.9, 1.02, -4.28, Math.PI / 2, 0x8c8068, 0.96, 0.1],
+    [8.9, 1.42, -3.48, Math.PI / 2, 0xb4a789, 0.9, 0.1],
+  ] as const;
+
+  return [
+    ...tableDust.map(([x, y, z, yaw, color, sx, sz], index) => ({
+      key: `library-table-settled-dust:${index}`,
+      position: [x, y, z] as ThreeVec3Tuple,
+      rotation: [-Math.PI / 2, 0, yaw] as ThreeVec3Tuple,
+      scale: [sx, sz, 1] as ThreeVec3Tuple,
+      color,
+    })),
+    ...floorDust.map(([x, y, z, yaw, color, sx, sz], index) => ({
+      key: `library-floor-contact-dust:${index}`,
+      position: [x, y, z] as ThreeVec3Tuple,
+      rotation: [-Math.PI / 2, 0, yaw] as ThreeVec3Tuple,
+      scale: [sx, sz, 1] as ThreeVec3Tuple,
+      color,
+    })),
+    ...shelfDust.map(([x, y, z, yaw, color, sx, sy], index) => ({
+      key: `library-shelf-lip-dust:${index}`,
+      position: [x, y, z] as ThreeVec3Tuple,
+      rotation: [0, yaw, 0] as ThreeVec3Tuple,
+      scale: [sx, sy, 1] as ThreeVec3Tuple,
+      color,
+    })),
+  ];
+}
+
+function createLibraryInkSmudges(): LibraryPhysicalDetailInstance[] {
+  const smudges = [
+    [5.0, 1.061, -1.16, -0.12, 0x16110f, 0.28, 0.11],
+    [5.64, 1.062, -1.34, 0.46, 0x211713, 0.22, 0.08],
+    [4.72, 1.061, -1.58, -0.42, 0x120f14, 0.2, 0.07],
+    [6.12, 1.06, -1.06, 0.18, 0x26140f, 0.24, 0.09],
+    [6.72, 0.49, -0.92, -0.18, 0x1b1510, 0.18, 0.06],
+    [3.56, 0.213, -4.24, 0.88, 0x18120e, 0.2, 0.08],
+  ] as const;
+
+  return smudges.map(([x, y, z, yaw, color, sx, sz], index) => ({
+    key: `library-dried-ink-smudge:${index}`,
+    position: [x, y, z] as ThreeVec3Tuple,
+    rotation: [-Math.PI / 2, 0, yaw] as ThreeVec3Tuple,
+    scale: [sx, sz, 1] as ThreeVec3Tuple,
+    color,
+  }));
+}
+
+function createLibraryPolishedWoodWear(): LibraryPhysicalDetailInstance[] {
+  const strips = [
+    [5.25, 1.064, -1.91, 0.05, 0xd0a66a, 1.42, 0.035],
+    [5.24, 1.064, -0.8, 0.05, 0xb88a55, 1.16, 0.032],
+    [4.15, 1.064, -1.34, Math.PI / 2, 0xd6b275, 0.62, 0.03],
+    [6.36, 1.064, -1.34, Math.PI / 2, 0xbe8e56, 0.62, 0.03],
+    [3.14, 0.6, -5.39, 0.02, 0xa87945, 0.82, 0.028],
+    [5.34, 0.98, -5.48, 0, 0xc0945d, 0.9, 0.026],
+    [7.62, 1.38, -5.38, -0.03, 0x9f7445, 0.78, 0.026],
+    [8.9, 1.0, -3.62, Math.PI / 2, 0xbb8a54, 0.78, 0.026],
+    [3.84, 1.06, -5.17, -0.18, 0xbd8d55, 0.52, 0.024],
+  ] as const;
+
+  return strips.map(([x, y, z, yaw, color, sx, sz], index) => ({
+    key: `library-hand-polished-wood-wear:${index}`,
+    position: [x, y, z] as ThreeVec3Tuple,
+    rotation: [-Math.PI / 2, 0, yaw] as ThreeVec3Tuple,
+    scale: [sx, sz, 1] as ThreeVec3Tuple,
+    color,
+  }));
+}
+
+function createLibraryShelfLabelPlates(): LibraryPhysicalDetailInstance[] {
+  const plates = [
+    [2.74, 0.48, -5.37, 0, 0xb98f4b],
+    [3.12, 0.86, -5.37, 0, 0x9f773d],
+    [3.55, 1.26, -5.37, 0, 0xc19a57],
+    [5.02, 0.48, -5.45, 0, 0xa47a3f],
+    [5.48, 0.86, -5.45, 0, 0xc3a05c],
+    [5.94, 1.26, -5.45, 0, 0x9a7138],
+    [7.28, 0.48, -5.37, -0.03, 0xb98f4b],
+    [7.74, 0.86, -5.37, -0.03, 0x9c743b],
+    [8.14, 1.26, -5.37, -0.03, 0xc6a35f],
+    [8.86, 0.48, -4.55, Math.PI / 2, 0xa47a40],
+    [8.86, 0.86, -4.02, Math.PI / 2, 0xc09a56],
+    [8.86, 1.26, -3.46, Math.PI / 2, 0x9b723b],
+  ] as const;
+
+  return plates.map(([x, y, z, yaw, color], index) => ({
+    key: `library-brass-shelf-label-plate:${index}`,
+    position: [x, y, z] as ThreeVec3Tuple,
+    rotation: [0, yaw, 0] as ThreeVec3Tuple,
+    scale: [0.22, 0.052, 0.018] as ThreeVec3Tuple,
+    color,
+  }));
+}
+
+function createLibraryShelfLabelGlyphs(): LibraryPhysicalDetailInstance[] {
+  return createLibraryShelfLabelPlates().flatMap((plate, index) => {
+    const yaw = plate.rotation[1];
+    const forwardX = Math.sin(yaw) * -0.014;
+    const forwardZ = Math.cos(yaw) * -0.014;
+    return [0, 1].map((line) => ({
+      key: `library-engraved-label-glyph:${index}:${line}`,
+      position: [
+        plate.position[0] + forwardX,
+        plate.position[1] + (line === 0 ? 0.008 : -0.01),
+        plate.position[2] + forwardZ,
+      ] as ThreeVec3Tuple,
+      rotation: plate.rotation,
+      scale: [0.12 - line * 0.025, 0.006, 0.01] as ThreeVec3Tuple,
+      color: line === 0 ? 0x24160d : 0x3a2514,
+    }));
+  });
+}
+
+function createLibraryPageInkLines(): LibraryPhysicalDetailInstance[] {
+  const lines: LibraryPhysicalDetailInstance[] = [];
+  const addPageLines = (
+    prefix: string,
+    origin: ThreeVec3Tuple,
+    yaw: number,
+    lineCount: number,
+    width: number,
+    spacing: number,
+    tint: number,
+  ) => {
+    for (let i = 0; i < lineCount; i += 1) {
+      const sideOffset = (i - (lineCount - 1) / 2) * spacing;
+      lines.push({
+        key: `${prefix}:ink-line:${i}`,
+        position: [
+          origin[0] + Math.sin(yaw) * sideOffset,
+          origin[1],
+          origin[2] + Math.cos(yaw) * sideOffset,
+        ] as ThreeVec3Tuple,
+        rotation: [0, yaw, 0] as ThreeVec3Tuple,
+        scale: [width * (0.72 + seededNoise(prefix, i + 30) * 0.28), 0.006, 0.012] as ThreeVec3Tuple,
+        color: new THREE.Color(tint).lerp(new THREE.Color(0x4a3322), seededNoise(prefix, i + 80) * 0.28).getHex(),
+      });
+    }
+  };
+
+  addPageLines('library-open-folio-left', [5.28, 1.064, -1.14], -0.2, 8, 0.34, 0.034, 0x2b1c12);
+  addPageLines('library-open-folio-right', [5.72, 1.066, -1.2], -0.2, 7, 0.32, 0.034, 0x241810);
+  addPageLines('library-cross-reference-stack', [4.73, 1.061, -1.02], 0.38, 5, 0.24, 0.03, 0x332015);
+  addPageLines('library-index-card-stack', [5.86, 1.059, -1.62], -0.5, 4, 0.18, 0.026, 0x2b1d12);
+  addPageLines('library-catalog-card-stack', [6.78, 0.494, -0.96], -0.2, 5, 0.24, 0.022, 0x2a1d13);
+  addPageLines('library-book-cart-folio', [7.05, 1.078, -2.66], -1.0, 5, 0.2, 0.024, 0x2e2118);
+
+  return lines;
 }
 
 function LibraryProceduralShelfUnit({
@@ -4363,7 +4671,58 @@ function getBiomeSoftAlphaMap(key: string): THREE.Texture {
   const ctx = canvas.getContext('2d');
   if (ctx) {
     ctx.clearRect(0, 0, size, size);
-    if (key.includes('waterline') || key.includes('foam') || key.includes('shallow-mineral-edge')) {
+    if (key.includes('library-contact-dust')) {
+      for (let i = 0; i < 46; i += 1) {
+        const x = seededNoise(key, i) * size;
+        const y = seededNoise(key, i + 100) * size;
+        ctx.globalAlpha = 0.06 + seededNoise(key, i + 200) * 0.18;
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.ellipse(x, y, 4 + seededNoise(key, i + 300) * 18, 1.8 + seededNoise(key, i + 400) * 7, seededNoise(key, i + 500) * Math.PI, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      for (let i = 0; i < 18; i += 1) {
+        const x = seededNoise(key, i + 700) * size;
+        const y = seededNoise(key, i + 900) * size;
+        ctx.globalAlpha = 0.08 + seededNoise(key, i + 1100) * 0.12;
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(x, y, 1 + seededNoise(key, i + 1300) * 2.5, 1 + seededNoise(key, i + 1500) * 2.5);
+      }
+    } else if (key.includes('library-ink-smudge')) {
+      for (let i = 0; i < 14; i += 1) {
+        const x = seededNoise(key, i) * size;
+        const y = seededNoise(key, i + 100) * size;
+        ctx.globalAlpha = 0.18 + seededNoise(key, i + 200) * 0.28;
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.ellipse(x, y, 8 + seededNoise(key, i + 300) * 22, 3 + seededNoise(key, i + 400) * 10, seededNoise(key, i + 500) * Math.PI, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.globalCompositeOperation = 'destination-out';
+      for (let i = 0; i < 8; i += 1) {
+        const x = seededNoise(key, i + 700) * size;
+        const y = seededNoise(key, i + 900) * size;
+        ctx.globalAlpha = 0.12 + seededNoise(key, i + 1100) * 0.22;
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.ellipse(x, y, 5 + seededNoise(key, i + 1300) * 13, 2 + seededNoise(key, i + 1500) * 7, seededNoise(key, i + 1700) * Math.PI, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.globalCompositeOperation = 'source-over';
+    } else if (key.includes('library-polished-wood')) {
+      ctx.strokeStyle = 'rgba(255,255,255,0.38)';
+      ctx.lineCap = 'round';
+      for (let i = 0; i < 18; i += 1) {
+        const y = size * (0.22 + seededNoise(key, i) * 0.56);
+        ctx.globalAlpha = 0.16 + seededNoise(key, i + 100) * 0.18;
+        ctx.lineWidth = 0.7 + seededNoise(key, i + 200) * 1.8;
+        ctx.beginPath();
+        ctx.moveTo(size * 0.08, y + seededSigned(key, i + 300) * 8);
+        ctx.bezierCurveTo(size * 0.34, y - 9, size * 0.64, y + 10, size * 0.92, y + seededSigned(key, i + 400) * 7);
+        ctx.stroke();
+      }
+      ctx.lineCap = 'butt';
+    } else if (key.includes('waterline') || key.includes('foam') || key.includes('shallow-mineral-edge')) {
       for (let i = 0; i < 30; i += 1) {
         const x = seededNoise(key, i) * size;
         const y = seededNoise(key, i + 100) * size;
