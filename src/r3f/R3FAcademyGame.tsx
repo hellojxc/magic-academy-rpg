@@ -1711,7 +1711,8 @@ function ThirdPartyAssetGroup({
   readonly placements: readonly ThirdPartyWorldPropPlacement[];
   readonly lodAnchor: ThirdPartyWorldLodAnchor;
 }): React.ReactElement {
-  const template = useOptionalGlb(source.url);
+  const priority = useMemo(() => getThirdPartyGlbLoadPriority(source.id, placements), [placements, source.id]);
+  const template = useOptionalGlb(source.url, false, undefined, priority);
   const objects = useMemo(() => {
     if (!template) return [];
     return placements
@@ -1845,6 +1846,21 @@ function shouldCastShadowForThirdPartyPlacement(
 ): boolean {
   const shadowDistance = getThirdPartyLodConfig(sourceId).shadowDistance ?? defaultThirdPartyWorldLod.shadowDistance ?? 0;
   return shadowDistance > 0 && getThirdPartyPlacementDistance(placement, anchor) <= shadowDistance;
+}
+
+function getThirdPartyGlbLoadPriority(
+  sourceId: string,
+  placements: readonly ThirdPartyWorldPropPlacement[],
+): GlbLoadPriority {
+  const lod = getThirdPartyLodConfig(sourceId);
+  if (placements.some((placement) => (
+    placement.chunkId === 'lake-grotto'
+    || placement.chunkId === 'moonlit-lawn'
+    || placement.chunkId === 'arcane-library'
+  ))) {
+    return lod.importance === 'detail' ? 'normal' : 'high';
+  }
+  return 'normal';
 }
 
 function prepareThirdPartyPropObject(
@@ -3291,11 +3307,14 @@ function LakeGrottoBiome(): React.ReactElement {
   const reeds = useMemo(() => createLakeReedWall(), []);
   const lilyPads = useMemo(() => createLakeLilyPads(), []);
   const lilyFlowers = useMemo(() => createLakeLilyFlowers(), []);
+  const floatingLeaves = useMemo(() => createLakeFloatingLeaves(), []);
   const stones = useMemo(() => createLakeShoreStones(), []);
   const pebbles = useMemo(() => createLakePebbleClusters(), []);
   const driftwood = useMemo(() => createLakeDriftwoodLogs(), []);
   const cattails = useMemo(() => createLakeCattailClumps(), []);
   const bankPosts = useMemo(() => createLakeBankMooringPosts(), []);
+  const bankWetMarks = useMemo(() => createLakeBankWetMarks(), []);
+  const waterlineFoam = useMemo(() => createLakeWaterlineFoam(), []);
   const rippleStreaks = useMemo(() => createLakeRippleStreaks(), []);
   const glints = useMemo(() => createLakeSurfaceGlints(), []);
   const wetlandMaterial = useMemo(() => new THREE.MeshStandardMaterial({
@@ -3332,6 +3351,16 @@ function LakeGrottoBiome(): React.ReactElement {
       'runtime-lake-grotto-lily-pad-pbr',
       createFilePbrSet('foliage'),
       { color: 0xffffff, roughness: 0.78, metalness: 0, envMapIntensity: 0.18, normalScale: 0.18 },
+    );
+    material.side = THREE.DoubleSide;
+    material.vertexColors = true;
+    return material;
+  }, []);
+  const floatingLeafMaterial = useMemo(() => {
+    const material = createPbrMaterial(
+      'runtime-lake-grotto-floating-duckweed-leaves-pbr',
+      createFilePbrSet('foliage'),
+      { color: 0xffffff, roughness: 0.82, metalness: 0, envMapIntensity: 0.2, normalScale: 0.12 },
     );
     material.side = THREE.DoubleSide;
     material.vertexColors = true;
@@ -3402,10 +3431,42 @@ function LakeGrottoBiome(): React.ReactElement {
     polygonOffset: true,
     polygonOffsetFactor: -9,
   }), []);
+  const waterlineFoamMaterial = useMemo(() => new THREE.MeshBasicMaterial({
+    name: 'runtime-lake-grotto-irregular-waterline-foam',
+    color: 0xd8fff5,
+    alphaMap: getBiomeSoftAlphaMap('lake-waterline-foam-alpha'),
+    transparent: true,
+    opacity: 0.18,
+    depthWrite: false,
+    side: THREE.DoubleSide,
+    vertexColors: true,
+    blending: THREE.AdditiveBlending,
+    polygonOffset: true,
+    polygonOffsetFactor: -12,
+  }), []);
+  const bankWetMaterial = useMemo(() => {
+    const material = createPbrMaterial(
+      'runtime-lake-grotto-waterline-wet-contact-pbr',
+      createFilePbrSet('ground'),
+      { color: 0xffffff, roughness: 0.98, metalness: 0, envMapIntensity: 0.08, normalScale: 0.18 },
+    );
+    material.transparent = true;
+    material.opacity = 0.56;
+    material.alphaMap = getBiomeSoftAlphaMap('lake-bank-wet-contact-alpha');
+    material.alphaTest = 0.018;
+    material.depthWrite = false;
+    material.side = THREE.DoubleSide;
+    material.vertexColors = true;
+    material.polygonOffset = true;
+    material.polygonOffsetFactor = -13;
+    return material;
+  }, []);
 
   useFrame(({ clock }) => {
     rippleMaterial.opacity = 0.13 + Math.sin(clock.elapsedTime * 0.34) * 0.035;
     glintMaterial.opacity = 0.09 + Math.sin(clock.elapsedTime * 0.42) * 0.03;
+    waterlineFoamMaterial.opacity = 0.14 + Math.sin(clock.elapsedTime * 0.24) * 0.024;
+    bankWetMaterial.opacity = 0.52 + Math.sin(clock.elapsedTime * 0.18) * 0.035;
     if (rippleMaterial.alphaMap) {
       rippleMaterial.alphaMap.offset.x = clock.elapsedTime * 0.025;
       rippleMaterial.alphaMap.offset.y = -clock.elapsedTime * 0.015;
@@ -3413,6 +3474,10 @@ function LakeGrottoBiome(): React.ReactElement {
     if (glintMaterial.alphaMap) {
       glintMaterial.alphaMap.offset.x = clock.elapsedTime * 0.04;
       glintMaterial.alphaMap.offset.y = -clock.elapsedTime * 0.025;
+    }
+    if (waterlineFoamMaterial.alphaMap) {
+      waterlineFoamMaterial.alphaMap.offset.x = clock.elapsedTime * 0.018;
+      waterlineFoamMaterial.alphaMap.offset.y = Math.sin(clock.elapsedTime * 0.1) * 0.04;
     }
   });
 
@@ -3424,8 +3489,11 @@ function LakeGrottoBiome(): React.ReactElement {
       lakeCattailClumps: String(cattails.length),
       lakeBankMooringPosts: String(bankPosts.length),
       lakeWetlandMats: String(wetlandMats.length),
+      lakeBankWetMarks: String(bankWetMarks.length),
+      lakeFloatingLeaves: String(floatingLeaves.length),
+      lakeWaterlineFoam: String(waterlineFoam.length),
     };
-  }, [bankPosts.length, cattails.length, driftwood.length, pebbles.length, wetlandMats.length]);
+  }, [bankPosts.length, bankWetMarks.length, cattails.length, driftwood.length, floatingLeaves.length, pebbles.length, waterlineFoam.length, wetlandMats.length]);
 
   return (
     <group name="biome-hero:lake-grotto">
@@ -3436,6 +3504,12 @@ function LakeGrottoBiome(): React.ReactElement {
         ))}
       </Instances>
       <EnhancedLakeSurface />
+      <Instances name="instanced-biome-lake-bank-wet-contact-marks" limit={bankWetMarks.length} range={bankWetMarks.length} material={bankWetMaterial} receiveShadow renderOrder={6}>
+        <planeGeometry args={[1, 1, 1, 1]} />
+        {bankWetMarks.map((mark) => (
+          <Instance key={mark.key} position={mark.position} rotation={mark.rotation} scale={mark.scale} color={mark.color} />
+        ))}
+      </Instances>
       <Instances name="instanced-biome-lake-reed-wall" limit={reeds.length} range={reeds.length} material={reedMaterial} castShadow receiveShadow>
         <planeGeometry args={[0.36, 1.24, 1, 5]} />
         {reeds.map((reed) => (
@@ -3446,6 +3520,12 @@ function LakeGrottoBiome(): React.ReactElement {
         <circleGeometry args={[0.3, 18]} />
         {lilyPads.map((pad) => (
           <Instance key={pad.key} position={pad.position} rotation={pad.rotation} scale={pad.scale} color={pad.color} />
+        ))}
+      </Instances>
+      <Instances name="instanced-biome-lake-floating-duckweed-leaves" limit={floatingLeaves.length} range={floatingLeaves.length} material={floatingLeafMaterial} receiveShadow renderOrder={6}>
+        <circleGeometry args={[0.12, 7]} />
+        {floatingLeaves.map((leaf) => (
+          <Instance key={leaf.key} position={leaf.position} rotation={leaf.rotation} scale={leaf.scale} color={leaf.color} />
         ))}
       </Instances>
       <Instances name="instanced-biome-lake-lily-flower-heads" limit={lilyFlowers.length} range={lilyFlowers.length} material={lilyFlowerMaterial} castShadow>
@@ -3520,6 +3600,12 @@ function LakeGrottoBiome(): React.ReactElement {
           <Instance key={glint.key} position={glint.position} rotation={glint.rotation} scale={glint.scale} color={glint.color} />
         ))}
       </Instances>
+      <Instances name="instanced-biome-lake-irregular-waterline-foam" limit={waterlineFoam.length} range={waterlineFoam.length} material={waterlineFoamMaterial} renderOrder={10}>
+        <planeGeometry args={[1, 1, 1, 1]} />
+        {waterlineFoam.map((foam) => (
+          <Instance key={foam.key} position={foam.position} rotation={foam.rotation} scale={foam.scale} color={foam.color} />
+        ))}
+      </Instances>
     </group>
   );
 }
@@ -3529,23 +3615,27 @@ function EnhancedLakeSurface(): React.ReactElement {
   const shallowMaterial = useRef<THREE.MeshBasicMaterial>(null);
   const waterMap = useMemo(() => getBiomePatternTexture('lake-water-albedo'), []);
   const waterNormal = useMemo(() => getBiomePatternTexture('lake-water-normal'), []);
+  const siltBedGeometry = useMemo(() => createIrregularLakeDiscGeometry('lake-silt-bed-irregular', 128, 0.92), []);
+  const deepWaterGeometry = useMemo(() => createIrregularLakeDiscGeometry('lake-deep-water-irregular', 128, 0.86), []);
+  const shallowShelfGeometry = useMemo(() => createIrregularLakeRingGeometry('lake-shallow-shelf-irregular', 0.74, 0.99, 128), []);
+  const wetBankGeometry = useMemo(() => createIrregularLakeRingGeometry('lake-wet-bank-irregular', 0.9, 1.02, 128), []);
 
   useFrame(({ clock }) => {
     if (deepMaterial.current) {
       deepMaterial.current.emissiveIntensity = 0.22 + Math.sin(clock.elapsedTime * 0.35) * 0.035;
-      deepMaterial.current.opacity = 0.82 + Math.sin(clock.elapsedTime * 0.2) * 0.018;
+      deepMaterial.current.opacity = 0.66 + Math.sin(clock.elapsedTime * 0.2) * 0.014;
       if (deepMaterial.current.normalMap) {
         deepMaterial.current.normalMap.offset.x = clock.elapsedTime * 0.018;
         deepMaterial.current.normalMap.offset.y = -clock.elapsedTime * 0.011;
       }
     }
-    if (shallowMaterial.current) shallowMaterial.current.opacity = 0.28 + Math.sin(clock.elapsedTime * 0.32) * 0.045;
+    if (shallowMaterial.current) shallowMaterial.current.opacity = 0.16 + Math.sin(clock.elapsedTime * 0.32) * 0.025;
   });
 
   return (
     <group name="biome-lake-enhanced-water">
       <mesh name="biome-lake-submerged-silt-bed" position={[-16, 0.101, 21]} rotation={[-Math.PI / 2, 0, -0.08]} scale={[8.55, 6.08, 1]} receiveShadow renderOrder={1}>
-        <circleGeometry args={[1, 128]} />
+        <primitive attach="geometry" object={siltBedGeometry} />
         <meshStandardMaterial
           color={0x263c37}
           map={getBiomePatternTexture('lake-bed-albedo')}
@@ -3554,49 +3644,113 @@ function EnhancedLakeSurface(): React.ReactElement {
           roughness={0.96}
           metalness={0}
           transparent
-          opacity={0.94}
+          opacity={0.8}
           side={THREE.DoubleSide}
         />
       </mesh>
       <mesh name="biome-lake-deep-elliptic-water" position={[-16, 0.128, 21]} rotation={[-Math.PI / 2, 0, -0.08]} scale={[8.8, 6.35, 1]} receiveShadow renderOrder={4}>
-        <circleGeometry args={[1, 128]} />
+        <primitive attach="geometry" object={deepWaterGeometry} />
         <meshPhysicalMaterial
           ref={deepMaterial}
-          color={0x3aa7b6}
+          color={0x236f83}
           map={waterMap}
           normalMap={waterNormal}
           normalScale={new THREE.Vector2(0.44, 0.44)}
-          emissive={0x0a3148}
-          emissiveIntensity={0.24}
+          emissive={0x082738}
+          emissiveIntensity={0.18}
           roughness={0.06}
           metalness={0}
           clearcoat={1}
           clearcoatRoughness={0.05}
-          reflectivity={0.56}
+          reflectivity={0.42}
           transparent
-          opacity={0.84}
+          opacity={0.66}
           depthWrite={false}
           side={THREE.DoubleSide}
         />
       </mesh>
       <mesh name="biome-lake-shallow-mineral-shelf" position={[-16, 0.133, 21]} rotation={[-Math.PI / 2, 0, -0.08]} scale={[9.7, 7, 1]} renderOrder={5}>
-        <ringGeometry args={[0.82, 1, 128]} />
+        <primitive attach="geometry" object={shallowShelfGeometry} />
         <meshBasicMaterial
           ref={shallowMaterial}
-          color={0xb7f0d5}
+          color={0xacebd2}
+          alphaMap={getBiomeSoftAlphaMap('lake-shallow-mineral-edge-alpha')}
           transparent
-          opacity={0.34}
+          opacity={0.12}
+          alphaTest={0.018}
           depthWrite={false}
           side={THREE.DoubleSide}
           blending={THREE.AdditiveBlending}
         />
       </mesh>
       <mesh name="biome-lake-dark-wet-bank" position={[-16, 0.104, 21]} rotation={[-Math.PI / 2, 0, -0.08]} scale={[10.15, 7.35, 1]} receiveShadow renderOrder={1}>
-        <ringGeometry args={[0.96, 1, 128]} />
+        <primitive attach="geometry" object={wetBankGeometry} />
         <meshStandardMaterial color={0x20382f} roughness={0.96} metalness={0} transparent opacity={0.58} depthWrite={false} side={THREE.DoubleSide} />
       </mesh>
     </group>
   );
+}
+
+function createIrregularLakeDiscGeometry(key: string, segments: number, radius = 1): THREE.BufferGeometry {
+  const vertices: number[] = [0, 0, 0];
+  const uvs: number[] = [0.5, 0.5];
+  const indices: number[] = [];
+  for (let i = 0; i < segments; i += 1) {
+    const angle = (i / segments) * Math.PI * 2;
+    const ripple = Math.sin(angle * 3.1 + seededNoise(key, 1) * Math.PI) * 0.025
+      + Math.sin(angle * 6.7 + seededNoise(key, 2) * Math.PI) * 0.018;
+    const radial = radius * (1 + ripple + seededSigned(key, i + 50) * 0.038);
+    const x = Math.cos(angle) * radial;
+    const y = Math.sin(angle) * radial;
+    vertices.push(x, y, 0);
+    uvs.push(0.5 + x * 0.5, 0.5 + y * 0.5);
+  }
+  for (let i = 0; i < segments; i += 1) {
+    indices.push(0, i + 1, ((i + 1) % segments) + 1);
+  }
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+  geometry.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
+  geometry.setIndex(indices);
+  geometry.computeVertexNormals();
+  return geometry;
+}
+
+function createIrregularLakeRingGeometry(
+  key: string,
+  innerRadius: number,
+  outerRadius: number,
+  segments: number,
+): THREE.BufferGeometry {
+  const vertices: number[] = [];
+  const uvs: number[] = [];
+  const indices: number[] = [];
+  for (let i = 0; i < segments; i += 1) {
+    const angle = (i / segments) * Math.PI * 2;
+    const outerRipple = Math.sin(angle * 3.4 + seededNoise(key, 10) * Math.PI) * 0.028
+      + seededSigned(key, i + 100) * 0.034;
+    const innerRipple = Math.sin(angle * 4.8 + seededNoise(key, 20) * Math.PI) * 0.022
+      + seededSigned(key, i + 300) * 0.026;
+    const outer = outerRadius * (1 + outerRipple);
+    const inner = innerRadius * (1 + innerRipple);
+    const cos = Math.cos(angle);
+    const sin = Math.sin(angle);
+    vertices.push(cos * inner, sin * inner, 0, cos * outer, sin * outer, 0);
+    uvs.push(0.5 + cos * inner * 0.5, 0.5 + sin * inner * 0.5, 0.5 + cos * outer * 0.5, 0.5 + sin * outer * 0.5);
+  }
+  for (let i = 0; i < segments; i += 1) {
+    const innerA = i * 2;
+    const outerA = innerA + 1;
+    const innerB = ((i + 1) % segments) * 2;
+    const outerB = innerB + 1;
+    indices.push(innerA, outerA, innerB, outerA, outerB, innerB);
+  }
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+  geometry.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
+  geometry.setIndex(indices);
+  geometry.computeVertexNormals();
+  return geometry;
 }
 
 function createMoonlitTurfPatches(): BiomeHeroInstance[] {
@@ -3912,6 +4066,98 @@ function createLakeLilyFlowers(): BiomeHeroInstance[] {
   });
 }
 
+function createLakeFloatingLeaves(): BiomeHeroInstance[] {
+  const leaves: BiomeHeroInstance[] = [];
+  const seed = 'biome:lake-grotto:floating-leaves';
+  for (let i = 0; i < 84; i += 1) {
+    const angle = seededNoise(seed, i) * Math.PI * 2;
+    const nearShore = i < 58;
+    const radius = nearShore
+      ? 0.54 + seededNoise(seed, i + 300) * 0.38
+      : Math.sqrt(seededNoise(seed, i + 300)) * 0.54;
+    const rot = seededNoise(seed, i + 600) * Math.PI * 2;
+    leaves.push({
+      key: `lake-floating-leaf:${i}`,
+      position: [
+        -16 + Math.cos(angle) * 7.95 * radius + seededSigned(seed, i + 900) * 0.14,
+        0.214 + i * 0.000045,
+        21 + Math.sin(angle) * 5.55 * radius + seededSigned(seed, i + 1200) * 0.12,
+      ],
+      rotation: [-Math.PI / 2, 0, rot],
+      scale: [
+        0.58 + seededNoise(seed, i + 1500) * 1.12,
+        0.34 + seededNoise(seed, i + 1800) * 0.74,
+        1,
+      ],
+      color: new THREE.Color(0x284d35)
+        .lerp(new THREE.Color(0x8abe66), seededNoise(seed, i + 2100) * 0.42)
+        .getHex(),
+      phase: seededNoise(seed, i + 2400),
+    });
+  }
+  return leaves;
+}
+
+function createLakeBankWetMarks(): BiomeHeroInstance[] {
+  const marks: BiomeHeroInstance[] = [];
+  const seed = 'biome:lake-grotto:bank-wet-contact';
+  for (let i = 0; i < 64; i += 1) {
+    const angle = seededNoise(seed, i) * Math.PI * 2;
+    const shore = 0.99 + seededSigned(seed, i + 350) * 0.1;
+    const radiusX = 9.78 * shore;
+    const radiusZ = 7.05 * shore;
+    marks.push({
+      key: `lake-bank-wet-contact:${i}`,
+      position: [
+        -16 + Math.cos(angle) * radiusX,
+        0.174 + i * 0.000055,
+        21 + Math.sin(angle) * radiusZ,
+      ],
+      rotation: [-Math.PI / 2, 0, angle + Math.PI / 2 + seededSigned(seed, i + 700) * 0.26],
+      scale: [
+        0.92 + seededNoise(seed, i + 1000) * 1.72,
+        0.14 + seededNoise(seed, i + 1300) * 0.32,
+        1,
+      ],
+      color: new THREE.Color(0x162a24)
+        .lerp(new THREE.Color(0x4f5b42), seededNoise(seed, i + 1600) * 0.28)
+        .getHex(),
+      phase: seededNoise(seed, i + 1900),
+    });
+  }
+  return marks;
+}
+
+function createLakeWaterlineFoam(): BiomeHeroInstance[] {
+  const foam: BiomeHeroInstance[] = [];
+  const seed = 'biome:lake-grotto:waterline-foam';
+  for (let i = 0; i < 78; i += 1) {
+    const angle = seededNoise(seed, i) * Math.PI * 2;
+    const brokenSegment = seededNoise(seed, i + 250) < 0.16;
+    if (brokenSegment) continue;
+    const shore = 0.84 + seededSigned(seed, i + 500) * 0.08;
+    foam.push({
+      key: `lake-waterline-foam:${i}`,
+      position: [
+        -16 + Math.cos(angle) * 9.38 * shore + seededSigned(seed, i + 750) * 0.12,
+        0.224 + i * 0.000035,
+        21 + Math.sin(angle) * 6.72 * shore + seededSigned(seed, i + 1000) * 0.1,
+      ],
+      rotation: [-Math.PI / 2, 0, angle + Math.PI / 2 + seededSigned(seed, i + 1250) * 0.34],
+      scale: [
+        0.48 + seededNoise(seed, i + 1500) * 1.35,
+        0.045 + seededNoise(seed, i + 1750) * 0.105,
+        1,
+      ],
+      color: new THREE.Color(0xa9fff0)
+        .lerp(new THREE.Color(0xffffff), seededNoise(seed, i + 2000) * 0.32)
+        .getHex(),
+      phase: seededNoise(seed, i + 2250),
+    });
+  }
+  return foam;
+}
+
 function createLakeShoreStones(): BiomeHeroInstance[] {
   const stones: BiomeHeroInstance[] = [];
   const seed = 'biome:lake-grotto:shore-stones';
@@ -4117,7 +4363,28 @@ function getBiomeSoftAlphaMap(key: string): THREE.Texture {
   const ctx = canvas.getContext('2d');
   if (ctx) {
     ctx.clearRect(0, 0, size, size);
-    if (key.includes('lake-glints') || key.includes('lake-ripple')) {
+    if (key.includes('waterline') || key.includes('foam') || key.includes('shallow-mineral-edge')) {
+      for (let i = 0; i < 30; i += 1) {
+        const x = seededNoise(key, i) * size;
+        const y = seededNoise(key, i + 100) * size;
+        ctx.globalAlpha = 0.16 + seededNoise(key, i + 200) * 0.28;
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.ellipse(x, y, 12 + seededNoise(key, i + 300) * 38, 1.2 + seededNoise(key, i + 400) * 3.8, seededSigned(key, i + 500) * 0.26, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.globalCompositeOperation = 'destination-out';
+      for (let i = 0; i < 18; i += 1) {
+        const x = seededNoise(key, i + 700) * size;
+        const y = seededNoise(key, i + 900) * size;
+        ctx.globalAlpha = 0.18 + seededNoise(key, i + 1100) * 0.34;
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.ellipse(x, y, 8 + seededNoise(key, i + 1300) * 28, 3 + seededNoise(key, i + 1500) * 9, seededNoise(key, i + 1700) * Math.PI, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.globalCompositeOperation = 'source-over';
+    } else if (key.includes('lake-glints') || key.includes('lake-ripple')) {
       for (let i = 0; i < 18; i += 1) {
         const x = seededNoise(key, i) * size;
         const y = seededNoise(key, i + 100) * size;
@@ -9177,7 +9444,7 @@ function isNatureChunkReplacedSurface(chunkId: WorldChunkId, label: string): boo
   }
   if (chunkId === 'lake-grotto') {
     return replacedFloor
-      || /reflective_moon_lake_surface|nearfield_wet_rock_pooled_sheen/.test(label);
+      || /reflective_moon_lake_surface|nearfield_wet_rock_pooled_sheen|lake_grotto_submerged_silt_bed|lake_grotto_shallow_mineral_water_shelf|lake_grotto_deep_irregular_water_pool/.test(label);
   }
   return false;
 }
