@@ -72,6 +72,7 @@ export interface NpcSceneDefinition {
 
 export const WORLD_ASSET_ROOT = '/assets/world';
 const MAX_STREAMED_CHUNKS = 8;
+const LIBRARY_FOCUS_STREAMED_CHUNKS = new Set<WorldChunkId>(['arcane-library', 'atrium']);
 
 export const WORLD_CHUNKS: readonly WorldChunkDefinition[] = [
   {
@@ -413,7 +414,23 @@ export function getChunkCenter(chunk: WorldChunkDefinition): { x: number; z: num
 }
 
 export function getActiveChunks(player: { x: number; z: number }): readonly WorldChunkDefinition[] {
-  return WORLD_CHUNKS
+  const containingChunk = WORLD_CHUNKS
+    .filter((chunk) => (
+      player.x >= chunk.bounds.minX
+      && player.x <= chunk.bounds.maxX
+      && player.z >= chunk.bounds.minZ
+      && player.z <= chunk.bounds.maxZ
+    ))
+    .sort((a, b) => {
+      const centerA = getChunkCenter(a);
+      const centerB = getChunkCenter(b);
+      return Math.hypot(centerA.x - player.x, centerA.z - player.z) - Math.hypot(centerB.x - player.x, centerB.z - player.z);
+    })[0];
+  const streamableChunks = containingChunk?.id === 'arcane-library'
+    ? WORLD_CHUNKS.filter((chunk) => LIBRARY_FOCUS_STREAMED_CHUNKS.has(chunk.id))
+    : WORLD_CHUNKS;
+
+  return streamableChunks
     .map((chunk) => {
       const center = getChunkCenter(chunk);
       const dx = center.x - player.x;

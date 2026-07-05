@@ -21,13 +21,15 @@ if (glbs.length === 0) {
 for (const file of glbs) {
   const input = path.join(chunksDir, file);
   const output = path.join(optimizedDir, file.replace(/\.glb$/, '.optimized.glb'));
+  const compressionArgs = file === 'arcane-library.high.glb'
+    ? ['--compress', 'false', '--instance', 'false']
+    : ['--compress', 'quantize'];
   run('npx', [
     'gltf-transform',
     'optimize',
     input,
     output,
-    '--compress',
-    'quantize',
+    ...compressionArgs,
     '--palette',
     'false',
     '--prune-attributes',

@@ -39,10 +39,20 @@ for (const source of sources) {
   await downloadFile(source.originalUrl, rawPath);
   downloaded += 1;
 
+  const isPolygonalMind = source.collection.startsWith('pm-');
+  const optimizeInputPath = isPolygonalMind ? rawPath.replace(/\.glb$/, '.textureless.glb') : rawPath;
+  if (isPolygonalMind) {
+    run('node', [
+      'scripts/world-pipeline/strip-gltf-textures.mjs',
+      rawPath,
+      optimizeInputPath,
+    ]);
+  }
+
   run('npx', [
     'gltf-transform',
     'optimize',
-    rawPath,
+    optimizeInputPath,
     outputPath,
     '--compress',
     'quantize',

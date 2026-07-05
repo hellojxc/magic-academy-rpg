@@ -142,6 +142,7 @@ const enhancedMaterialCache = new Map<string, THREE.MeshStandardMaterial>();
 const lightmapCache = new Map<string, THREE.Texture>();
 const worldHdriUrl = '/assets/world/hdri/academy-night-atrium.hdr';
 let activeGlbLoadCount = 0;
+let activeCriticalGlbLoadCount = 0;
 const pendingCriticalGlbLoadQueue: Array<() => void> = [];
 const pendingHighPriorityGlbLoadQueue: Array<() => void> = [];
 const pendingGlbLoadQueue: Array<() => void> = [];
@@ -175,6 +176,7 @@ interface ThirdPartyWorldBoxCollider {
 
 interface ThirdPartyWorldRuntimeConfig {
   readonly defaultEnabledSourceIds?: readonly string[];
+  readonly defaultEnabledPlacementIds?: readonly string[];
   readonly defaultLod?: ThirdPartyWorldLodConfig;
   readonly lod?: Record<string, Partial<ThirdPartyWorldLodConfig>>;
   readonly colliders?: Record<string, ThirdPartyWorldBoxCollider>;
@@ -203,6 +205,7 @@ const thirdPartyWorldAssetSourcesById = new Map(
 const thirdPartyWorldPlacements = thirdPartyWorldAssetManifest.placements;
 const thirdPartyWorldRuntime = thirdPartyWorldAssetManifest.runtime ?? {};
 const defaultThirdPartyWorldGlbSourceIds = new Set(thirdPartyWorldRuntime.defaultEnabledSourceIds ?? []);
+const defaultThirdPartyWorldGlbPlacementIds = new Set(thirdPartyWorldRuntime.defaultEnabledPlacementIds ?? []);
 const defaultThirdPartyWorldLod: ThirdPartyWorldLodConfig = {
   importance: 'set-dressing',
   fadeDistance: 62,
@@ -1290,14 +1293,16 @@ interface StreamingWorldProps {
 
 function StreamingWorld({ activeChunks, activeIds, playerPosition }: StreamingWorldProps): React.ReactElement {
   const activeChunkKey = activeChunks.map((chunk) => chunk.id).join('|');
+  const initialChunkCount = getInitialAuthoredChunkCount(activeChunks);
+  const authoredStreamStepMs = getAuthoredChunkStreamStepMs(activeChunks);
   const [authoredChunkIds, setAuthoredChunkIds] = useState<ReadonlySet<WorldChunkId>>(() => (
-    new Set(activeChunks.slice(0, Math.min(initialAuthoredChunkCount, maxAuthoredChunkCount)).map((chunk) => chunk.id))
+    new Set(activeChunks.slice(0, Math.min(initialChunkCount, maxAuthoredChunkCount)).map((chunk) => chunk.id))
   ));
 
   useEffect(() => {
     let cancelled = false;
     const initialIds = activeChunks
-      .slice(0, Math.min(initialAuthoredChunkCount, maxAuthoredChunkCount))
+      .slice(0, Math.min(initialChunkCount, maxAuthoredChunkCount))
       .map((chunk) => chunk.id);
     setAuthoredChunkIds(new Set(initialIds));
 
@@ -1305,14 +1310,14 @@ function StreamingWorld({ activeChunks, activeIds, playerPosition }: StreamingWo
       window.setTimeout(() => {
         if (cancelled) return;
         setAuthoredChunkIds((current) => new Set([...current, chunk.id]));
-      }, (index + 1) * authoredChunkStreamStepMs)
+      }, (index + 1) * authoredStreamStepMs)
     ));
 
     return () => {
       cancelled = true;
       for (const timer of timers) window.clearTimeout(timer);
     };
-  }, [activeChunkKey]);
+  }, [activeChunkKey, authoredStreamStepMs, initialChunkCount]);
 
   useEffect(() => {
     window.__r3fChunkRenderState = {
@@ -1354,6 +1359,14 @@ function StreamingWorld({ activeChunks, activeIds, playerPosition }: StreamingWo
       <ChunkLightingLayer activeChunks={activeChunks} />
     </group>
   );
+}
+
+function getInitialAuthoredChunkCount(activeChunks: readonly WorldChunkDefinition[]): number {
+  return activeChunks[0]?.id === 'arcane-library' ? 1 : initialAuthoredChunkCount;
+}
+
+function getAuthoredChunkStreamStepMs(activeChunks: readonly WorldChunkDefinition[]): number {
+  return activeChunks[0]?.id === 'arcane-library' ? 1800 : authoredChunkStreamStepMs;
 }
 
 function BaseTerrain(): React.ReactElement {
@@ -1635,7 +1648,7 @@ function ThirdPartyAssetLayer({
         ? 'all-enabled:vendorGlb=1'
         : defaultGlbAssetsDisabled
           ? 'disabled:vendorGlb=0'
-          : `default-enabled:${defaultThirdPartyWorldGlbSourceIds.size}`,
+          : `default-enabled:sources:${defaultThirdPartyWorldGlbSourceIds.size},placements:${defaultThirdPartyWorldGlbPlacementIds.size}`,
     };
   }, [allGlbAssetsEnabled, defaultGlbAssetsDisabled]);
 
@@ -1649,7 +1662,7 @@ function ThirdPartyAssetLayer({
       if (!activeIds.has(placement.chunkId)) continue;
       const source = thirdPartyWorldAssetSourcesById.get(placement.sourceId);
       if (!source) continue;
-      if (!shouldEnableThirdPartyGlbSource(source.id, allGlbAssetsEnabled, defaultGlbAssetsDisabled)) continue;
+      if (!shouldEnableThirdPartyGlbPlacement(source.id, placement.id, allGlbAssetsEnabled, defaultGlbAssetsDisabled)) continue;
       if (!shouldLoadThirdPartyPlacement(source.id, placement, lodAnchor)) continue;
       const existing = grouped.get(source.id);
       if (existing) {
@@ -1747,14 +1760,15 @@ function shouldDisableDefaultThirdPartyGlbAssets(): boolean {
   return new URLSearchParams(window.location.search).get('vendorGlb') === '0';
 }
 
-function shouldEnableThirdPartyGlbSource(
+function shouldEnableThirdPartyGlbPlacement(
   sourceId: string,
+  placementId: string,
   allGlbAssetsEnabled: boolean,
   defaultGlbAssetsDisabled: boolean,
 ): boolean {
   if (allGlbAssetsEnabled) return true;
   if (defaultGlbAssetsDisabled) return false;
-  return defaultThirdPartyWorldGlbSourceIds.has(sourceId);
+  return defaultThirdPartyWorldGlbSourceIds.has(sourceId) || defaultThirdPartyWorldGlbPlacementIds.has(placementId);
 }
 
 function getChunkGlbLoadPriority(chunkId: WorldChunkId): GlbLoadPriority {
@@ -8728,6 +8742,7 @@ function useOptionalGlb(
     scheduledLoad.promise
       .then((gltf) => {
         if (cancelled) return;
+        setAssetLoadState(url, 'cloning');
         const clone = gltf.scene.clone(true);
         clone.traverse((object) => {
           if (object instanceof THREE.Mesh) {
@@ -8762,6 +8777,7 @@ function scheduleGlbLoad(
   priority: GlbLoadPriority,
 ): { readonly promise: Promise<Awaited<ReturnType<GLTFLoader['parseAsync']>>>; readonly cancel: () => void } {
   let cancelled = false;
+  const isCritical = priority === 'critical';
   const promise = new Promise<Awaited<ReturnType<GLTFLoader['parseAsync']>>>((resolve, reject) => {
     const run = () => {
       if (cancelled) {
@@ -8769,14 +8785,16 @@ function scheduleGlbLoad(
         return;
       }
       activeGlbLoadCount += 1;
+      if (isCritical) activeCriticalGlbLoadCount += 1;
       loadGlbArrayBuffer(url)
         .then(resolve, reject)
         .finally(() => {
           activeGlbLoadCount = Math.max(0, activeGlbLoadCount - 1);
+          if (isCritical) activeCriticalGlbLoadCount = Math.max(0, activeCriticalGlbLoadCount - 1);
           flushGlbLoadQueue();
         });
     };
-    if (priority === 'critical') pendingCriticalGlbLoadQueue.push(run);
+    if (isCritical) pendingCriticalGlbLoadQueue.push(run);
     else if (priority === 'high') pendingHighPriorityGlbLoadQueue.push(run);
     else pendingGlbLoadQueue.push(run);
     flushGlbLoadQueue();
@@ -8797,14 +8815,25 @@ async function loadGlbArrayBuffer(url: string): Promise<Awaited<ReturnType<GLTFL
   const loader = new GLTFLoader();
   loader.setMeshoptDecoder(MeshoptDecoder);
   const basePath = url.slice(0, url.lastIndexOf('/') + 1);
-  return loader.parseAsync(await response.arrayBuffer(), basePath);
+  const arrayBuffer = await response.arrayBuffer();
+  setAssetLoadState(url, `fetched:${arrayBuffer.byteLength}`);
+  const gltf = await loader.parseAsync(arrayBuffer, basePath);
+  setAssetLoadState(url, 'parsed');
+  return gltf;
 }
 
 function flushGlbLoadQueue(): void {
   while (activeGlbLoadCount < maxConcurrentGlbLoads) {
-    const next = pendingCriticalGlbLoadQueue.shift() ?? pendingHighPriorityGlbLoadQueue.shift() ?? pendingGlbLoadQueue.shift();
-    if (!next) return;
-    next();
+    const critical = pendingCriticalGlbLoadQueue.shift();
+    if (critical) {
+      critical();
+      continue;
+    }
+    if (activeCriticalGlbLoadCount > 0) return;
+
+    const normal = pendingHighPriorityGlbLoadQueue.shift() ?? pendingGlbLoadQueue.shift();
+    if (!normal) return;
+    normal();
   }
 }
 

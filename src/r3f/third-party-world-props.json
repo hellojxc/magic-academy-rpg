@@ -401,6 +401,20 @@
       "kenney-stone-large-a",
       "kenney-hanging-moss"
     ],
+    "defaultEnabledPlacementIds": [
+      "library-reading-table-main",
+      "library-reading-lamp-main",
+      "library-window-bench",
+      "library-reading-carpet",
+      "library-curtain-north",
+      "library-curtain-east",
+      "library-cc0-tall-shelf-west-return",
+      "library-cc0-tall-shelf-east-return",
+      "library-cc0-low-shelf-reading-sort",
+      "library-cc0-book-return-cart",
+      "library-cc0-narrow-runner",
+      "library-cc0-shelf-task-lamp"
+    ],
     "defaultLod": {
       "importance": "set-dressing",
       "fadeDistance": 62,
