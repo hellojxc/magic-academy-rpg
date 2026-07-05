@@ -67,7 +67,7 @@ export class ExtendedAcademyGrounds {
 
   private addCrystalGreenhouse(obstacles: Obstacle[]): void {
     const floorTex = makeSharedSurfaceDetailTexture('greenhouse-mosaic-floor', 5, 4);
-    const floorMat = new THREE.MeshStandardMaterial({
+    const floorMat = getStandardMaterial({
       color: 0x7d9f78,
       roughness: 0.74,
       metalness: 0.03,
@@ -345,7 +345,7 @@ export class ExtendedAcademyGrounds {
 
   private addRunicTrainingGrounds(obstacles: Obstacle[]): void {
     const groundDetail = makeSharedSurfaceDetailTexture('training-packed-clay', 7, 5);
-    const groundMat = new THREE.MeshStandardMaterial({
+    const groundMat = getStandardMaterial({
       color: 0x8d765f,
       roughness: 0.86,
       metalness: 0.02,
@@ -602,7 +602,7 @@ export class ExtendedAcademyGrounds {
 
   private addMoonstoneGrotto(obstacles: Obstacle[]): void {
     const groundDetail = makeSharedSurfaceDetailTexture('grotto-wet-rock', 5, 6);
-    const rockMat = new THREE.MeshStandardMaterial({
+    const rockMat = getStandardMaterial({
       color: 0x4b5260,
       roughness: 0.82,
       metalness: 0.06,
@@ -646,9 +646,10 @@ export class ExtendedAcademyGrounds {
       [-28.6, 29.2, 0.7], [-27.0, 23.2, 0.82], [-36.8, 13.0, 0.86],
       [-31.2, 13.2, 0.64], [-41.2, 24.8, 0.72],
     ] as Array<[number, number, number]>;
+    const boulderGeo = Geo.dodecahedron(1, 0);
     for (let i = 0; i < boulders.length; i += 1) {
       const [x, z, scale] = boulders[i];
-      const boulder = new THREE.Mesh(new THREE.DodecahedronGeometry(1, 0), rockMat);
+      const boulder = new THREE.Mesh(boulderGeo, rockMat);
       boulder.scale.set(scale * (1.0 + seeded(i * 7) * 0.5), scale * (0.42 + seeded(i * 11) * 0.28), scale * (0.8 + seeded(i * 13) * 0.35));
       boulder.rotation.set(seeded(i * 17) * Math.PI, seeded(i * 19) * Math.PI, seeded(i * 23) * Math.PI);
       boulder.position.set(x, 0.25 + scale * 0.12, z);
