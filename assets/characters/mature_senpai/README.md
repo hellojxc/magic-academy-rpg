@@ -8,7 +8,8 @@ Current target: v7 mature senpai concept, used as an adult academy NPC.
 - `references/hunyuan-multiview-v7/`: Hunyuan3D multi-view upload images.
 - `character-model-brief.json`: source-of-truth model brief.
 - `tools/rig_hunyuan_preview.py`: Blender batch rigging script for the current preview asset.
-- `tools/build_final_v14.py`: Blender headless clean production-preview script that keeps the `mcp-polish-v2` visible likeness, removes the failed flat expression overlay and hard strap panels, adds amplified source-mesh morphs, semantic part groups, supplemental hair/skirt secondary weights, and a real skinned choker/pendant runtime part.
+- `tools/build_final_v15.py`: Blender headless physical split script that imports v14, preserves the accepted visible likeness, and exports named skinned face, hair, torso, arm, skirt, leg, and shoe runtime meshes with copied UVs, materials, vertex groups, skin weights, and six expression shape keys.
+- `tools/build_final_v14.py`: previous Blender headless clean production-preview script that keeps the `mcp-polish-v2` visible likeness, removes the failed flat expression overlay and hard strap panels, adds amplified source-mesh morphs, semantic part groups, supplemental hair/skirt secondary weights, and a real skinned choker/pendant runtime part.
 - `tools/build_final_v12.py`: previous Blender headless source-preserving retopo/motion script that keeps the `mcp-polish-v2` visible likeness, adds semantic part groups, six facial morph targets, supplemental hair/skirt secondary weights, and visible strap/choker/pendant runtime parts.
 - `tools/build_final_v11.py`: Blender headless mesh-anchored face audit script that keeps the v10 visible asset, records face mesh bounds/surface-profile anchors, and leaves the unreliable overlay transparent so it cannot pollute the runtime model.
 - `tools/build_final_v10.py`: previous BlenderMCP conservative close-up face/material polish script that keeps the v9 hand-polish layer and adds micro iris, pupil, catchlight, eyelid, brow, mouth, and blush material overlays without large visible face-card artifacts.
@@ -21,7 +22,8 @@ Current target: v7 mature senpai concept, used as an adult academy NPC.
 - `tools/build_retopo_v3.py`: BlenderMCP production-structure script that rebuilds the Hunyuan mesh into named skinned submeshes, rule-painted weights, facial morph targets, and secondary-motion hooks.
 - `mature_senpai_rigged_v1.report.json`: generated rig and animation audit.
 - `mature_senpai_production_v1.report.json`: disabled procedural template audit and decision record.
-- `mature_senpai_commercial_v14.report.json`: active clean production-preview audit and runtime default decision record.
+- `mature_senpai_commercial_v15.report.json`: active physical split production-preview audit and runtime default decision record.
+- `mature_senpai_commercial_v14.report.json`: previous clean production-preview audit and fallback decision record.
 - `mature_senpai_commercial_v12.report.json`: previous source-preserving retopo/motion audit and fallback decision record.
 - `mature_senpai_commercial_v11.report.json`: mesh-anchored face audit and engineered split-part/morph reference decision record.
 - `mature_senpai_commercial_v10.report.json`: previous conservative close-up face/material polish audit and fallback.
@@ -35,7 +37,8 @@ Current target: v7 mature senpai concept, used as an adult academy NPC.
 - `mature_senpai_mcp_polish_v2.report.json`: previous BlenderMCP polish audit and visual fallback.
 - `mature_senpai_mcp_retouch_v1.report.json`: previous BlenderMCP retouch audit and runtime fallback.
 - `source/mature_senpai.blend`: procedural Blender reference template for rigging and modular cleanup experiments.
-- `source/mature_senpai_commercial_v14.blend`: active clean production-preview source scene.
+- `source/mature_senpai_commercial_v15.blend`: active physical split production-preview source scene.
+- `source/mature_senpai_commercial_v14.blend`: previous clean production-preview source scene.
 - `source/mature_senpai_commercial_v12.blend`: previous source-preserving retopo/motion source scene.
 - `source/mature_senpai_commercial_v11.blend`: mesh-anchored face audit source scene.
 - `source/mature_senpai_commercial_v10.blend`: previous conservative close-up face/material polish source scene.
@@ -53,7 +56,8 @@ Current target: v7 mature senpai concept, used as an adult academy NPC.
 
 Runtime export registered for preview:
 
-- `mature_senpai_commercial_v14.glb`: active clean production-preview runtime default with the `mcp-polish-v2` visible body/UV/texture intact, semantic part vertex groups, six amplified body morph targets, supplemental Secondary_* hair/skirt weights, 15 secondary bones, no flat expression overlay artifacts, no hard straight strap panels, and one real skinned choker/pendant detail part.
+- `mature_senpai_commercial_v15.glb`: active physical split production-preview runtime default with the accepted v14 visible source split into named skinned face, hair, torso, arms, skirt panels, legs, and shoe meshes. It preserves source UVs, material slots, vertex groups, skin weights, six expression shape keys, 15 secondary bones, no flat expression overlay artifacts, no hard straight strap panels, and one real skinned choker/pendant detail part.
+- `mature_senpai_commercial_v14.glb`: previous clean production-preview fallback with the `mcp-polish-v2` visible body/UV/texture intact, semantic part vertex groups, six amplified body morph targets, supplemental Secondary_* hair/skirt weights, 15 secondary bones, no flat expression overlay artifacts, no hard straight strap panels, and one real skinned choker/pendant detail part.
 - `mature_senpai_commercial_v12.glb`: previous source-preserving fallback with semantic part vertex groups, six facial morph targets, supplemental Secondary_* hair/skirt weights, 15 secondary bones, and three visible skinned strap/choker/pendant detail parts.
 - `mature_senpai_mcp_polish_v2.glb`: visual fallback because it preserves the more natural Hunyuan v7 face, arms, body, hair, outfit proportions, and animation clips better than the earlier split-part experiments.
 - `mature_senpai_commercial_v11.glb`: mesh-anchored face audit and engineered split-part/morph reference asset with 16 named skinned meshes, 6 face morph targets, 32 bones, hair-tip and skirt-tip secondary hooks, source-normal seam cleanup, 15 materials, transparent face-audit overlay materials, per-part weight audit data, and rounded segmented fingers/thumbs with soft nail and knuckle shade surfaces.
@@ -77,23 +81,23 @@ Local inspection exports not intended for the runtime commit:
 
 ## Current Gate
 
-The `mature_senpai_commercial_v14.glb` output is the active runtime preview.
-It keeps the v12 direction that preserved the `mcp-polish-v2` visible body, UVs,
-texture atlas, face, arms, hair, outfit shape, and overall JRPG silhouette, then
-removes the v12 hard straight strap panels and rejects the failed v13 flat
-expression-overlay experiment that produced forehead bars in morph audit
-renders. The current production hooks are semantic part vertex groups, six
-amplified source-mesh morph targets, supplemental Secondary_* weights for hair
-and skirt, 15 secondary bones, and one real skinned choker/pendant detail part.
-The `mature_senpai_commercial_v12.glb` file remains the fallback, and the
-commercial v11 asset remains the engineered split-part reference for a future
-manual topology pass.
+The `mature_senpai_commercial_v15.glb` output is the active runtime preview.
+It keeps the v14 direction that preserved the accepted Hunyuan/BlenderMCP
+likeness, then moves beyond v14's single visible body carrier by physically
+splitting the runtime asset into named skinned parts: face/head, three hair
+regions, torso/camisole, arms/hands, three skirt panels, legs, and shoes. Each
+split mesh preserves the source UVs, materials, vertex groups, skin weights, and
+six expression shape keys. The current production hooks are physical runtime
+parts, 15 secondary bones, supplemental Secondary_* weights for hair and skirt,
+and one clean skinned choker/pendant detail part. The
+`mature_senpai_commercial_v14.glb` file remains the fallback, and the commercial
+v11 asset remains the engineered split-part reference for comparison.
 
 Remaining production blockers:
 
-- v14 is a source-preserving hybrid retopo layer: semantic part groups exist,
-  but the main body/hair/outfit are intentionally not physically split so the
-  likeness is not degraded again.
+- v15 is a physical source-topology split, not a hand-authored quad retopology:
+  the runtime now has named parts, but the triangles still come from the
+  accepted source mesh to preserve likeness.
 - Skin weights are source weights plus generated supplemental secondary weights,
   not artist brush-painted final weights.
 - Facial morphs are named and exported runtime shape keys with higher runtime
@@ -114,17 +118,18 @@ Remaining production blockers:
   expression sculpting before it should be treated as final mainstream
   JRPG-quality runtime art.
 
-The `mature_senpai_commercial_v14.glb` file is the current in-game animated
+The `mature_senpai_commercial_v15.glb` file is the current in-game animated
 preview NPC. It keeps the better Hunyuan v7 visible source while adding runtime
-morphs, secondary-motion hooks, and clean accessory parts, but it should not be
+morphs, secondary-motion hooks, physical split parts, and clean accessory parts,
+but it should not be
 considered final until artist retopology, brush-painted weights, sculpted
 expression blendshapes, and final material polish are complete.
 
 ## Next Production Step
 
-1. Use the v14 source-preserving asset as the visual lock for any future manual
-   retopo instead of the degraded v11 split mesh.
-2. Build artist-authored quad topology over the preserved v14 body, hair,
+1. Use the v15 physical split asset as the visual and structural lock for the
+   next manual retopo pass.
+2. Build artist-authored quad topology over the preserved v15 body, hair,
    outfit, hands, and shoes.
 3. Brush-paint final deformation weights over the generated source and
    supplemental weights.

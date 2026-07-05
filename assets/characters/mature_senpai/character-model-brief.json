@@ -2,7 +2,7 @@
   "version": "character-model-brief-v1",
   "characterId": "mature_senpai",
   "displayName": "Elena",
-  "currentPreviewAssetId": "mature-senpai-commercial-v14",
+  "currentPreviewAssetId": "mature-senpai-commercial-v15",
   "hunyuanBaseAssetId": "mature-senpai-rigged-v1",
   "templateReferenceAssetId": "mature-senpai-production-v1",
   "finalRuntimeAssetId": "mature-senpai-supporting-v1",
@@ -44,7 +44,7 @@
   "sourceModelRequirements": {
     "sourceFile": "assets/characters/mature_senpai/source/mature_senpai.blend",
     "targetRuntimeFile": "public/assets/models/mature_senpai.glb",
-    "currentRuntimeFile": "public/assets/models/mature_senpai_commercial_v14.glb",
+    "currentRuntimeFile": "public/assets/models/mature_senpai_commercial_v15.glb",
     "hunyuanBaseFile": "public/assets/models/mature_senpai_rigged_v1.glb",
     "disabledTemplateFile": "public/assets/models/mature_senpai_production_v1.glb",
     "preferredFormat": "glb",
