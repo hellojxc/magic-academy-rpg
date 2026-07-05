@@ -442,6 +442,20 @@ export class CharacterModel3D {
     return radius >= 0.035;
   }
 
+  private shouldCharacterMeshCastShadow(mesh: THREE.Mesh | THREE.SkinnedMesh): boolean {
+    if (!mesh.geometry) return false;
+    const normalized = mesh.name.replace(/[^a-z0-9]/gi, '').toLowerCase();
+    if (normalized.includes('inkoutline') || normalized.includes('selectionring')) return false;
+    if (/(eye|iris|pupil|catchlight|eyelash|brow|mouth|lip|cheek|nose|tooth|teeth|tongue|blush|tear)/.test(normalized)) return false;
+    if (/(button|gem|crest|ring|finger|thumb|wand|paper|book|ribbon|lace|shadow)/.test(normalized)) return false;
+    const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+    if (materials.some((material) => material.transparent || material.opacity < 0.9)) return false;
+
+    if (!mesh.geometry.boundingSphere) mesh.geometry.computeBoundingSphere();
+    const radius = mesh.geometry.boundingSphere?.radius ?? 0;
+    return radius >= 0.04;
+  }
+
   private addGLTFMeshOutline(
     mesh: THREE.Mesh | THREE.SkinnedMesh,
     material: THREE.MeshBasicMaterial,
@@ -991,7 +1005,7 @@ export class CharacterModel3D {
   private setVRMShadows(model: THREE.Object3D): void {
     model.traverse((object) => {
       if (object instanceof THREE.Mesh || object instanceof THREE.SkinnedMesh) {
-        object.castShadow = true;
+        object.castShadow = this.shouldCharacterMeshCastShadow(object);
         object.receiveShadow = true;
         object.frustumCulled = false;
       }
