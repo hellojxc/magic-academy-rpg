@@ -64,22 +64,23 @@ The web runtime should stay stable while source models improve.
 
 ## Current Mature Senpai Runtime Layer
 
-`mature_senpai` currently uses `mature-senpai-commercial-v9` as the active
+`mature_senpai` currently uses `mature-senpai-commercial-v10` as the active
 runtime asset. The generated source and audit files are:
 
-- `assets/characters/mature_senpai/tools/build_final_v9.py`
-- `assets/characters/mature_senpai/source/mature_senpai_commercial_v9.blend`
-- `assets/characters/mature_senpai/mature_senpai_commercial_v9.report.json`
-- `public/assets/models/mature_senpai_commercial_v9.glb`
-- `public/assets/models/mature_senpai_commercial_v9.png`
+- `assets/characters/mature_senpai/tools/build_final_v10.py`
+- `assets/characters/mature_senpai/source/mature_senpai_commercial_v10.blend`
+- `assets/characters/mature_senpai/mature_senpai_commercial_v10.report.json`
+- `public/assets/models/mature_senpai_commercial_v10.glb`
+- `public/assets/models/mature_senpai_commercial_v10.png`
 
 This layer completes the current automated Blender pass: helper mesh removal,
 hybrid source-preserving runtime retopo, named skinned submesh splitting,
 explicit per-part weight profiles, six expression morph targets,
 hair/hair-tip/skirt/skirt-tip/strap/pendant secondary bones, and
-dialogue-distance face detail overlays. v9 keeps the v8 audit structure and
-adds a close-up hand polish pass: rounded segmented fingers, a tighter thumb
-pose, soft nail surfaces, and subtle knuckle shade planes. It deliberately
-remains marked as a commercial candidate because the topology, hands, and
+dialogue-distance face detail overlays. v10 keeps the v9 hand polish pass and
+adds a conservative close-up face material polish layer with iris, pupil,
+catchlight, eyelid, brow, mouth, and blush materials. It deliberately remains
+marked as a commercial candidate because the topology, face, hands, and
 expression shapes are generated cleanup work rather than a final
-artist-sculpted quad retopology and brush-painted weight pass.
+artist-sculpted quad retopology, texture repaint, and brush-painted weight
+pass.
