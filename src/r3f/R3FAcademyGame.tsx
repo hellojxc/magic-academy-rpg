@@ -102,6 +102,7 @@ declare global {
 
 type R3FNpc = NpcSceneDefinition;
 type ThreeVec3Tuple = [number, number, number];
+type GlbLoadPriority = 'high' | 'normal';
 
 interface R3FGameDebugState {
   readonly renderer: 'r3f';
@@ -131,16 +132,18 @@ const keyboardMap = [
 ];
 
 const zeroVec = new THREE.Vector3();
-const gltfLoader = new GLTFLoader();
-gltfLoader.setMeshoptDecoder(MeshoptDecoder);
 const worldTextureLoader = new THREE.TextureLoader();
 const playerSpawn = new THREE.Vector3(0, 1.25, 4.2);
 const maxAuthoredChunkCount = 8;
-const initialAuthoredChunkCount = 4;
-const authoredChunkStreamStepMs = 900;
+const initialAuthoredChunkCount = 0;
+const authoredChunkStreamStepMs = 1600;
+const maxConcurrentGlbLoads = 2;
 const enhancedMaterialCache = new Map<string, THREE.MeshStandardMaterial>();
 const lightmapCache = new Map<string, THREE.Texture>();
 const worldHdriUrl = '/assets/world/hdri/academy-night-atrium.hdr';
+let activeGlbLoadCount = 0;
+const pendingHighPriorityGlbLoadQueue: Array<() => void> = [];
+const pendingGlbLoadQueue: Array<() => void> = [];
 
 interface ThirdPartyWorldAssetSource {
   readonly id: string;
@@ -170,6 +173,7 @@ interface ThirdPartyWorldBoxCollider {
 }
 
 interface ThirdPartyWorldRuntimeConfig {
+  readonly defaultEnabledSourceIds?: readonly string[];
   readonly defaultLod?: ThirdPartyWorldLodConfig;
   readonly lod?: Record<string, Partial<ThirdPartyWorldLodConfig>>;
   readonly colliders?: Record<string, ThirdPartyWorldBoxCollider>;
@@ -197,6 +201,7 @@ const thirdPartyWorldAssetSourcesById = new Map(
 );
 const thirdPartyWorldPlacements = thirdPartyWorldAssetManifest.placements;
 const thirdPartyWorldRuntime = thirdPartyWorldAssetManifest.runtime ?? {};
+const defaultThirdPartyWorldGlbSourceIds = new Set(thirdPartyWorldRuntime.defaultEnabledSourceIds ?? []);
 const defaultThirdPartyWorldLod: ThirdPartyWorldLodConfig = {
   importance: 'set-dressing',
   fadeDistance: 62,
@@ -1401,7 +1406,12 @@ function ChunkLayer({
   readonly chunk: WorldChunkDefinition;
   readonly authoredEnabled: boolean;
 }): React.ReactElement {
-  const glbScene = useOptionalGlb(shouldProbeAuthoredChunks() && authoredEnabled ? chunk.glb : null, true, chunk.lightmap);
+  const glbScene = useOptionalGlb(
+    shouldProbeAuthoredChunks() && authoredEnabled ? chunk.glb : null,
+    true,
+    chunk.lightmap,
+    getChunkGlbLoadPriority(chunk.id),
+  );
   const material = useChunkFallbackMaterial(chunk);
 
   useEffect(() => {
@@ -1609,7 +1619,8 @@ function ThirdPartyAssetLayer({
   readonly activeIds: ReadonlySet<WorldChunkId>;
   readonly playerPosition: THREE.Vector3;
 }): React.ReactElement {
-  const glbAssetsEnabled = shouldEnableThirdPartyGlbAssets();
+  const allGlbAssetsEnabled = shouldEnableAllThirdPartyGlbAssets();
+  const defaultGlbAssetsDisabled = shouldDisableDefaultThirdPartyGlbAssets();
   const compactViewport = isCompactViewport();
   const lodKey = `${Math.round(playerPosition.x / 4)}:${Math.round(playerPosition.z / 4)}:${compactViewport ? 'mobile' : 'desktop'}`;
   const lodAnchor = useMemo<ThirdPartyWorldLodAnchor>(() => ({
@@ -1617,12 +1628,15 @@ function ThirdPartyAssetLayer({
     compactViewport,
   }), [lodKey]);
   useEffect(() => {
-    if (glbAssetsEnabled) return;
     window.__r3fChunkRenderState = {
       ...(window.__r3fChunkRenderState ?? {}),
-      thirdPartyGlbAssets: 'disabled-default:enable-with-vendorGlb=1',
+      thirdPartyGlbAssets: allGlbAssetsEnabled
+        ? 'all-enabled:vendorGlb=1'
+        : defaultGlbAssetsDisabled
+          ? 'disabled:vendorGlb=0'
+          : `default-enabled:${defaultThirdPartyWorldGlbSourceIds.size}`,
     };
-  }, [glbAssetsEnabled]);
+  }, [allGlbAssetsEnabled, defaultGlbAssetsDisabled]);
 
   const groups = useMemo(() => {
     const grouped = new Map<string, {
@@ -1634,6 +1648,7 @@ function ThirdPartyAssetLayer({
       if (!activeIds.has(placement.chunkId)) continue;
       const source = thirdPartyWorldAssetSourcesById.get(placement.sourceId);
       if (!source) continue;
+      if (!shouldEnableThirdPartyGlbSource(source.id, allGlbAssetsEnabled, defaultGlbAssetsDisabled)) continue;
       if (!shouldLoadThirdPartyPlacement(source.id, placement, lodAnchor)) continue;
       const existing = grouped.get(source.id);
       if (existing) {
@@ -1644,11 +1659,7 @@ function ThirdPartyAssetLayer({
     }
 
     return [...grouped.values()];
-  }, [activeIds, lodAnchor]);
-
-  if (!glbAssetsEnabled) {
-    return <group name="cc0-third-party-world-assets" />;
-  }
+  }, [activeIds, allGlbAssetsEnabled, defaultGlbAssetsDisabled, lodAnchor]);
 
   return (
     <group name="cc0-third-party-world-assets">
@@ -1673,7 +1684,7 @@ function ThirdPartyAssetGroup({
   readonly placements: readonly ThirdPartyWorldPropPlacement[];
   readonly lodAnchor: ThirdPartyWorldLodAnchor;
 }): React.ReactElement {
-  const template = useOptionalGlb(source.url);
+  const template = useOptionalGlb(source.url, false, undefined, 'high');
   const objects = useMemo(() => {
     if (!template) return [];
     return placements
@@ -1725,9 +1736,30 @@ function ThirdPartyAssetGroup({
   );
 }
 
-function shouldEnableThirdPartyGlbAssets(): boolean {
+function shouldEnableAllThirdPartyGlbAssets(): boolean {
   if (typeof window === 'undefined') return false;
   return new URLSearchParams(window.location.search).get('vendorGlb') === '1';
+}
+
+function shouldDisableDefaultThirdPartyGlbAssets(): boolean {
+  if (typeof window === 'undefined') return false;
+  return new URLSearchParams(window.location.search).get('vendorGlb') === '0';
+}
+
+function shouldEnableThirdPartyGlbSource(
+  sourceId: string,
+  allGlbAssetsEnabled: boolean,
+  defaultGlbAssetsDisabled: boolean,
+): boolean {
+  if (allGlbAssetsEnabled) return true;
+  if (defaultGlbAssetsDisabled) return false;
+  return defaultThirdPartyWorldGlbSourceIds.has(sourceId);
+}
+
+function getChunkGlbLoadPriority(chunkId: WorldChunkId): GlbLoadPriority {
+  return chunkId === 'lake-grotto' || chunkId === 'moonlit-lawn' || chunkId === 'arcane-library'
+    ? 'high'
+    : 'normal';
 }
 
 function isCompactViewport(): boolean {
@@ -8675,20 +8707,24 @@ function MagicAtmosphere({ activeIds }: { readonly activeIds: ReadonlySet<WorldC
   );
 }
 
-function useOptionalGlb(url: string | null, enhanceWorldMaterials = false, lightmapUrl?: string): THREE.Object3D | null {
-  const status = useAssetProbe(url);
+function useOptionalGlb(
+  url: string | null,
+  enhanceWorldMaterials = false,
+  lightmapUrl?: string,
+  priority: GlbLoadPriority = 'normal',
+): THREE.Object3D | null {
   const [scene, setScene] = useState<THREE.Object3D | null>(null);
 
   useEffect(() => {
-    if (status !== 'present' || !url) {
-      if (url) setAssetLoadState(url, status);
+    if (!url) {
       setScene(null);
       return;
     }
     let cancelled = false;
     let cancelEnhancement: (() => void) | null = null;
     setAssetLoadState(url, 'loading');
-    gltfLoader.loadAsync(url)
+    const scheduledLoad = scheduleGlbLoad(url, priority);
+    scheduledLoad.promise
       .then((gltf) => {
         if (cancelled) return;
         const clone = gltf.scene.clone(true);
@@ -8712,11 +8748,62 @@ function useOptionalGlb(url: string | null, enhanceWorldMaterials = false, light
       });
     return () => {
       cancelled = true;
+      scheduledLoad.cancel();
       cancelEnhancement?.();
     };
-  }, [enhanceWorldMaterials, lightmapUrl, status, url]);
+  }, [enhanceWorldMaterials, lightmapUrl, priority, url]);
 
   return scene;
+}
+
+function scheduleGlbLoad(
+  url: string,
+  priority: GlbLoadPriority,
+): { readonly promise: Promise<Awaited<ReturnType<GLTFLoader['parseAsync']>>>; readonly cancel: () => void } {
+  let cancelled = false;
+  const promise = new Promise<Awaited<ReturnType<GLTFLoader['parseAsync']>>>((resolve, reject) => {
+    const run = () => {
+      if (cancelled) {
+        reject(new Error('cancelled'));
+        return;
+      }
+      activeGlbLoadCount += 1;
+      loadGlbArrayBuffer(url)
+        .then(resolve, reject)
+        .finally(() => {
+          activeGlbLoadCount = Math.max(0, activeGlbLoadCount - 1);
+          flushGlbLoadQueue();
+        });
+    };
+    if (priority === 'high') pendingHighPriorityGlbLoadQueue.push(run);
+    else pendingGlbLoadQueue.push(run);
+    flushGlbLoadQueue();
+  });
+  return {
+    promise,
+    cancel: () => {
+      cancelled = true;
+    },
+  };
+}
+
+async function loadGlbArrayBuffer(url: string): Promise<Awaited<ReturnType<GLTFLoader['parseAsync']>>> {
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status} while loading ${url}`);
+  }
+  const loader = new GLTFLoader();
+  loader.setMeshoptDecoder(MeshoptDecoder);
+  const basePath = url.slice(0, url.lastIndexOf('/') + 1);
+  return loader.parseAsync(await response.arrayBuffer(), basePath);
+}
+
+function flushGlbLoadQueue(): void {
+  while (activeGlbLoadCount < maxConcurrentGlbLoads) {
+    const next = pendingHighPriorityGlbLoadQueue.shift() ?? pendingGlbLoadQueue.shift();
+    if (!next) return;
+    next();
+  }
 }
 
 function setAssetLoadState(url: string, state: string): void {
@@ -8724,46 +8811,6 @@ function setAssetLoadState(url: string, state: string): void {
     ...(window.__r3fAssetLoads ?? {}),
     [url]: state,
   };
-}
-
-const assetProbeCache = new Map<string, 'unknown' | 'present' | 'missing'>();
-
-function useAssetProbe(url: string | null): 'unknown' | 'present' | 'missing' {
-  const [state, setState] = useState<'unknown' | 'present' | 'missing'>(() => (
-    url ? assetProbeCache.get(url) ?? 'unknown' : 'missing'
-  ));
-
-  useEffect(() => {
-    if (!url) {
-      setState('missing');
-      return;
-    }
-    const cached = assetProbeCache.get(url);
-    if (cached === 'present' || cached === 'missing') {
-      setState(cached);
-      return;
-    }
-    let cancelled = false;
-    fetch(url, { method: 'HEAD' })
-      .then((response) => {
-        if (cancelled) return;
-        const contentType = response.headers.get('content-type') ?? '';
-        const ok = response.ok && !contentType.includes('text/html');
-        const next = ok ? 'present' : 'missing';
-        assetProbeCache.set(url, next);
-        setState(next);
-      })
-      .catch(() => {
-        if (cancelled) return;
-        assetProbeCache.set(url, 'missing');
-        setState('missing');
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [url]);
-
-  return state;
 }
 
 function enhanceAuthoredWorldMaterial(

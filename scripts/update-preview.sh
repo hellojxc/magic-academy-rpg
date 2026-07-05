@@ -54,9 +54,9 @@ done
 
 sleep 1
 
-echo "[preview] starting Vite preview dev server"
+echo "[preview] starting Vite production preview server"
 cd "$PREVIEW_DIR"
-nohup setsid ./node_modules/.bin/vite --host "$HOST" --port "$PORT" > "$LOG_FILE" 2>&1 < /dev/null &
+nohup setsid ./node_modules/.bin/vite preview --host "$HOST" --port "$PORT" --strictPort > "$LOG_FILE" 2>&1 < /dev/null &
 echo "$!" > "$PREVIEW_DIR/vite-preview.pid"
 
 echo "[preview] waiting for http://$HOST:$PORT/"

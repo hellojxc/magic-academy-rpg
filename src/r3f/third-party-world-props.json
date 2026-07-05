@@ -387,6 +387,20 @@
     }
   ],
   "runtime": {
+    "defaultEnabledSourceIds": [
+      "kenney-ground-grass",
+      "kenney-river-open",
+      "kenney-river-corner",
+      "kenney-river-rocks",
+      "kenney-grass-large",
+      "kenney-grass-leafs",
+      "kenney-bush-detailed",
+      "kenney-tree-oak",
+      "kenney-rock-large-a",
+      "kenney-rock-tall-d",
+      "kenney-stone-large-a",
+      "kenney-hanging-moss"
+    ],
     "defaultLod": {
       "importance": "set-dressing",
       "fadeDistance": 62,
