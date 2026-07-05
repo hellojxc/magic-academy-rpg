@@ -208,7 +208,7 @@ export class LawnLakeEnvironment {
   }
 
   private addStonePaths(): void {
-    const stoneMat = new THREE.MeshStandardMaterial({
+    const stoneMat = getStandardMaterial({
       color: 0x8f877a,
       roughness: 0.76,
       metalness: 0.02,
@@ -220,7 +220,7 @@ export class LawnLakeEnvironment {
     this.addSteppingStoneStrip({ from: new THREE.Vector2(-15.5, 18), to: new THREE.Vector2(-1.8, 18), count: 10, width: 0.82 }, pathStoneMatrices);
     this.addSteppingStoneStrip({ from: new THREE.Vector2(1.8, 18), to: new THREE.Vector2(15.5, 18), count: 10, width: 0.82 }, pathStoneMatrices);
     this.addSteppingStoneStrip({ from: new THREE.Vector2(-4.2, 17.1), to: new THREE.Vector2(-7.1, 15.8), count: 4, width: 0.72 }, pathStoneMatrices);
-    this.addInstancedStaticMesh(new THREE.DodecahedronGeometry(1, 0), stoneMat, pathStoneMatrices, true, true);
+    this.addInstancedStaticMesh(Geo.dodecahedron(1, 0), stoneMat, pathStoneMatrices, true, true);
   }
 
   private addSteppingStoneStrip(
@@ -270,7 +270,7 @@ export class LawnLakeEnvironment {
   }
 
   private addShorelineDetails(): void {
-    const sandMat = new THREE.MeshStandardMaterial({
+    const sandMat = getStandardMaterial({
       color: 0xb99b62,
       roughness: 0.88,
       metalness: 0,
@@ -296,7 +296,7 @@ export class LawnLakeEnvironment {
     }
     this.addInstancedStaticMesh(Geo.circle(1, 14), sandMat, sandMatrices, false, true);
 
-    const rockGeometry = new THREE.DodecahedronGeometry(1, 0);
+    const rockGeometry = Geo.dodecahedron(1, 0);
     const rockMatricesByMaterial = rockMats.map((): THREE.Matrix4[] => []);
     const rockDummy = new THREE.Object3D();
     for (let i = 0; i < 110; i += 1) {
@@ -344,7 +344,7 @@ export class LawnLakeEnvironment {
 
   private addDock(): void {
     const woodDetail = makeSharedSurfaceDetailTexture('lake-dock-wood', 2, 3);
-    const plankMat = new THREE.MeshStandardMaterial({
+    const plankMat = getStandardMaterial({
       color: 0x6d432b,
       roughness: 0.68,
       metalness: 0.05,
@@ -389,7 +389,7 @@ export class LawnLakeEnvironment {
   }
 
   private addFountainAndBeds(obstacles: Obstacle[]): void {
-    const stoneMat = new THREE.MeshStandardMaterial({
+    const stoneMat = getStandardMaterial({
       color: 0x8a8278,
       roughness: 0.72,
       metalness: 0.04,
@@ -521,7 +521,7 @@ export class LawnLakeEnvironment {
   }
 
   private addBenchesAndLights(): void {
-    const benchMat = new THREE.MeshStandardMaterial({
+    const benchMat = getStandardMaterial({
       color: 0x6d432b,
       roughness: 0.58,
       metalness: 0.06,
