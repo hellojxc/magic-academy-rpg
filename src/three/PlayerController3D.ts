@@ -5,7 +5,7 @@ export class PlayerController3D {
   private static readonly obstacleCellSize = 4;
   private readonly speed = 4.2;
   private readonly playerRadius = 0.32;
-  private readonly obstacleBuckets = new Map<string, Obstacle[]>();
+  private readonly obstacleBuckets = new Map<number, Map<number, Obstacle[]>>();
   private readonly velocity = new THREE.Vector3();
   private readonly targetVelocity = new THREE.Vector3();
   private readonly forward = new THREE.Vector3();
@@ -84,8 +84,10 @@ export class PlayerController3D {
     const minCellZ = this.cellCoord(z - this.playerRadius);
     const maxCellZ = this.cellCoord(z + this.playerRadius);
     for (let cx = minCellX; cx <= maxCellX; cx += 1) {
+      const zBuckets = this.obstacleBuckets.get(cx);
+      if (!zBuckets) continue;
       for (let cz = minCellZ; cz <= maxCellZ; cz += 1) {
-        const bucket = this.obstacleBuckets.get(PlayerController3D.cellKey(cx, cz));
+        const bucket = zBuckets.get(cz);
         if (!bucket) continue;
         for (const obstacle of bucket) {
           if (
@@ -114,11 +116,15 @@ export class PlayerController3D {
       const minCellZ = this.cellCoord(obstacle.minZ);
       const maxCellZ = this.cellCoord(obstacle.maxZ);
       for (let cx = minCellX; cx <= maxCellX; cx += 1) {
+        let zBuckets = this.obstacleBuckets.get(cx);
+        if (!zBuckets) {
+          zBuckets = new Map<number, Obstacle[]>();
+          this.obstacleBuckets.set(cx, zBuckets);
+        }
         for (let cz = minCellZ; cz <= maxCellZ; cz += 1) {
-          const key = PlayerController3D.cellKey(cx, cz);
-          const bucket = this.obstacleBuckets.get(key);
+          const bucket = zBuckets.get(cz);
           if (bucket) bucket.push(obstacle);
-          else this.obstacleBuckets.set(key, [obstacle]);
+          else zBuckets.set(cz, [obstacle]);
         }
       }
     }
@@ -126,9 +132,5 @@ export class PlayerController3D {
 
   private cellCoord(value: number): number {
     return Math.floor(value / PlayerController3D.obstacleCellSize);
-  }
-
-  private static cellKey(x: number, z: number): string {
-    return `${x}:${z}`;
   }
 }

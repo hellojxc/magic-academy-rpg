@@ -127,10 +127,11 @@ export class DiningHall {
     return obstacles;
   }
 
-  update(elapsedTime: number): void {
+  update(elapsedTime: number, delta: number): void {
+    const frameScale = delta * 60;
     for (const item of this.animatedObjects) {
       item.obj.position.y = item.baseY + Math.sin(elapsedTime * item.speed + item.phase) * item.amp;
-      item.obj.rotation.y += 0.01;
+      item.obj.rotation.y += 0.01 * frameScale;
     }
   }
 

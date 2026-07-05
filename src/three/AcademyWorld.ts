@@ -246,14 +246,15 @@ export class AcademyWorld {
     };
 
     this.regionUpdateGroups.push(
-      make('atrium', 'atrium', (t, _d) => {
+      make('atrium', 'atrium', (t, d) => {
+        const frameScale = d * 60;
         for (const item of this.animatedObjects) {
           item.object.position.y = item.baseY + Math.sin(t * item.speed + item.phase) * item.amplitude;
-          item.object.rotation.y += 0.006;
+          item.object.rotation.y += 0.006 * frameScale;
         }
       }),
-      make('grand_hall', 'grandHall', (t) => this.grandHall.update(t)),
-      make('dining_hall', 'diningHall', (t) => this.diningHall.update(t)),
+      make('grand_hall', 'grandHall', (t, d) => this.grandHall.update(t, d)),
+      make('dining_hall', 'diningHall', (t, d) => this.diningHall.update(t, d)),
       make('lawn', 'outdoor', (t, d) => this.outdoor.update(t, d)),
       make('lake', 'outdoor', (t, d) => this.outdoor.update(t, d)),
       make('greenhouse', 'extendedGrounds', (t, d) => this.extendedGrounds.update(t, d)),

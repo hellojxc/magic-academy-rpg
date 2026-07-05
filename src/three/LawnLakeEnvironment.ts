@@ -67,13 +67,14 @@ export class LawnLakeEnvironment {
     return obstacles;
   }
 
-  update(elapsedTime: number, _delta: number): void {
+  update(elapsedTime: number, delta: number): void {
     if (elapsedTime === this.lastUpdateTime) return;
     this.lastUpdateTime = elapsedTime;
 
+    const frameScale = delta * 60;
     for (const item of this.animatedObjects) {
       item.obj.position.y = item.baseY + Math.sin(elapsedTime * item.speed + item.phase) * item.amp;
-      if (item.rotateY) item.obj.rotation.y += item.rotateY;
+      if (item.rotateY) item.obj.rotation.y += item.rotateY * frameScale;
     }
 
     for (const material of this.waterMaterials) {
