@@ -40,6 +40,13 @@ export const Geo = {
     geoCache.set(key, g);
     return g;
   },
+  spherePartial: (r: number, ws: number, hs: number, phiStart: number, phiLength: number, thetaStart: number, thetaLength: number): THREE.SphereGeometry => {
+    const key = paramKey('spherePartial', { r, ws, hs, phiStart, phiLength, thetaStart, thetaLength });
+    if (geoCache.has(key)) return geoCache.get(key) as THREE.SphereGeometry;
+    const g = new THREE.SphereGeometry(r, ws, hs, phiStart, phiLength, thetaStart, thetaLength);
+    geoCache.set(key, g);
+    return g;
+  },
   torus: (r: number, tube: number, rs: number, ts: number): THREE.TorusGeometry => {
     const key = paramKey('torus', { r, tube, rs, ts });
     if (geoCache.has(key)) return geoCache.get(key) as THREE.TorusGeometry;
@@ -58,6 +65,13 @@ export const Geo = {
     const key = paramKey('cone', { r, h, s });
     if (geoCache.has(key)) return geoCache.get(key) as THREE.ConeGeometry;
     const g = new THREE.ConeGeometry(r, h, s);
+    geoCache.set(key, g);
+    return g;
+  },
+  coneOpen: (r: number, h: number, s: number, hs: number, openEnded: boolean): THREE.ConeGeometry => {
+    const key = paramKey('coneOpen', { r, h, s, hs, openEnded });
+    if (geoCache.has(key)) return geoCache.get(key) as THREE.ConeGeometry;
+    const g = new THREE.ConeGeometry(r, h, s, hs, openEnded);
     geoCache.set(key, g);
     return g;
   },

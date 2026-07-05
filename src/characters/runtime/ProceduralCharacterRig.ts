@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import type { CharacterId } from '../CharacterSpec';
+import { Geo } from '../../three/RenderResources';
 
 interface RigParts {
   body: THREE.Group;
@@ -56,9 +57,11 @@ export class ProceduralCharacterRig {
   private movementBlend = 0;
 
   private static toonGradient: THREE.DataTexture | undefined;
+  private static readonly paletteCache = new Map<CharacterId, CharacterPalette>();
+  private static readonly clothPanelGeometryCache = new Map<string, THREE.ShapeGeometry>();
 
   constructor(private readonly kind: CharacterId) {
-    const palette = this.createPalette(kind);
+    const palette = this.getPalette(kind);
     this.parts = this.buildRig(palette);
     this.root.userData.characterKind = kind;
   }
@@ -265,7 +268,7 @@ export class ProceduralCharacterRig {
 
     const groundRing = this.addMesh(
       this.root,
-      new THREE.TorusGeometry(0.48, 0.01, 10, 52),
+      Geo.torus(0.48, 0.01, 10, 52),
       palette.gold,
       [0, 0.035, 0],
       [Math.PI / 2, 0, 0],
@@ -314,7 +317,7 @@ export class ProceduralCharacterRig {
   private addPelvis(body: THREE.Group, palette: CharacterPalette): void {
     this.addMesh(
       body,
-      new THREE.SphereGeometry(0.245, 28, 16),
+      Geo.sphere(0.245, 28, 16),
       this.kind === 'player' ? palette.outfitDark : palette.clothLight,
       [0, 0.91, 0.02],
       [0, 0, 0],
@@ -322,15 +325,15 @@ export class ProceduralCharacterRig {
     );
 
     if (this.kind === 'player') {
-      this.addMesh(body, new THREE.BoxGeometry(0.56, 0.06, 0.07), palette.gold, [0, 0.93, -0.235], [0, 0, 0], [1, 1, 1]);
-      this.addMesh(body, new THREE.BoxGeometry(0.11, 0.09, 0.08), palette.dark, [0, 0.93, -0.275], [0, 0, 0], [1, 1, 1]);
+      this.addMesh(body, Geo.box(0.56, 0.06, 0.07), palette.gold, [0, 0.93, -0.235], [0, 0, 0], [1, 1, 1]);
+      this.addMesh(body, Geo.box(0.11, 0.09, 0.08), palette.dark, [0, 0.93, -0.275], [0, 0, 0], [1, 1, 1]);
     }
   }
 
   private addTorso(chest: THREE.Group, palette: CharacterPalette): void {
     this.addMesh(
       chest,
-      new THREE.CapsuleGeometry(this.kind === 'player' ? 0.275 : 0.265, 0.5, 14, 24),
+      Geo.capsule(this.kind === 'player' ? 0.275 : 0.265, 0.5, 14, 24),
       palette.outfit,
       [0, 0.03, 0],
       [0, 0, 0],
@@ -338,7 +341,7 @@ export class ProceduralCharacterRig {
     );
     this.addMesh(
       chest,
-      new THREE.CapsuleGeometry(0.205, 0.47, 12, 22),
+      Geo.capsule(0.205, 0.47, 12, 22),
       palette.clothLight,
       [0, 0.055, -0.225],
       [0, 0, 0],
@@ -349,25 +352,25 @@ export class ProceduralCharacterRig {
 
     this.addUniformDetails(chest, palette);
 
-    const collarLeft = this.addMesh(chest, new THREE.BoxGeometry(0.18, 0.08, 0.035), palette.clothLight, [-0.11, 0.37, -0.245], [0, 0, -0.34], [1, 1, 1]);
+    const collarLeft = this.addMesh(chest, Geo.box(0.18, 0.08, 0.035), palette.clothLight, [-0.11, 0.37, -0.245], [0, 0, -0.34], [1, 1, 1]);
     const collarRight = collarLeft.clone();
     collarRight.material = palette.clothLight;
     collarRight.position.x = 0.11;
     collarRight.rotation.z = 0.34;
     chest.add(collarRight);
 
-    this.addMesh(chest, new THREE.CylinderGeometry(0.07, 0.09, 0.14, 20), palette.skin, [0, 0.47, -0.005], [0, 0, 0], [0.78, 1, 0.78]);
+    this.addMesh(chest, Geo.cylinder(0.07, 0.09, 0.14, 20), palette.skin, [0, 0.47, -0.005], [0, 0, 0], [0.78, 1, 0.78]);
   }
 
   private addUniformDetails(chest: THREE.Group, palette: CharacterPalette): void {
-    const leftPanel = this.addMesh(chest, new THREE.BoxGeometry(0.13, 0.54, 0.04), palette.outfitDark, [-0.095, 0.035, -0.257], [0, 0, -0.11], [1, 1, 1]);
+    const leftPanel = this.addMesh(chest, Geo.box(0.13, 0.54, 0.04), palette.outfitDark, [-0.095, 0.035, -0.257], [0, 0, -0.11], [1, 1, 1]);
     const rightPanel = leftPanel.clone();
     rightPanel.material = palette.outfitDark;
     rightPanel.position.x = 0.095;
     rightPanel.rotation.z = 0.11;
     chest.add(rightPanel);
 
-    const leftTrim = this.addMesh(chest, new THREE.BoxGeometry(0.032, 0.58, 0.026), palette.gold, [-0.18, 0.04, -0.29], [0, 0, -0.28], [1, 1, 1], false);
+    const leftTrim = this.addMesh(chest, Geo.box(0.032, 0.58, 0.026), palette.gold, [-0.18, 0.04, -0.29], [0, 0, -0.28], [1, 1, 1], false);
     const rightTrim = leftTrim.clone();
     rightTrim.material = palette.gold;
     rightTrim.position.x = 0.18;
@@ -379,12 +382,12 @@ export class ProceduralCharacterRig {
       this.addStar(chest, new THREE.Vector3(-0.22, 0.2, -0.312), 0.053, palette.gold);
       this.addStar(chest, new THREE.Vector3(0.21, 0.0, -0.312), 0.041, palette.gold);
       this.addChain(chest, palette.gold);
-      this.addMesh(chest, new THREE.SphereGeometry(0.035, 14, 10), palette.gold, [-0.05, -0.17, -0.31], [0, 0, 0], [1, 1, 0.45], false);
-      this.addMesh(chest, new THREE.SphereGeometry(0.035, 14, 10), palette.gold, [-0.05, -0.28, -0.31], [0, 0, 0], [1, 1, 0.45], false);
+      this.addMesh(chest, Geo.sphere(0.035, 14, 10), palette.gold, [-0.05, -0.17, -0.31], [0, 0, 0], [1, 1, 0.45], false);
+      this.addMesh(chest, Geo.sphere(0.035, 14, 10), palette.gold, [-0.05, -0.28, -0.31], [0, 0, 0], [1, 1, 0.45], false);
     } else {
       this.addBow(chest, palette);
       this.addStar(chest, new THREE.Vector3(0, 0.22, -0.335), 0.058, palette.gold);
-      this.addMesh(chest, new THREE.BoxGeometry(0.5, 0.052, 0.032), palette.gold, [0, -0.2, -0.305], [0, 0, 0], [1, 1, 1], false);
+      this.addMesh(chest, Geo.box(0.5, 0.052, 0.032), palette.gold, [0, -0.2, -0.305], [0, 0, 0], [1, 1, 1], false);
     }
   }
 
@@ -414,10 +417,10 @@ export class ProceduralCharacterRig {
       rightUpperArm.rotation.set(-0.42, 0.2, 0.74);
     }
 
-    this.addMesh(chest, new THREE.SphereGeometry(0.13, 20, 12), palette.outfitDark, [-0.325, shoulderY, -0.005], [0, 0, 0], [1.22, 0.54, 0.86]);
-    this.addMesh(chest, new THREE.SphereGeometry(0.13, 20, 12), palette.outfitDark, [0.325, shoulderY, -0.005], [0, 0, 0], [1.22, 0.54, 0.86]);
-    this.addMesh(chest, new THREE.TorusGeometry(0.118, 0.008, 8, 28), palette.gold, [-0.325, shoulderY, -0.005], [Math.PI / 2, 0, 0.1], [1.2, 0.72, 1], false);
-    this.addMesh(chest, new THREE.TorusGeometry(0.118, 0.008, 8, 28), palette.gold, [0.325, shoulderY, -0.005], [Math.PI / 2, 0, -0.1], [1.2, 0.72, 1], false);
+    this.addMesh(chest, Geo.sphere(0.13, 20, 12), palette.outfitDark, [-0.325, shoulderY, -0.005], [0, 0, 0], [1.22, 0.54, 0.86]);
+    this.addMesh(chest, Geo.sphere(0.13, 20, 12), palette.outfitDark, [0.325, shoulderY, -0.005], [0, 0, 0], [1.22, 0.54, 0.86]);
+    this.addMesh(chest, Geo.torus(0.118, 0.008, 8, 28), palette.gold, [-0.325, shoulderY, -0.005], [Math.PI / 2, 0, 0.1], [1.2, 0.72, 1], false);
+    this.addMesh(chest, Geo.torus(0.118, 0.008, 8, 28), palette.gold, [0.325, shoulderY, -0.005], [Math.PI / 2, 0, -0.1], [1.2, 0.72, 1], false);
   }
 
   private addArm(
@@ -433,21 +436,21 @@ export class ProceduralCharacterRig {
     const upperRadius = this.kind === 'player' ? 0.068 : 0.061;
     const lowerRadius = this.kind === 'player' ? 0.058 : 0.054;
 
-    this.addMesh(upperArm, new THREE.CapsuleGeometry(upperRadius, upperLength, 12, 18), sleeveMat, [0, -upperLength / 2, 0], [0, 0, 0], [0.84, 1, 0.8]);
-    this.addMesh(upperArm, new THREE.TorusGeometry(upperRadius + 0.008, 0.006, 8, 22), palette.gold, [0, -0.08, -0.002], [Math.PI / 2, 0, 0], [1, 1, 1], false);
+    this.addMesh(upperArm, Geo.capsule(upperRadius, upperLength, 12, 18), sleeveMat, [0, -upperLength / 2, 0], [0, 0, 0], [0.84, 1, 0.8]);
+    this.addMesh(upperArm, Geo.torus(upperRadius + 0.008, 0.006, 8, 22), palette.gold, [0, -0.08, -0.002], [Math.PI / 2, 0, 0], [1, 1, 1], false);
 
     forearm.position.set(side * 0.012, -upperLength, -0.005);
     upperArm.add(forearm);
 
-    this.addMesh(forearm, new THREE.CapsuleGeometry(lowerRadius, lowerLength, 12, 18), sleeveMat, [0, -lowerLength / 2, 0], [0, 0, 0], [0.8, 1, 0.76]);
-    this.addMesh(forearm, new THREE.TorusGeometry(lowerRadius + 0.007, 0.008, 8, 22), palette.gold, [0, -lowerLength + 0.045, 0], [Math.PI / 2, 0, 0], [1, 1, 1], false);
+    this.addMesh(forearm, Geo.capsule(lowerRadius, lowerLength, 12, 18), sleeveMat, [0, -lowerLength / 2, 0], [0, 0, 0], [0.8, 1, 0.76]);
+    this.addMesh(forearm, Geo.torus(lowerRadius + 0.007, 0.008, 8, 22), palette.gold, [0, -lowerLength + 0.045, 0], [Math.PI / 2, 0, 0], [1, 1, 1], false);
 
     hand.position.set(side * 0.006, -lowerLength - 0.045, -0.012);
     forearm.add(hand);
-    this.addMesh(hand, new THREE.SphereGeometry(0.055, 18, 12), palette.skin, [0, 0, 0], [0, 0, 0], [0.88, 0.68, 0.82]);
-    this.addMesh(hand, new THREE.CapsuleGeometry(0.012, 0.08, 6, 8), palette.skinWarm, [side * 0.035, -0.025, -0.014], [0.25, 0, side * 0.45], [1, 1, 0.8], false);
+    this.addMesh(hand, Geo.sphere(0.055, 18, 12), palette.skin, [0, 0, 0], [0, 0, 0], [0.88, 0.68, 0.82]);
+    this.addMesh(hand, Geo.capsule(0.012, 0.08, 6, 8), palette.skinWarm, [side * 0.035, -0.025, -0.014], [0.25, 0, side * 0.45], [1, 1, 0.8], false);
     for (let i = 0; i < 3; i += 1) {
-      this.addMesh(hand, new THREE.CapsuleGeometry(0.008, 0.058, 5, 7), palette.skinWarm, [side * (-0.016 + i * 0.015), -0.048, -0.026], [0.18, 0, side * (0.08 - i * 0.04)], [1, 1, 0.7], false);
+      this.addMesh(hand, Geo.capsule(0.008, 0.058, 5, 7), palette.skinWarm, [side * (-0.016 + i * 0.015), -0.048, -0.026], [0.18, 0, side * (0.08 - i * 0.04)], [1, 1, 0.7], false);
     }
   }
 
@@ -464,15 +467,15 @@ export class ProceduralCharacterRig {
     const upperRadius = this.kind === 'player' ? 0.077 : 0.068;
     const lowerRadius = this.kind === 'player' ? 0.064 : 0.057;
 
-    this.addMesh(upperLeg, new THREE.CapsuleGeometry(upperRadius, upperLength, 12, 18), legMat, [0, -upperLength / 2, 0], [0, 0, 0], [0.84, 1, 0.74]);
+    this.addMesh(upperLeg, Geo.capsule(upperRadius, upperLength, 12, 18), legMat, [0, -upperLength / 2, 0], [0, 0, 0], [0.84, 1, 0.74]);
     lowerLeg.position.set(side * 0.012, -upperLength, -0.005);
     upperLeg.add(lowerLeg);
-    this.addMesh(lowerLeg, new THREE.CapsuleGeometry(lowerRadius, lowerLength, 12, 18), legMat, [0, -lowerLength / 2, 0], [0, 0, 0], [0.8, 1, 0.7]);
+    this.addMesh(lowerLeg, Geo.capsule(lowerRadius, lowerLength, 12, 18), legMat, [0, -lowerLength / 2, 0], [0, 0, 0], [0.8, 1, 0.7]);
 
     foot.position.set(0, -lowerLength - 0.045, -0.055);
     lowerLeg.add(foot);
-    this.addMesh(foot, new THREE.SphereGeometry(0.092, 20, 12), palette.dark, [0, 0, -0.065], [0, 0, 0], [0.72, 0.34, 1.34]);
-    this.addMesh(foot, new THREE.BoxGeometry(0.12, 0.025, 0.22), palette.gold, [0, 0.018, -0.06], [0, 0, 0], [1, 1, 1], false);
+    this.addMesh(foot, Geo.sphere(0.092, 20, 12), palette.dark, [0, 0, -0.065], [0, 0, 0], [0.72, 0.34, 1.34]);
+    this.addMesh(foot, Geo.box(0.12, 0.025, 0.22), palette.gold, [0, 0.018, -0.06], [0, 0, 0], [1, 1, 1], false);
   }
 
   private addHead(
@@ -483,16 +486,16 @@ export class ProceduralCharacterRig {
     blinkLids: THREE.Mesh[],
     palette: CharacterPalette
   ): void {
-    this.addMesh(head, new THREE.SphereGeometry(0.225, 42, 26), palette.skin, [0, 0, 0], [0, 0, 0], [0.9, 1.05, 0.78]);
-    this.addMesh(head, new THREE.SphereGeometry(0.038, 16, 10), palette.skinWarm, [-0.198, -0.012, -0.003], [0, 0, 0], [0.52, 0.82, 0.38]);
-    this.addMesh(head, new THREE.SphereGeometry(0.038, 16, 10), palette.skinWarm, [0.198, -0.012, -0.003], [0, 0, 0], [0.52, 0.82, 0.38]);
+    this.addMesh(head, Geo.sphere(0.225, 42, 26), palette.skin, [0, 0, 0], [0, 0, 0], [0.9, 1.05, 0.78]);
+    this.addMesh(head, Geo.sphere(0.038, 16, 10), palette.skinWarm, [-0.198, -0.012, -0.003], [0, 0, 0], [0.52, 0.82, 0.38]);
+    this.addMesh(head, Geo.sphere(0.038, 16, 10), palette.skinWarm, [0.198, -0.012, -0.003], [0, 0, 0], [0.52, 0.82, 0.38]);
 
     hair.position.set(0, 0.015, 0.015);
     head.add(hair);
 
     this.addMesh(
       hair,
-      new THREE.SphereGeometry(0.252, 42, 18, 0, Math.PI * 2, 0, Math.PI * 0.68),
+      Geo.spherePartial(0.252, 42, 18, 0, Math.PI * 2, 0, Math.PI * 0.68),
       palette.hair,
       [0, 0.08, 0.015],
       [0, 0, 0],
@@ -500,7 +503,7 @@ export class ProceduralCharacterRig {
     );
     this.addMesh(
       hair,
-      new THREE.SphereGeometry(0.222, 34, 16, 0, Math.PI * 2, Math.PI * 0.25, Math.PI * 0.55),
+      Geo.spherePartial(0.222, 34, 16, 0, Math.PI * 2, Math.PI * 0.25, Math.PI * 0.55),
       palette.hairShade,
       [0, -0.005, 0.085],
       [0.08, 0, 0],
@@ -519,20 +522,20 @@ export class ProceduralCharacterRig {
   private addAnimeFace(head: THREE.Group, blinkLids: THREE.Mesh[], palette: CharacterPalette): void {
     for (const side of [-1, 1] as const) {
       const eyeX = side * 0.068;
-      this.addMesh(head, new THREE.SphereGeometry(0.042, 24, 14), palette.white, [eyeX, 0.036, -0.195], [0, 0, side * 0.05], [1.32, 0.9, 0.12], false);
-      this.addMesh(head, new THREE.SphereGeometry(0.026, 22, 12), palette.eye, [eyeX + side * 0.005, 0.033, -0.204], [0, 0, 0], [0.95, 1.12, 0.08], false);
-      this.addMesh(head, new THREE.SphereGeometry(0.013, 14, 8), palette.pupil, [eyeX + side * 0.006, 0.028, -0.211], [0, 0, 0], [0.74, 1.0, 0.05], false);
-      this.addMesh(head, new THREE.SphereGeometry(0.0065, 10, 6), palette.white, [eyeX - side * 0.009, 0.046, -0.215], [0, 0, 0], [1, 1, 0.035], false);
-      this.addMesh(head, new THREE.BoxGeometry(0.07, 0.01, 0.01), palette.hairShade, [eyeX, 0.084, -0.199], [0, 0, side * 0.15], [1, 1, 1], false);
-      this.addMesh(head, new THREE.SphereGeometry(0.026, 16, 8), palette.blush, [side * 0.11, -0.032, -0.196], [0, 0, 0], [1.35, 0.48, 0.07], false);
-      const lid = this.addMesh(head, new THREE.SphereGeometry(0.043, 20, 8), palette.skin, [eyeX, 0.058, -0.218], [0, 0, side * 0.05], [1.38, 0.045, 0.035], false);
+      this.addMesh(head, Geo.sphere(0.042, 24, 14), palette.white, [eyeX, 0.036, -0.195], [0, 0, side * 0.05], [1.32, 0.9, 0.12], false);
+      this.addMesh(head, Geo.sphere(0.026, 22, 12), palette.eye, [eyeX + side * 0.005, 0.033, -0.204], [0, 0, 0], [0.95, 1.12, 0.08], false);
+      this.addMesh(head, Geo.sphere(0.013, 14, 8), palette.pupil, [eyeX + side * 0.006, 0.028, -0.211], [0, 0, 0], [0.74, 1.0, 0.05], false);
+      this.addMesh(head, Geo.sphere(0.0065, 10, 6), palette.white, [eyeX - side * 0.009, 0.046, -0.215], [0, 0, 0], [1, 1, 0.035], false);
+      this.addMesh(head, Geo.box(0.07, 0.01, 0.01), palette.hairShade, [eyeX, 0.084, -0.199], [0, 0, side * 0.15], [1, 1, 1], false);
+      this.addMesh(head, Geo.sphere(0.026, 16, 8), palette.blush, [side * 0.11, -0.032, -0.196], [0, 0, 0], [1.35, 0.48, 0.07], false);
+      const lid = this.addMesh(head, Geo.sphere(0.043, 20, 8), palette.skin, [eyeX, 0.058, -0.218], [0, 0, side * 0.05], [1.38, 0.045, 0.035], false);
       lid.userData.baseScale = lid.scale.clone();
       lid.userData.baseY = lid.position.y;
       blinkLids.push(lid);
     }
 
-    this.addMesh(head, new THREE.SphereGeometry(0.016, 14, 8), palette.skinWarm, [0, -0.018, -0.207], [0, 0, 0], [0.55, 0.8, 0.16], false);
-    this.addMesh(head, new THREE.TorusGeometry(0.026, 0.0024, 6, 18, Math.PI), palette.accent, [0.006, -0.084, -0.199], [0, 0, Math.PI * 1.05], [1, 0.42, 1], false);
+    this.addMesh(head, Geo.sphere(0.016, 14, 8), palette.skinWarm, [0, -0.018, -0.207], [0, 0, 0], [0.55, 0.8, 0.16], false);
+    this.addMesh(head, Geo.torusArc(0.026, 0.0024, 6, 18, Math.PI), palette.accent, [0.006, -0.084, -0.199], [0, 0, Math.PI * 1.05], [1, 0.42, 1], false);
   }
 
   private addPlayerHair(hair: THREE.Group, hairStrands: THREE.Group[], palette: CharacterPalette): void {
@@ -610,7 +613,7 @@ export class ProceduralCharacterRig {
 
       this.addMesh(
         strand,
-        new THREE.CapsuleGeometry(0.032 + local * 0.002, 0.72 + local * 0.075, 10, 16),
+        Geo.capsule(0.032 + local * 0.002, 0.72 + local * 0.075, 10, 16),
         local % 2 === 0 ? palette.hair : palette.hairShade,
         [0, -0.36 - local * 0.035, 0],
         [0, 0, 0],
@@ -630,7 +633,7 @@ export class ProceduralCharacterRig {
       braidRoot.add(bead);
       this.rememberBaseRotation(bead);
       braidSegments.push(bead);
-      this.addMesh(bead, new THREE.SphereGeometry(0.055, 18, 10), palette.hairShade, [0, 0, 0], [0, 0, 0], [1.12, 0.78, 0.9]);
+      this.addMesh(bead, Geo.sphere(0.055, 18, 10), palette.hairShade, [0, 0, 0], [0, 0, 0], [1.12, 0.78, 0.9]);
     }
 
     const ribbonLeft = this.addMesh(hair, this.createClothPanelGeometry(0.03, 0.085, 0.25), palette.accent, [0.36, -0.04, 0.08], [0.1, -0.18, -0.86], [1, 1, 1]);
@@ -661,10 +664,10 @@ export class ProceduralCharacterRig {
       this.rememberBaseRotation(panel);
       capePanels.push(panel);
       this.addMesh(panel, this.createClothPanelGeometry(0.12, 0.17, height), palette.outfitDark, [0, -0.04, 0], [0, 0, 0], [1, 1, 1], true, 1.015);
-      this.addMesh(panel, new THREE.BoxGeometry(0.024, height * 0.84, 0.018), palette.gold, [0.15 * Math.sign(x || 1), -height * 0.4, -0.006], [0, 0, 0], [1, 1, 1], false);
+      this.addMesh(panel, Geo.box(0.024, height * 0.84, 0.018), palette.gold, [0.15 * Math.sign(x || 1), -height * 0.4, -0.006], [0, 0, 0], [1, 1, 1], false);
     }
 
-    this.addMesh(cape, new THREE.BoxGeometry(0.58, 0.035, 0.055), palette.gold, [0, 0.015, -0.01], [0, 0, 0], [1, 1, 1], false);
+    this.addMesh(cape, Geo.box(0.58, 0.035, 0.055), palette.gold, [0, 0.015, -0.01], [0, 0, 0], [1, 1, 1], false);
     return cape;
   }
 
@@ -687,11 +690,11 @@ export class ProceduralCharacterRig {
       this.rememberBaseRotation(panel);
       capePanels.push(panel);
       this.addMesh(panel, this.createClothPanelGeometry(0.1, x === 0 ? 0.16 : 0.23, height), palette.outfitDark, [0, -0.02, 0], [0, 0, 0], [1, 1, 1], true, 1.014);
-      this.addMesh(panel, new THREE.BoxGeometry(0.02, height * 0.88, 0.018), palette.gold, [0.16 * Math.sign(x || 1), -height * 0.43, -0.006], [0, 0, 0], [1, 1, 1], false);
+      this.addMesh(panel, Geo.box(0.02, height * 0.88, 0.018), palette.gold, [0.16 * Math.sign(x || 1), -height * 0.43, -0.006], [0, 0, 0], [1, 1, 1], false);
       if (x !== 0) this.addStar(panel, new THREE.Vector3(0.07 * Math.sign(x), -height * 0.55, -0.014), 0.036, palette.gold);
     }
 
-    this.addMesh(cape, new THREE.BoxGeometry(0.52, 0.035, 0.055), palette.gold, [0, 0.012, -0.01], [0, 0, 0], [1, 1, 1], false);
+    this.addMesh(cape, Geo.box(0.52, 0.035, 0.055), palette.gold, [0, 0.012, -0.01], [0, 0, 0], [1, 1, 1], false);
     return cape;
   }
 
@@ -700,7 +703,7 @@ export class ProceduralCharacterRig {
     skirt.position.set(0, 0.83, -0.005);
     body.add(skirt);
 
-    this.addMesh(skirt, new THREE.ConeGeometry(0.42, 0.5, 36, 1, true), palette.clothLight, [0, -0.22, 0], [0, 0, 0], [1.0, 1, 0.86]);
+    this.addMesh(skirt, Geo.coneOpen(0.42, 0.5, 36, 1, true), palette.clothLight, [0, -0.22, 0], [0, 0, 0], [1.0, 1, 0.86]);
     for (let i = 0; i < 12; i += 1) {
       const angle = (i / 12) * Math.PI * 2;
       const panel = new THREE.Group();
@@ -719,7 +722,7 @@ export class ProceduralCharacterRig {
         i % 3 === 0
       );
       if (i % 3 === 0) {
-        this.addMesh(panel, new THREE.BoxGeometry(0.016, 0.34, 0.012), palette.gold, [0.055, -0.24, -0.003], [0, 0, 0], [1, 1, 1], false);
+        this.addMesh(panel, Geo.box(0.016, 0.34, 0.012), palette.gold, [0.055, -0.24, -0.003], [0, 0, 0], [1, 1, 1], false);
       }
     }
     return skirt;
@@ -731,8 +734,8 @@ export class ProceduralCharacterRig {
     wand.rotation.set(0.08, 0.12, 0.18);
     hand.add(wand);
 
-    this.addMesh(wand, new THREE.CylinderGeometry(0.012, 0.018, 0.58, 12), palette.dark, [0, -0.25, -0.02], [0.2, 0, 0], [1, 1, 1]);
-    this.addMesh(wand, new THREE.SphereGeometry(0.032, 16, 10), palette.gold, [0, -0.54, -0.08], [0, 0, 0], [1, 1, 1], false);
+    this.addMesh(wand, Geo.cylinder(0.012, 0.018, 0.58, 12), palette.dark, [0, -0.25, -0.02], [0.2, 0, 0], [1, 1, 1]);
+    this.addMesh(wand, Geo.sphere(0.032, 16, 10), palette.gold, [0, -0.54, -0.08], [0, 0, 0], [1, 1, 1], false);
     this.addStar(wand, new THREE.Vector3(0.0, -0.58, -0.08), 0.04, palette.gold);
     return wand;
   }
@@ -745,46 +748,50 @@ export class ProceduralCharacterRig {
 
     const coverMaterial = this.createToonMaterial(0x37212c, 0.48, 0.08);
     const pageMaterial = this.createToonMaterial(0xf0ddb5, 0.68, 0.0);
-    this.addMesh(book, new THREE.BoxGeometry(0.48, 0.5, 0.085), coverMaterial, [0, 0, 0], [0, 0, 0], [1, 1, 1]);
-    this.addMesh(book, new THREE.BoxGeometry(0.42, 0.42, 0.025), pageMaterial, [0.01, 0, -0.058], [0, 0, 0], [1, 1, 1], false);
-    this.addMesh(book, new THREE.BoxGeometry(0.04, 0.48, 0.1), palette.gold, [-0.225, 0, 0.01], [0, 0, 0], [1, 1, 1], false);
-    this.addMesh(book, new THREE.BoxGeometry(0.28, 0.018, 0.09), palette.gold, [0.065, 0.18, 0.045], [0, 0, 0], [1, 1, 1], false);
-    this.addMesh(book, new THREE.BoxGeometry(0.28, 0.018, 0.09), palette.gold, [0.065, -0.18, 0.045], [0, 0, 0], [1, 1, 1], false);
+    this.addMesh(book, Geo.box(0.48, 0.5, 0.085), coverMaterial, [0, 0, 0], [0, 0, 0], [1, 1, 1]);
+    this.addMesh(book, Geo.box(0.42, 0.42, 0.025), pageMaterial, [0.01, 0, -0.058], [0, 0, 0], [1, 1, 1], false);
+    this.addMesh(book, Geo.box(0.04, 0.48, 0.1), palette.gold, [-0.225, 0, 0.01], [0, 0, 0], [1, 1, 1], false);
+    this.addMesh(book, Geo.box(0.28, 0.018, 0.09), palette.gold, [0.065, 0.18, 0.045], [0, 0, 0], [1, 1, 1], false);
+    this.addMesh(book, Geo.box(0.28, 0.018, 0.09), palette.gold, [0.065, -0.18, 0.045], [0, 0, 0], [1, 1, 1], false);
     this.addStar(book, new THREE.Vector3(0.04, 0, 0.055), 0.078, palette.gold);
     return book;
   }
 
   private addTie(parent: THREE.Group, palette: CharacterPalette, height: number, width: number): void {
-    this.addMesh(parent, new THREE.ConeGeometry(width * 0.45, height, 4), palette.accent, [0, 0.2, -0.32], [0, 0, Math.PI / 4], [0.84, 1.1, 0.28]);
-    this.addMesh(parent, new THREE.SphereGeometry(width * 0.25, 14, 8), palette.accent, [0, 0.33, -0.323], [0, 0, 0], [1, 0.78, 0.3], false);
+    this.addMesh(parent, Geo.cone(width * 0.45, height, 4), palette.accent, [0, 0.2, -0.32], [0, 0, Math.PI / 4], [0.84, 1.1, 0.28]);
+    this.addMesh(parent, Geo.sphere(width * 0.25, 14, 8), palette.accent, [0, 0.33, -0.323], [0, 0, 0], [1, 0.78, 0.3], false);
   }
 
   private addBow(parent: THREE.Group, palette: CharacterPalette): void {
     this.addMesh(parent, this.createClothPanelGeometry(0.025, 0.1, 0.18), palette.accent, [-0.09, 0.27, -0.326], [0, 0, 1.32], [1, 1, 1]);
     this.addMesh(parent, this.createClothPanelGeometry(0.025, 0.1, 0.18), palette.accent, [0.09, 0.27, -0.326], [0, 0, -1.32], [1, 1, 1]);
-    this.addMesh(parent, new THREE.SphereGeometry(0.035, 16, 8), palette.gold, [0, 0.27, -0.334], [0, 0, 0], [1, 0.85, 0.5], false);
+    this.addMesh(parent, Geo.sphere(0.035, 16, 8), palette.gold, [0, 0.27, -0.334], [0, 0, 0], [1, 0.85, 0.5], false);
   }
 
   private addChain(parent: THREE.Group, material: THREE.Material): void {
     for (let i = 0; i < 9; i += 1) {
-      const bead = this.addMesh(parent, new THREE.TorusGeometry(0.019, 0.0035, 5, 10), material, [0.17 + i * 0.023, 0.08 - i * 0.026, -0.321], [Math.PI / 2, 0, i * 0.2], [1, 1, 1], false);
+      const bead = this.addMesh(parent, Geo.torus(0.019, 0.0035, 5, 10), material, [0.17 + i * 0.023, 0.08 - i * 0.026, -0.321], [Math.PI / 2, 0, i * 0.2], [1, 1, 1], false);
       bead.castShadow = false;
     }
   }
 
   private addStar(parent: THREE.Object3D, position: THREE.Vector3, radius: number, material: THREE.Material): void {
-    const star = this.addMesh(parent, new THREE.OctahedronGeometry(radius, 0), material, [position.x, position.y, position.z], [0, 0, Math.PI / 4], [1, 1, 0.28], false);
+    const star = this.addMesh(parent, Geo.octahedron(radius, 0), material, [position.x, position.y, position.z], [0, 0, Math.PI / 4], [1, 1, 0.28], false);
     star.castShadow = true;
   }
 
   private createHairLock(palette: CharacterPalette, radius: number, length: number): THREE.Group {
     const group = new THREE.Group();
-    this.addMesh(group, new THREE.ConeGeometry(radius, length, 18), palette.hair, [0, -length / 2, 0], [0, 0, Math.PI], [1, 1, 0.48]);
-    this.addMesh(group, new THREE.ConeGeometry(radius * 0.48, length * 0.92, 14), palette.hairShade, [radius * 0.28, -length / 2 + 0.012, -radius * 0.08], [0, 0, Math.PI + 0.04], [1, 1, 0.28], false);
+    this.addMesh(group, Geo.cone(radius, length, 18), palette.hair, [0, -length / 2, 0], [0, 0, Math.PI], [1, 1, 0.48]);
+    this.addMesh(group, Geo.cone(radius * 0.48, length * 0.92, 14), palette.hairShade, [radius * 0.28, -length / 2 + 0.012, -radius * 0.08], [0, 0, Math.PI + 0.04], [1, 1, 0.28], false);
     return group;
   }
 
   private createClothPanelGeometry(topHalfWidth: number, bottomHalfWidth: number, height: number): THREE.ShapeGeometry {
+    const key = `${topHalfWidth}|${bottomHalfWidth}|${height}`;
+    const cached = ProceduralCharacterRig.clothPanelGeometryCache.get(key);
+    if (cached) return cached;
+
     const shape = new THREE.Shape();
     shape.moveTo(-topHalfWidth, 0);
     shape.lineTo(topHalfWidth, 0);
@@ -793,6 +800,7 @@ export class ProceduralCharacterRig {
     shape.lineTo(-topHalfWidth, 0);
     const geometry = new THREE.ShapeGeometry(shape);
     geometry.computeVertexNormals();
+    ProceduralCharacterRig.clothPanelGeometryCache.set(key, geometry);
     return geometry;
   }
 
@@ -834,6 +842,15 @@ export class ProceduralCharacterRig {
 
   private rememberBaseRotation(group: THREE.Group): void {
     group.userData.baseRotation = group.rotation.clone();
+  }
+
+  private getPalette(kind: CharacterId): CharacterPalette {
+    const cached = ProceduralCharacterRig.paletteCache.get(kind);
+    if (cached) return cached;
+
+    const palette = this.createPalette(kind);
+    ProceduralCharacterRig.paletteCache.set(kind, palette);
+    return palette;
   }
 
   private createPalette(kind: CharacterId): CharacterPalette {
