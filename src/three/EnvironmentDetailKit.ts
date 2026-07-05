@@ -255,25 +255,44 @@ function addLeafCanopy(group: THREE.Group, trunkTop: THREE.Vector3, spec: TreeSp
   addCanopyShadowProxies(group, trunkTop, spec, centers);
 
   const leafGeo = Geo.plane(0.42, 0.24);
+  const dummy = new THREE.Object3D();
+  const leafMatrices = new Map<number, THREE.Matrix4[]>();
+
   for (const [cx, cy, cz, radius] of centers) {
     const count = Math.floor(42 * radius * spec.scale);
     for (let i = 0; i < count; i += 1) {
-      const mat = getLeafMaterial(leafPalette[Math.floor(rand() * leafPalette.length)]);
-      const leaf = new THREE.Mesh(leafGeo, mat);
+      const color = leafPalette[Math.floor(rand() * leafPalette.length)];
       const theta = rand() * Math.PI * 2;
       const phi = Math.acos(lerp(-0.55, 0.9, rand()));
       const r = spec.scale * radius * Math.pow(rand(), 0.48);
-      leaf.position.set(
+      dummy.position.set(
         trunkTop.x + (cx + Math.cos(theta) * Math.sin(phi) * r) * spec.scale,
         trunkTop.y + (cy + Math.cos(phi) * r * 0.62) * spec.scale,
         trunkTop.z + (cz + Math.sin(theta) * Math.sin(phi) * r) * spec.scale
       );
-      leaf.rotation.set(rand() * Math.PI, rand() * Math.PI * 2, rand() * Math.PI);
+      dummy.rotation.set(rand() * Math.PI, rand() * Math.PI * 2, rand() * Math.PI);
       const leafScale = spec.scale * lerp(0.62, 1.35, rand());
-      leaf.scale.set(leafScale, leafScale * lerp(0.8, 1.5, rand()), 1);
-      leaf.castShadow = false;
-      group.add(leaf);
+      dummy.scale.set(leafScale, leafScale * lerp(0.8, 1.5, rand()), 1);
+      dummy.updateMatrix();
+      const matrices = leafMatrices.get(color);
+      if (matrices) {
+        matrices.push(dummy.matrix.clone());
+      } else {
+        leafMatrices.set(color, [dummy.matrix.clone()]);
+      }
     }
+  }
+
+  for (const [color, matrices] of leafMatrices) {
+    const leaves = new THREE.InstancedMesh(leafGeo, getLeafMaterial(color), matrices.length);
+    leaves.name = `natural-tree-leaves:${color.toString(16)}`;
+    leaves.instanceMatrix.setUsage(THREE.StaticDrawUsage);
+    matrices.forEach((matrix, index) => leaves.setMatrixAt(index, matrix));
+    leaves.instanceMatrix.needsUpdate = true;
+    leaves.castShadow = false;
+    leaves.receiveShadow = false;
+    leaves.computeBoundingSphere();
+    group.add(leaves);
   }
 }
 
