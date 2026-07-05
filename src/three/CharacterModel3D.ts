@@ -91,7 +91,9 @@ interface CharacterModel3DOptions {
 type ThreeVRMModule = typeof import('@pixiv/three-vrm');
 
 export class CharacterModel3D {
-  private static readonly maxConcurrentAssetLoads = 2;
+  private static readonly maxConcurrentAssetLoads = 1;
+  private static readonly deferredAssetLoadPriority = 2;
+  private static readonly idleAssetLoadTimeoutMs = 1600;
   private static readonly pendingAssetLoads: AssetLoadQueueEntry[] = [];
   private static readonly assetUrlAvailability = new Map<string, Promise<boolean>>();
   private static activeAssetLoads = 0;
@@ -272,13 +274,32 @@ export class CharacterModel3D {
       if (!entry) return;
 
       CharacterModel3D.activeAssetLoads += 1;
-      void entry.task()
+      void CharacterModel3D.runQueuedAssetLoad(entry)
         .then(entry.resolve, entry.reject)
         .finally(() => {
           CharacterModel3D.activeAssetLoads -= 1;
           CharacterModel3D.drainAssetLoadQueue();
         });
     }
+  }
+
+  private static async runQueuedAssetLoad(entry: AssetLoadQueueEntry): Promise<void> {
+    if (entry.priority >= CharacterModel3D.deferredAssetLoadPriority) {
+      await CharacterModel3D.waitForIdleAssetLoadWindow();
+    }
+    await entry.task();
+  }
+
+  private static waitForIdleAssetLoadWindow(): Promise<void> {
+    return new Promise((resolve) => {
+      if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+        window.requestIdleCallback(() => resolve(), {
+          timeout: CharacterModel3D.idleAssetLoadTimeoutMs,
+        });
+        return;
+      }
+      globalThis.setTimeout(resolve, 80);
+    });
   }
 
   private static async isModelUrlAvailable(url: string): Promise<boolean> {

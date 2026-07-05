@@ -7,12 +7,34 @@ let packPromise: Promise<THREE.Group> | null = null;
 const appliedRegions = new WeakMap<THREE.Scene, Set<WorldRegionId>>();
 
 const NO_SHADOW_PREFABS = new Set([
+  'dining_service_set',
   'floor_inlay_tile',
+  'grass_clump',
+  'lily_cluster',
+  'magic_lantern',
+  'reed_cluster',
   'rug_runner',
+  'shrub_patch',
   'weathered_floor_slab',
   'window_light_beam',
 ]);
-const LIBRARY_BOOKSHELF_SHADOW_MESHES = new Set(['back', 'left_side', 'right_side', 'shelf']);
+const PREFAB_SHADOW_MESHES = new Map<string, ReadonlySet<string>>([
+  ['arched_window', new Set(['sill', 'left_frame', 'right_frame', 'arch_frame'])],
+  ['candelabra', new Set(['stem', 'base', 'candle'])],
+  ['dining_table_set', new Set(['long_table', 'leg', 'bench'])],
+  ['fireplace', new Set(['left_jamb', 'right_jamb', 'mantel', 'hearth'])],
+  ['food_counter', new Set(['counter', 'counter_trim'])],
+  ['fountain_prefab', new Set(['basin', 'pillar', 'top_bowl'])],
+  ['grand_column', new Set(['base', 'shaft', 'capital'])],
+  ['library_bookshelf', new Set(['back', 'left_side', 'right_side', 'shelf'])],
+  ['library_cart', new Set(['cart_tray', 'cart_back', 'wheel'])],
+  ['oak_tree', new Set(['trunk', 'branch'])],
+  ['ornate_column', new Set(['base', 'shaft', 'capital'])],
+  ['reading_table_set', new Set(['table_top', 'leg'])],
+  ['tapestry_banner', new Set(['top_rod'])],
+  ['wall_pilaster_panel', new Set(['top_trim', 'bottom_trim', 'left_trim', 'right_trim'])],
+  ['willow_tree', new Set(['trunk', 'branch'])],
+]);
 
 export function addWorldPrefabRegion(
   scene: THREE.Scene,
@@ -68,9 +90,8 @@ function getPrefabPack(): Promise<THREE.Group> {
 
 function shouldPrefabMeshCastShadow(prefab: string, mesh: THREE.Mesh): boolean {
   if (NO_SHADOW_PREFABS.has(prefab)) return false;
-  if (prefab === 'library_bookshelf') {
-    return LIBRARY_BOOKSHELF_SHADOW_MESHES.has(mesh.name);
-  }
+  const meshNames = PREFAB_SHADOW_MESHES.get(prefab);
+  if (meshNames) return meshNames.has(mesh.name);
   return true;
 }
 
