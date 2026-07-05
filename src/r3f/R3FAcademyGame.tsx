@@ -138,7 +138,8 @@ const playerSpawn = new THREE.Vector3(0, 1.25, 4.2);
 const maxAuthoredChunkCount = 8;
 const initialAuthoredChunkCount = 2;
 const authoredChunkStreamStepMs = 900;
-const maxConcurrentGlbLoads = 12;
+const maxConcurrentGlbLoads = 4;
+const normalGlbLoadIdleTimeoutMs = 1800;
 const r3fPlayerStatePublishDistanceSq = 0.18 * 0.18;
 const r3fDebugStatePublishIntervalMs = 250;
 const r3fSceneDiagnosticsIntervalMs = 2500;
@@ -1269,7 +1270,7 @@ function EcctrlPlayer({ onFrame }: EcctrlPlayerProps): React.ReactElement {
 }
 
 function PlayerAvatar(): React.ReactElement {
-  const model = useOptionalGlb('/assets/models/player.glb');
+  const model = useOptionalGlb('/assets/models/player.glb', false, undefined, 'critical');
   if (model) {
     return (
       <primitive
@@ -9516,7 +9517,7 @@ function scheduleGlbLoad(
       }
       activeGlbLoadCount += 1;
       if (isCritical) activeCriticalGlbLoadCount += 1;
-      loadGlbArrayBuffer(url)
+      runQueuedGlbLoad(url, priority, () => cancelled)
         .then(resolve, reject)
         .finally(() => {
           activeGlbLoadCount = Math.max(0, activeGlbLoadCount - 1);
@@ -9535,6 +9536,28 @@ function scheduleGlbLoad(
       cancelled = true;
     },
   };
+}
+
+async function runQueuedGlbLoad(
+  url: string,
+  priority: GlbLoadPriority,
+  isCancelled: () => boolean,
+): Promise<Awaited<ReturnType<GLTFLoader['parseAsync']>>> {
+  if (priority === 'normal') await waitForIdleGlbLoadWindow();
+  if (isCancelled()) throw new Error('cancelled');
+  return loadGlbArrayBuffer(url);
+}
+
+function waitForIdleGlbLoadWindow(): Promise<void> {
+  return new Promise((resolve) => {
+    if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+      window.requestIdleCallback(() => resolve(), {
+        timeout: normalGlbLoadIdleTimeoutMs,
+      });
+      return;
+    }
+    globalThis.setTimeout(resolve, 96);
+  });
 }
 
 async function loadGlbArrayBuffer(url: string): Promise<Awaited<ReturnType<GLTFLoader['parseAsync']>>> {

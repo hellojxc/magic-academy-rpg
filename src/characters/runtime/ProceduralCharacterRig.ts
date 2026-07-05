@@ -57,6 +57,7 @@ export class ProceduralCharacterRig {
   private movementBlend = 0;
 
   private static toonGradient: THREE.DataTexture | undefined;
+  private static shadowProxyMaterial: THREE.MeshBasicMaterial | undefined;
   private static readonly paletteCache = new Map<CharacterId, CharacterPalette>();
   private static readonly clothPanelGeometryCache = new Map<string, THREE.ShapeGeometry>();
 
@@ -278,10 +279,13 @@ export class ProceduralCharacterRig {
     groundRing.castShadow = false;
     groundRing.receiveShadow = false;
 
+    this.addShadowProxy();
     this.root.traverse((object) => {
       if (object instanceof THREE.Mesh) {
         object.castShadow = this.shouldCastCharacterShadow(object);
-        object.receiveShadow = object.userData.proceduralCharacterOutline !== true;
+        object.receiveShadow = object.userData.proceduralCharacterShadowProxy === true
+          ? false
+          : object.userData.proceduralCharacterOutline !== true;
       }
     });
 
@@ -804,6 +808,21 @@ export class ProceduralCharacterRig {
     return geometry;
   }
 
+  private addShadowProxy(): void {
+    const shadowProxy = new THREE.Mesh(
+      Geo.capsule(0.3, 1.15, 8, 16),
+      ProceduralCharacterRig.getShadowProxyMaterial(),
+    );
+    shadowProxy.name = 'procedural-character-shadow-proxy';
+    shadowProxy.position.set(0, 0.78, 0);
+    shadowProxy.scale.set(this.kind === 'player' ? 1.05 : 1, 1, 0.82);
+    shadowProxy.castShadow = true;
+    shadowProxy.receiveShadow = false;
+    shadowProxy.userData.proceduralCharacterShadowProxy = true;
+    shadowProxy.userData.proceduralCharacterShadowCandidate = true;
+    this.root.add(shadowProxy);
+  }
+
   private addMesh<T extends THREE.BufferGeometry>(
     parent: THREE.Object3D,
     geometry: T,
@@ -841,11 +860,9 @@ export class ProceduralCharacterRig {
   }
 
   private shouldCastCharacterShadow(mesh: THREE.Mesh): boolean {
+    if (mesh.userData.proceduralCharacterShadowProxy === true) return true;
     if (mesh.userData.proceduralCharacterShadowCandidate !== true) return false;
-    if (!mesh.geometry.boundingSphere) mesh.geometry.computeBoundingSphere();
-    const radius = mesh.geometry.boundingSphere?.radius ?? 0;
-    const scale = Math.max(Math.abs(mesh.scale.x), Math.abs(mesh.scale.y), Math.abs(mesh.scale.z));
-    return radius * scale >= 0.04;
+    return false;
   }
 
   private findOutlineMaterial(material: THREE.Material): THREE.MeshBasicMaterial | undefined {
@@ -941,5 +958,16 @@ export class ProceduralCharacterRig {
       ProceduralCharacterRig.toonGradient = texture;
     }
     return ProceduralCharacterRig.toonGradient;
+  }
+
+  private static getShadowProxyMaterial(): THREE.MeshBasicMaterial {
+    if (!ProceduralCharacterRig.shadowProxyMaterial) {
+      const material = new THREE.MeshBasicMaterial({ color: 0x000000 });
+      material.colorWrite = false;
+      material.depthWrite = false;
+      material.depthTest = false;
+      ProceduralCharacterRig.shadowProxyMaterial = material;
+    }
+    return ProceduralCharacterRig.shadowProxyMaterial;
   }
 }
