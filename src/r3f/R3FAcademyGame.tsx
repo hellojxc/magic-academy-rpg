@@ -139,6 +139,7 @@ const maxAuthoredChunkCount = 8;
 const initialAuthoredChunkCount = 2;
 const authoredChunkStreamStepMs = 900;
 const maxConcurrentGlbLoads = 4;
+const maxConcurrentPriorityGlbLoads = 20;
 const normalGlbLoadIdleTimeoutMs = 1800;
 const r3fPlayerStatePublishDistanceSq = 0.18 * 0.18;
 const r3fDebugStatePublishIntervalMs = 250;
@@ -2155,6 +2156,7 @@ function LibraryHeroLayer({ activeIds }: { readonly activeIds: ReadonlySet<World
     <group name="library-hero:arcane-library">
       <pointLight name="library-reading-table-warm-light" position={[5.35, 1.55, -1.45]} color="#ffd38a" intensity={8.6} distance={6.5} decay={2.25} />
       <pointLight name="library-shelf-lantern-fill-light" position={[8.45, 1.8, -4.75]} color="#c98cff" intensity={1.35} distance={4.8} decay={2.4} />
+      <LibraryArchitectureEnvelope />
       <LibraryProceduralFurniture />
       <LibraryGroundedReadingNook />
       <LibraryArchiveClutterLayer />
@@ -2226,6 +2228,75 @@ function LibraryHeroLayer({ activeIds }: { readonly activeIds: ReadonlySet<World
           ))}
         </Instances>
       ) : null}
+    </group>
+  );
+}
+
+function LibraryArchitectureEnvelope(): React.ReactElement {
+  const trimMaterial = useMemo(() => createPbrMaterial(
+    'runtime-library-cutaway-aged-stone-trim-pbr',
+    createFilePbrSet('stone'),
+    { color: 0x7f7885, roughness: 0.84, metalness: 0.02, envMapIntensity: 0.34, normalScale: 0.28 },
+  ), []);
+  const glassMaterial = useMemo(() => new THREE.MeshPhysicalMaterial({
+    name: 'runtime-library-leaded-window-glass',
+    color: 0x8bb8c9,
+    roughness: 0.18,
+    metalness: 0,
+    transparent: true,
+    opacity: 0.34,
+    transmission: 0.08,
+    thickness: 0.08,
+    envMapIntensity: 0.72,
+    side: THREE.DoubleSide,
+  }), []);
+  const windowGlowMaterial = useMemo(() => new THREE.MeshBasicMaterial({
+    name: 'runtime-library-window-muted-exterior-glow',
+    color: 0xa8d2ff,
+    transparent: true,
+    opacity: 0.07,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+    side: THREE.DoubleSide,
+  }), []);
+  const mullionMaterial = useMemo(() => new THREE.MeshStandardMaterial({
+    name: 'runtime-library-dark-iron-window-mullions',
+    color: 0x17141a,
+    roughness: 0.72,
+    metalness: 0.42,
+    envMapIntensity: 0.2,
+  }), []);
+
+  useEffect(() => {
+    window.__r3fChunkRenderState = {
+      ...(window.__r3fChunkRenderState ?? {}),
+      libraryArchitectureEnvelope: 'cutawayFrame:1,windows:2,pilasters:4',
+    };
+  }, []);
+
+  return (
+    <group name="library-cutaway-architecture-envelope">
+      {[3.25, 7.62].map((x) => (
+        <group key={x} name="library-cutaway-leaded-window" position={[x, 1.52, -6.08]}>
+          <mesh name="library-cutaway-window-cool-glass" material={glassMaterial} receiveShadow>
+            <boxGeometry args={[0.9, 0.86, 0.035]} />
+          </mesh>
+          <mesh name="library-cutaway-window-exterior-glow" position={[0, 0, 0.025]} material={windowGlowMaterial} renderOrder={6}>
+            <planeGeometry args={[1.02, 0.98, 1, 1]} />
+          </mesh>
+          <mesh name="library-cutaway-window-vertical-mullion" position={[0, 0, 0.05]} material={mullionMaterial} castShadow>
+            <boxGeometry args={[0.035, 0.94, 0.04]} />
+          </mesh>
+          <mesh name="library-cutaway-window-horizontal-mullion" position={[0, 0, 0.055]} material={mullionMaterial} castShadow>
+            <boxGeometry args={[0.96, 0.035, 0.04]} />
+          </mesh>
+        </group>
+      ))}
+      {[2.28, 4.38, 6.54, 8.48].map((x) => (
+        <mesh key={x} name="library-cutaway-north-pilaster" position={[x, 1.22, -6.04]} material={trimMaterial} castShadow receiveShadow>
+          <boxGeometry args={[0.16, 2.14, 0.24]} />
+        </mesh>
+      ))}
     </group>
   );
 }
@@ -9575,8 +9646,18 @@ async function loadGlbArrayBuffer(url: string): Promise<Awaited<ReturnType<GLTFL
   return gltf;
 }
 
+function getMaxConcurrentQueuedGlbLoads(): number {
+  return (
+    pendingCriticalGlbLoadQueue.length > 0
+    || pendingHighPriorityGlbLoadQueue.length > 0
+    || activeCriticalGlbLoadCount > 0
+  )
+    ? maxConcurrentPriorityGlbLoads
+    : maxConcurrentGlbLoads;
+}
+
 function flushGlbLoadQueue(): void {
-  while (activeGlbLoadCount < maxConcurrentGlbLoads) {
+  while (activeGlbLoadCount < getMaxConcurrentQueuedGlbLoads()) {
     const critical = pendingCriticalGlbLoadQueue.shift();
     if (critical) {
       critical();

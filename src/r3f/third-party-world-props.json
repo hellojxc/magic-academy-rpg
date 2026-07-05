@@ -576,6 +576,11 @@
     { "id": "grotto-kenney-grass-leafs-waterline-a", "sourceId": "kenney-grass-leafs", "chunkId": "lake-grotto", "position": [-9.9, 0.18, 20.15], "rotation": [0, 0.26, 0], "scale": 1.08 },
     { "id": "grotto-kenney-grass-leafs-waterline-b", "sourceId": "kenney-grass-leafs", "chunkId": "lake-grotto", "position": [-7.25, 0.18, 22.0], "rotation": [0, -0.88, 0], "scale": 0.98 },
     { "id": "grotto-kenney-bush-foreground-bank", "sourceId": "kenney-bush-detailed", "chunkId": "lake-grotto", "position": [-8.25, 0.18, 20.05], "rotation": [0, -0.54, 0], "scale": 0.82 },
+    { "id": "grotto-kenney-river-corner-foreground-west", "sourceId": "kenney-river-corner", "chunkId": "lake-grotto", "position": [-9.4, 0.158, 22.9], "rotation": [0, -0.34, 0], "scale": 2.1 },
+    { "id": "grotto-kenney-river-rocks-south-lip", "sourceId": "kenney-river-rocks", "chunkId": "lake-grotto", "position": [-14.8, 0.162, 27.2], "rotation": [0, 0.18, 0], "scale": 2.35 },
+    { "id": "grotto-kenney-rock-tall-back-bank", "sourceId": "kenney-rock-tall-d", "chunkId": "lake-grotto", "position": [-19.4, 0.18, 28.0], "rotation": [0, 0.74, 0], "scale": 1.05 },
+    { "id": "grotto-kenney-grass-large-south-bank", "sourceId": "kenney-grass-large", "chunkId": "lake-grotto", "position": [-17.2, 0.18, 26.4], "rotation": [0, -0.44, 0], "scale": 1.26 },
+    { "id": "grotto-kenney-hanging-moss-back-ledge", "sourceId": "kenney-hanging-moss", "chunkId": "lake-grotto", "position": [-19.8, 2.05, 26.8], "rotation": [0, -0.28, 0], "scale": 1.12 },
 
     { "id": "training-cart", "sourceId": "medieval-cart", "chunkId": "training-yard", "position": [22.4, 0.18, 37.2], "rotation": [0, -0.82, 0], "scale": 0.85 },
     { "id": "training-barrel-left", "sourceId": "medieval-barrel", "chunkId": "training-yard", "position": [11.0, 0.18, 28.7], "rotation": [0, 0.2, 0], "scale": 0.86 },
