@@ -157,32 +157,43 @@ export class DiningHall {
     cloth.castShadow = true; cloth.receiveShadow = true;
     this.scene.add(cloth);
 
+    const dummy = new THREE.Object3D();
+
     // 桌腿
     const legGeo = Geo.box(0.12, 0.72, 0.12);
+    const legMatrices: THREE.Matrix4[] = [];
     for (const dx of [-length / 2 + 0.3, length / 2 - 0.3]) {
       for (const dz of [-0.45, 0.45]) {
-        const leg = new THREE.Mesh(legGeo, darkWoodMat);
-        leg.position.set(centerX + dx, 0.36, centerZ + dz);
-        leg.castShadow = true; leg.receiveShadow = true;
-        this.scene.add(leg);
+        dummy.position.set(centerX + dx, 0.36, centerZ + dz);
+        dummy.rotation.set(0, 0, 0);
+        dummy.scale.set(1, 1, 1);
+        dummy.updateMatrix();
+        legMatrices.push(dummy.matrix.clone());
       }
     }
+    this.addInstancedStaticMesh(legGeo, darkWoodMat, legMatrices, true, true);
 
     // 板凳 (两侧)
+    const benchMatrices: THREE.Matrix4[] = [];
+    const benchLegMatrices: THREE.Matrix4[] = [];
+    const benchLegGeo = Geo.box(0.08, 0.4, 0.08);
     for (const dz of [-0.85, 0.85]) {
-      const bench = new THREE.Mesh(Geo.box(length * 0.9, 0.06, 0.3), darkWoodMat);
-      bench.position.set(centerX, 0.42, centerZ + dz);
-      bench.castShadow = true; bench.receiveShadow = true;
-      this.scene.add(bench);
+      dummy.position.set(centerX, 0.42, centerZ + dz);
+      dummy.rotation.set(0, 0, 0);
+      dummy.scale.set(1, 1, 1);
+      dummy.updateMatrix();
+      benchMatrices.push(dummy.matrix.clone());
 
-      const benchLegGeo = Geo.box(0.08, 0.4, 0.08);
       for (const dx of [-length * 0.4, 0, length * 0.4]) {
-        const bl = new THREE.Mesh(benchLegGeo, darkWoodMat);
-        bl.position.set(centerX + dx, 0.2, centerZ + dz);
-        bl.castShadow = true;
-        this.scene.add(bl);
+        dummy.position.set(centerX + dx, 0.2, centerZ + dz);
+        dummy.rotation.set(0, 0, 0);
+        dummy.scale.set(1, 1, 1);
+        dummy.updateMatrix();
+        benchLegMatrices.push(dummy.matrix.clone());
       }
     }
+    this.addInstancedStaticMesh(Geo.box(length * 0.9, 0.06, 0.3), darkWoodMat, benchMatrices, true, true);
+    this.addInstancedStaticMesh(benchLegGeo, darkWoodMat, benchLegMatrices, true, false);
 
     // 餐具 — 盘子
     const plateMat = MatLib.plate;
@@ -191,7 +202,6 @@ export class DiningHall {
     const cupGeo = Geo.cylinder(0.04, 0.035, 0.08, 12);
     const plateMatrices: THREE.Matrix4[] = [];
     const cupMatrices: THREE.Matrix4[] = [];
-    const dummy = new THREE.Object3D();
     for (let i = 0; i < 6; i++) {
       const dx = -length / 2 + 1 + i * (length - 2) / 5;
       for (const dz of [-0.3, 0.3]) {
