@@ -5,6 +5,7 @@ export class InteractionController3D {
   private static readonly pointerRaycastIntervalMs = 50;
   private static readonly nearestTargetIntervalMs = 120;
   private static readonly nearestTargetMoveThresholdSq = 0.08 * 0.08;
+  private static readonly canvasRectRefreshIntervalMs = 250;
   private readonly raycaster = new THREE.Raycaster();
   private readonly pointer = new THREE.Vector2();
   private readonly promptWorldPosition = new THREE.Vector3();
@@ -12,6 +13,7 @@ export class InteractionController3D {
   private readonly prompt: HTMLDivElement;
   private readonly targetObjects: THREE.Object3D[];
   private readonly targetById = new Map<string, InteractiveNPC>();
+  private readonly canvasRect = { left: 0, top: 0, width: 1, height: 1 };
   private readonly interactionRange = 1.55;
   private currentTarget: InteractiveNPC | null = null;
   private lastPointerTarget: InteractiveNPC | null = null;
@@ -21,8 +23,10 @@ export class InteractionController3D {
   private lastNearestTargetAt = 0;
   private lastNearestPlayerX = Number.NaN;
   private lastNearestPlayerZ = Number.NaN;
+  private lastCanvasRectAt = 0;
   private lastPromptHidden = true;
   private lastPromptText = '';
+  private lastPromptTransform = '';
 
   constructor(
     private readonly container: HTMLElement,
@@ -39,10 +43,15 @@ export class InteractionController3D {
     this.prompt.className = 'interaction-prompt';
     this.prompt.textContent = 'E 交谈';
     this.prompt.hidden = true;
+    this.prompt.style.left = '0px';
+    this.prompt.style.top = '0px';
+    this.prompt.style.willChange = 'transform';
     this.container.append(this.prompt);
 
+    this.refreshCanvasRect(true);
     this.renderer.domElement.addEventListener('pointermove', this.onPointerMove);
     this.renderer.domElement.addEventListener('click', this.onClick);
+    window.addEventListener('resize', this.onResize);
   }
 
   update(dialogueVisible: boolean): void {
@@ -54,8 +63,7 @@ export class InteractionController3D {
       this.promptWorldPosition.copy(this.currentTarget.object.position);
       this.promptWorldPosition.y += 1.15;
       this.worldToScreen(this.promptWorldPosition, this.promptScreenPosition);
-      this.prompt.style.left = `${this.promptScreenPosition.x}px`;
-      this.prompt.style.top = `${this.promptScreenPosition.y}px`;
+      this.setPromptPosition(this.promptScreenPosition.x, this.promptScreenPosition.y);
     }
   }
 
@@ -68,16 +76,22 @@ export class InteractionController3D {
   destroy(): void {
     this.renderer.domElement.removeEventListener('pointermove', this.onPointerMove);
     this.renderer.domElement.removeEventListener('click', this.onClick);
+    window.removeEventListener('resize', this.onResize);
     this.renderer.domElement.style.cursor = 'default';
     this.prompt.remove();
   }
 
   private readonly onPointerMove = (event: PointerEvent): void => {
-    const rect = this.renderer.domElement.getBoundingClientRect();
+    const rect = this.refreshCanvasRect(false);
     this.pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
     this.pointer.y = -(((event.clientY - rect.top) / rect.height) * 2 - 1);
     this.pointerDirty = true;
     this.updatePointerTarget(false);
+  };
+
+  private readonly onResize = (): void => {
+    this.refreshCanvasRect(true);
+    this.lastPromptTransform = '';
   };
 
   private readonly onClick = (): void => {
@@ -141,11 +155,35 @@ export class InteractionController3D {
 
   private worldToScreen(position: THREE.Vector3, target: THREE.Vector2): void {
     const projected = position.project(this.camera);
-    const rect = this.renderer.domElement.getBoundingClientRect();
+    const rect = this.refreshCanvasRect(false);
     target.set(
       (projected.x * 0.5 + 0.5) * rect.width + rect.left,
       (-projected.y * 0.5 + 0.5) * rect.height + rect.top
     );
+  }
+
+  private refreshCanvasRect(force: boolean): typeof this.canvasRect {
+    const now = performance.now();
+    if (!force && now - this.lastCanvasRectAt < InteractionController3D.canvasRectRefreshIntervalMs) {
+      return this.canvasRect;
+    }
+
+    const rect = this.renderer.domElement.getBoundingClientRect();
+    this.lastCanvasRectAt = now;
+    this.canvasRect.left = rect.left;
+    this.canvasRect.top = rect.top;
+    this.canvasRect.width = rect.width || 1;
+    this.canvasRect.height = rect.height || 1;
+    return this.canvasRect;
+  }
+
+  private setPromptPosition(x: number, y: number): void {
+    const roundedX = Math.round(x * 10) / 10;
+    const roundedY = Math.round(y * 10) / 10;
+    const transform = `translate3d(${roundedX}px, ${roundedY}px, 0) translate(-50%, -100%)`;
+    if (transform === this.lastPromptTransform) return;
+    this.lastPromptTransform = transform;
+    this.prompt.style.transform = transform;
   }
 
   private setPromptHidden(hidden: boolean): void {
