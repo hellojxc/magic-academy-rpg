@@ -413,7 +413,14 @@
       "library-cc0-low-shelf-reading-sort",
       "library-cc0-book-return-cart",
       "library-cc0-narrow-runner",
-      "library-cc0-shelf-task-lamp"
+      "library-cc0-shelf-task-lamp",
+      "lawn-wood-platform",
+      "lawn-bench-near-tree",
+      "lawn-signpost",
+      "grotto-crystal-hero",
+      "grotto-crystal-small-a",
+      "grotto-crystal-small-b",
+      "grotto-broken-column"
     ],
     "defaultLod": {
       "importance": "set-dressing",

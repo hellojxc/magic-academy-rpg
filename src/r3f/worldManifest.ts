@@ -73,6 +73,7 @@ export interface NpcSceneDefinition {
 export const WORLD_ASSET_ROOT = '/assets/world';
 const MAX_STREAMED_CHUNKS = 8;
 const LIBRARY_FOCUS_STREAMED_CHUNKS = new Set<WorldChunkId>(['arcane-library', 'atrium']);
+const BIOME_FOCUS_STREAMED_CHUNKS = new Set<WorldChunkId>(['moonlit-lawn', 'lake-grotto', 'atrium']);
 
 export const WORLD_CHUNKS: readonly WorldChunkDefinition[] = [
   {
@@ -426,8 +427,13 @@ export function getActiveChunks(player: { x: number; z: number }): readonly Worl
       const centerB = getChunkCenter(b);
       return Math.hypot(centerA.x - player.x, centerA.z - player.z) - Math.hypot(centerB.x - player.x, centerB.z - player.z);
     })[0];
-  const streamableChunks = containingChunk?.id === 'arcane-library'
-    ? WORLD_CHUNKS.filter((chunk) => LIBRARY_FOCUS_STREAMED_CHUNKS.has(chunk.id))
+  const focusChunkIds = containingChunk?.id === 'arcane-library'
+    ? LIBRARY_FOCUS_STREAMED_CHUNKS
+    : containingChunk?.id === 'moonlit-lawn' || containingChunk?.id === 'lake-grotto'
+      ? BIOME_FOCUS_STREAMED_CHUNKS
+      : null;
+  const streamableChunks = focusChunkIds
+    ? WORLD_CHUNKS.filter((chunk) => focusChunkIds.has(chunk.id))
     : WORLD_CHUNKS;
 
   return streamableChunks
