@@ -198,6 +198,7 @@ export const WORLD_CHUNKS: readonly WorldChunkDefinition[] = [
 
 export const NPC_SCENE_DEFINITIONS: readonly NpcSceneDefinition[] = [
   { id: 'lyra', name: 'Lyra', title: '星象学徒', area: '学院中庭', position: [1.8, 0.18, 1.15], color: 0xd49cff },
+  { id: 'mature_senpai', name: '艾琳娜', title: '高年级魔法礼仪顾问', area: '学院中庭', position: [3.15, 0.18, 1.55], color: 0xa999d8 },
   { id: 'seren', name: 'Seren', title: '图书馆管理员', area: '秘法图书馆', position: [6.9, 0.18, -2.35], color: 0xffd98a },
   { id: 'kael', name: 'Kael', title: '战斗导师', area: '训练庭院', position: [17, 0.18, 32], color: 0xff986b },
   { id: 'mira', name: 'Mira', title: '温室研究员', area: '水晶温室', position: [-32, 0.18, 4.5], color: 0x85ffd3 },

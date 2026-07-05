@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { getCharacterSpec, hasCharacterSpec } from '../characters';
 import { CharacterModel3D } from './CharacterModel3D';
 import npcsData from '../data/npcs.json';
+import { isActiveNpcId } from '../data/activeNpcRoster';
 import type { NPCData } from '../types';
 import type { AcademyWorldObjects, InteractiveNPC, Obstacle } from './WorldTypes';
 import { REGIONS } from './WorldHelpers';
@@ -1065,7 +1066,7 @@ export class AcademyWorld {
   private addCharacters(): void {
     this.npcs.length = 0;
     this.storyNpcObjects.length = 0;
-    const npcEntries = npcsData as NPCData[];
+    const npcEntries = (npcsData as NPCData[]).filter((npc) => isActiveNpcId(npc.id));
     const lyraData = npcEntries.find((npc) => npc.id === 'lyra');
 
     this.playerRig = new CharacterModel3D(getCharacterSpec('player'), {

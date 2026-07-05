@@ -50,6 +50,7 @@ import { SaveSystem } from '../systems/SaveSystem';
 import { CombatSkillSystem } from '../systems/CombatSkillSystem';
 import { InventorySystem } from '../systems/InventorySystem';
 import dialoguesData from '../data/dialogues.json';
+import { isActiveNpcId } from '../data/activeNpcRoster';
 import type { DialogueTree, SaveData } from '../types';
 import {
   DECALS,
@@ -102,6 +103,7 @@ declare global {
 }
 
 type R3FNpc = NpcSceneDefinition;
+const activeR3fNpcs = NPC_SCENE_DEFINITIONS.filter((npc) => isActiveNpcId(npc.id));
 type ThreeVec3Tuple = [number, number, number];
 type GlbLoadPriority = 'critical' | 'high' | 'normal';
 
@@ -9311,7 +9313,7 @@ function createLinearStoryAnchors(
 function NpcLayer({ activeIds }: { readonly activeIds: ReadonlySet<WorldChunkId> }): React.ReactElement {
   return (
     <group name="r3f-npcs">
-      {NPC_SCENE_DEFINITIONS.map((npc) => (
+      {activeR3fNpcs.map((npc) => (
         <NpcAvatar key={npc.id} npc={npc} active={isNpcInActiveChunk(npc, activeIds)} />
       ))}
     </group>
@@ -10042,7 +10044,7 @@ function createScatterPoints(bounds: Bounds2D, count: number, seed: string): rea
 function findNearbyNpc(position: THREE.Vector3): R3FNpc | null {
   let best: R3FNpc | null = null;
   let bestDistance = 1.85;
-  for (const npc of NPC_SCENE_DEFINITIONS) {
+  for (const npc of activeR3fNpcs) {
     const dx = npc.position[0] - position.x;
     const dz = npc.position[2] - position.z;
     const distance = Math.hypot(dx, dz);
