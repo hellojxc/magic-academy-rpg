@@ -31,8 +31,15 @@ interface BoneSet {
 
 interface GLTFMorphBinding {
   mesh: THREE.Mesh | THREE.SkinnedMesh;
-  dictionary: Record<string, number>;
   influences: number[];
+  targets: GLTFMorphTarget[];
+}
+
+type GLTFMorphTargetKind = 'blink' | 'teasing' | 'thoughtful' | 'smile' | 'zero';
+
+interface GLTFMorphTarget {
+  index: number;
+  kind: GLTFMorphTargetKind;
 }
 
 interface GLTFBoneBasePose {
@@ -112,6 +119,10 @@ export class CharacterModel3D {
   private gltfLookPitch = 0;
   private assetState: CharacterAssetState = 'loading';
   private assetLoadPromise?: Promise<void>;
+  private readonly gltfHeadWorld = new THREE.Vector3();
+  private readonly gltfLookTargetLocal = new THREE.Vector3();
+  private readonly gltfLookHeadLocal = new THREE.Vector3();
+  private readonly runtimePivotCenter = new THREE.Vector3();
 
   constructor(private readonly spec: CharacterSpec, options: CharacterModel3DOptions = {}) {
     this.buildPlan = createCharacterBuildPlan(spec);
@@ -295,7 +306,7 @@ export class CharacterModel3D {
     vrmModule.VRMUtils.combineSkeletons(vrm.scene);
     vrmModule.VRMUtils.combineMorphs(vrm);
 
-    this.fallback.root.visible = false;
+    this.detachFallbackRoot();
     this.prepareModelRoot(vrm.scene, this.spec.body.heightMeters);
     vrm.scene.rotation.y = Math.PI;
     this.root.add(vrm.scene);
@@ -309,7 +320,7 @@ export class CharacterModel3D {
 
   private installGLTF(scene: THREE.Group, animations: THREE.AnimationClip[]): void {
     this.setAssetState('gltf');
-    this.fallback.root.visible = false;
+    this.detachFallbackRoot();
     this.prepareModelRoot(scene, this.spec.body.heightMeters);
     scene.rotation.y = Math.PI;
     this.root.add(scene);
@@ -442,6 +453,11 @@ export class CharacterModel3D {
     parent.add(outline);
   }
 
+  private detachFallbackRoot(): void {
+    this.fallback.root.visible = false;
+    this.fallback.root.removeFromParent();
+  }
+
   private createGLTFOutlineMaterial(): THREE.MeshBasicMaterial {
     return new THREE.MeshBasicMaterial({
       color: this.spec.id === 'player' ? 0x15131b : 0x24172f,
@@ -545,13 +561,35 @@ export class CharacterModel3D {
     model.traverse((object) => {
       if (!(object instanceof THREE.Mesh || object instanceof THREE.SkinnedMesh)) return;
       if (!object.morphTargetDictionary || !object.morphTargetInfluences) return;
+      const targets = CharacterModel3D.collectRuntimeMorphTargets(object.morphTargetDictionary);
+      if (targets.length === 0) return;
       bindings.push({
         mesh: object,
-        dictionary: object.morphTargetDictionary,
         influences: object.morphTargetInfluences,
+        targets,
       });
     });
     return bindings;
+  }
+
+  private static collectRuntimeMorphTargets(dictionary: Record<string, number>): GLTFMorphTarget[] {
+    const targets: GLTFMorphTarget[] = [];
+    for (const [name, index] of Object.entries(dictionary)) {
+      const kind = CharacterModel3D.classifyRuntimeMorphTarget(name);
+      if (!kind) continue;
+      targets.push({ index, kind });
+    }
+    return targets;
+  }
+
+  private static classifyRuntimeMorphTarget(name: string): GLTFMorphTargetKind | undefined {
+    const normalized = name.toLowerCase();
+    if (normalized.includes('blink')) return 'blink';
+    if (normalized.includes('teasing')) return 'teasing';
+    if (normalized.includes('thoughtful')) return 'thoughtful';
+    if (normalized.includes('smile') || normalized.includes('warm')) return 'smile';
+    if (normalized.includes('concerned') || normalized.includes('surprised')) return 'zero';
+    return undefined;
   }
 
   private collectSecondaryMotionObjects(model: THREE.Object3D): GLTFSecondaryMotionBinding[] {
@@ -656,11 +694,10 @@ export class CharacterModel3D {
     if (!geometry.boundingBox) geometry.computeBoundingBox();
     if (!geometry.boundingBox) return false;
 
-    const center = new THREE.Vector3();
-    geometry.boundingBox.getCenter(center);
+    geometry.boundingBox.getCenter(this.runtimePivotCenter);
     // Older generated panels had absolute vertices around the character body. Skip
     // those so secondary motion only runs on assets with usable local pivots.
-    return center.length() < 0.18;
+    return this.runtimePivotCenter.length() < 0.18;
   }
 
   private captureGLTFBoneBasePoses(): void {
@@ -799,10 +836,11 @@ export class CharacterModel3D {
     let targetPitch = Math.sin(elapsedTime * 0.31) * 0.025;
 
     if (lookAtWorldPosition && this.bones.head) {
-      const headWorld = new THREE.Vector3();
-      const targetLocal = lookAtWorldPosition.clone();
-      const headLocal = headWorld;
+      const headWorld = this.gltfHeadWorld;
+      const targetLocal = this.gltfLookTargetLocal.copy(lookAtWorldPosition);
+      const headLocal = this.gltfLookHeadLocal;
       this.bones.head.getWorldPosition(headWorld);
+      headLocal.copy(headWorld);
       this.root.worldToLocal(targetLocal);
       this.root.worldToLocal(headLocal);
       const direction = targetLocal.sub(headLocal);
@@ -890,20 +928,14 @@ export class CharacterModel3D {
     const teasing = isMatureSenpai ? 0.018 + Math.max(0, Math.sin(elapsedTime * 0.48)) * 0.018 : 0;
     const thoughtful = isMatureSenpai ? 0.012 + Math.max(0, Math.sin(elapsedTime * 0.31 + 1.4)) * 0.012 : 0;
 
+    const smileValue = Math.max(0, smile);
     for (const binding of this.gltfMorphBindings) {
-      for (const [name, index] of Object.entries(binding.dictionary)) {
-        const normalized = name.toLowerCase();
-        if (normalized.includes('blink')) {
-          binding.influences[index] = blink;
-        } else if (normalized.includes('teasing')) {
-          binding.influences[index] = teasing;
-        } else if (normalized.includes('thoughtful')) {
-          binding.influences[index] = thoughtful;
-        } else if (normalized.includes('smile') || normalized.includes('warm')) {
-          binding.influences[index] = Math.max(0, smile);
-        } else if (normalized.includes('concerned') || normalized.includes('surprised')) {
-          binding.influences[index] = 0;
-        }
+      for (const target of binding.targets) {
+        if (target.kind === 'blink') binding.influences[target.index] = blink;
+        else if (target.kind === 'teasing') binding.influences[target.index] = teasing;
+        else if (target.kind === 'thoughtful') binding.influences[target.index] = thoughtful;
+        else if (target.kind === 'smile') binding.influences[target.index] = smileValue;
+        else binding.influences[target.index] = 0;
       }
     }
   }
