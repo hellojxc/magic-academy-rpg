@@ -56,13 +56,16 @@ interface StoryNpcObject {
   phase: number;
   idleSpeed: number;
   rigUpdateAccumulator: number;
+  shadowsEnabled: boolean;
+  lastModelState: string | null;
 }
 
 const STORY_NPC_IMMEDIATE_ASSET_DISTANCE_SQ = 6.2 * 6.2;
 const STORY_NPC_IDLE_ASSET_DISTANCE_SQ = 13 * 13;
 const STORY_NPC_HEAVY_IDLE_ASSET_DISTANCE_SQ = 8.5 * 8.5;
 const STORY_NPC_ACTIVE_DISTANCE_SQ = 18 * 18;
-const STORY_NPC_VISIBLE_DISTANCE_SQ = 20 * 20;
+const STORY_NPC_VISIBLE_DISTANCE_SQ = 12 * 12;
+const STORY_NPC_SHADOW_DISTANCE_SQ = 8.5 * 8.5;
 const STORY_NPC_FULL_RATE_DISTANCE_SQ = 8.5 * 8.5;
 const STORY_NPC_LOOK_AT_DISTANCE_SQ = 4 * 4;
 const STORY_NPC_IDLE_PRELOAD_DELAY_SECONDS = 3.2;
@@ -988,6 +991,8 @@ export class AcademyWorld {
       root.visible = this.isStoryNpcVisible(root);
       this.scene.add(root);
       this.registerInteractiveNpc(npcData, root);
+      const shadowsEnabled = this.shouldStoryNpcCastShadow(root);
+      this.setStoryNpcShadows(root, shadowsEnabled);
       this.storyNpcObjects.push({
         id: npcData.id,
         object: root,
@@ -998,6 +1003,8 @@ export class AcademyWorld {
         phase: index * 0.63,
         idleSpeed: 0.85 + (index % 7) * 0.07,
         rigUpdateAccumulator: 0,
+        shadowsEnabled,
+        lastModelState: rig.getModelState(),
       });
       return;
     }
@@ -1070,6 +1077,8 @@ export class AcademyWorld {
     root.visible = this.isStoryNpcVisible(root);
     this.scene.add(root);
     this.registerInteractiveNpc(npcData, root);
+    const shadowsEnabled = this.shouldStoryNpcCastShadow(root);
+    this.setStoryNpcShadows(root, shadowsEnabled);
     this.storyNpcObjects.push({
       id: npcData.id,
       object: root,
@@ -1079,6 +1088,8 @@ export class AcademyWorld {
       phase: index * 0.63,
       idleSpeed: 0.85 + (index % 7) * 0.07,
       rigUpdateAccumulator: 0,
+      shadowsEnabled,
+      lastModelState: null,
     });
   }
 
@@ -1105,6 +1116,7 @@ export class AcademyWorld {
       const distanceSq = dx * dx + dz * dz;
       const visible = distanceSq <= STORY_NPC_VISIBLE_DISTANCE_SQ;
       if (npc.object.visible !== visible) npc.object.visible = visible;
+      this.updateStoryNpcShadowState(npc, distanceSq);
 
       if (this.shouldStartStoryNpcAssetLoad(npc, distanceSq, elapsedTime, playerMoving)) {
         this.lastStoryNpcAssetLoadStartTime = elapsedTime;
@@ -1184,6 +1196,28 @@ export class AcademyWorld {
     const dx = this.player.position.x - npc.position.x;
     const dz = this.player.position.z - npc.position.z;
     return dx * dx + dz * dz <= STORY_NPC_VISIBLE_DISTANCE_SQ;
+  }
+
+  private shouldStoryNpcCastShadow(npc: THREE.Object3D): boolean {
+    const dx = this.player.position.x - npc.position.x;
+    const dz = this.player.position.z - npc.position.z;
+    return dx * dx + dz * dz <= STORY_NPC_SHADOW_DISTANCE_SQ;
+  }
+
+  private updateStoryNpcShadowState(npc: StoryNpcObject, distanceSq: number): void {
+    const nextModelState = npc.rig?.getModelState() ?? null;
+    const shouldCastShadow = distanceSq <= STORY_NPC_SHADOW_DISTANCE_SQ;
+    if (npc.shadowsEnabled === shouldCastShadow && npc.lastModelState === nextModelState) return;
+
+    npc.shadowsEnabled = shouldCastShadow;
+    npc.lastModelState = nextModelState;
+    this.setStoryNpcShadows(npc.object, shouldCastShadow);
+  }
+
+  private setStoryNpcShadows(root: THREE.Object3D, enabled: boolean): void {
+    root.traverse((object) => {
+      if (object instanceof THREE.Mesh) object.castShadow = enabled;
+    });
   }
 
   private updateMatureSenpaiShowcaseWalk(
