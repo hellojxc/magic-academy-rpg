@@ -19,7 +19,7 @@ Current target: v7 mature senpai concept, used as an adult academy NPC.
 - `tools/build_retopo_v3.py`: BlenderMCP production-structure script that rebuilds the Hunyuan mesh into named skinned submeshes, rule-painted weights, facial morph targets, and secondary-motion hooks.
 - `mature_senpai_rigged_v1.report.json`: generated rig and animation audit.
 - `mature_senpai_production_v1.report.json`: disabled procedural template audit and decision record.
-- `mature_senpai_commercial_v11.report.json`: active mesh-anchored face audit and runtime default decision record.
+- `mature_senpai_commercial_v11.report.json`: mesh-anchored face audit and engineered split-part/morph reference decision record.
 - `mature_senpai_commercial_v10.report.json`: previous conservative close-up face/material polish audit and fallback.
 - `mature_senpai_commercial_v9.report.json`: previous close-up hand/material polish audit.
 - `mature_senpai_commercial_v8.report.json`: previous retopo/rigging-layer audit and fallback.
@@ -31,7 +31,7 @@ Current target: v7 mature senpai concept, used as an adult academy NPC.
 - `mature_senpai_mcp_polish_v2.report.json`: previous BlenderMCP polish audit and visual fallback.
 - `mature_senpai_mcp_retouch_v1.report.json`: previous BlenderMCP retouch audit and runtime fallback.
 - `source/mature_senpai.blend`: procedural Blender reference template for rigging and modular cleanup experiments.
-- `source/mature_senpai_commercial_v11.blend`: active mesh-anchored face audit source scene.
+- `source/mature_senpai_commercial_v11.blend`: mesh-anchored face audit source scene.
 - `source/mature_senpai_commercial_v10.blend`: previous conservative close-up face/material polish source scene.
 - `source/mature_senpai_commercial_v9.blend`: previous close-up hand/material polish source scene.
 - `source/mature_senpai_commercial_v8.blend`: previous retopo/rigging-layer source scene.
@@ -47,7 +47,8 @@ Current target: v7 mature senpai concept, used as an adult academy NPC.
 
 Runtime export registered for preview:
 
-- `mature_senpai_commercial_v11.glb`: active mesh-anchored face audit asset with 16 named skinned meshes, 6 face morph targets, 32 bones, hair-tip and skirt-tip secondary hooks, source-normal seam cleanup, 15 materials, transparent face-audit overlay materials, per-part weight audit data, and rounded segmented fingers/thumbs with soft nail and knuckle shade surfaces.
+- `mature_senpai_mcp_polish_v2.glb`: active visual runtime default because it preserves the more natural Hunyuan v7 face, arms, body, hair, outfit proportions, and animation clips better than the current split-part experiments.
+- `mature_senpai_commercial_v11.glb`: mesh-anchored face audit and engineered split-part/morph reference asset with 16 named skinned meshes, 6 face morph targets, 32 bones, hair-tip and skirt-tip secondary hooks, source-normal seam cleanup, 15 materials, transparent face-audit overlay materials, per-part weight audit data, and rounded segmented fingers/thumbs with soft nail and knuckle shade surfaces.
 - `mature_senpai_commercial_v10.glb`: previous conservative close-up face/material polish asset with 16 named skinned meshes, 6 face morph targets, 32 bones, hair-tip and skirt-tip secondary hooks, source-normal seam cleanup, 15 materials, 8 face-detail overlay materials, per-part weight audit data, and rounded segmented fingers/thumbs with soft nail and knuckle shade surfaces.
 - `mature_senpai_commercial_v9.glb`: previous close-up hand/material polish asset with 16 named skinned meshes, 6 face morph targets, 32 bones, hair-tip and skirt-tip secondary hooks, source-normal seam cleanup, dialogue-distance face overlays, per-part weight audit data, and rounded segmented fingers/thumbs with soft nail and knuckle shade surfaces.
 - `mature_senpai_commercial_v8.glb`: previous retopo/partition/morph/weight/secondary-bone asset with 16 named skinned meshes, 6 face morph targets, 32 bones, hair-tip and skirt-tip secondary hooks, source-normal seam cleanup, dialogue-distance face overlays, per-part weight audit data, and v7 natural skinned arm/hand replacement meshes with separate fingers, thumbs, and nail surfaces.
@@ -56,7 +57,6 @@ Runtime export registered for preview:
 - `mature_senpai_commercial_v5.glb`: previous commercial-candidate asset with 15 named skinned meshes, dialogue-distance face overlays, and v5 fallback status.
 - `mature_senpai_commercial_v4.glb`: previous commercial-candidate asset with 14 named skinned meshes, 6 face morph targets, 25 bones, secondary hair/skirt/strap/pendant hooks, source-normal seam cleanup, and visible strap/pendant details.
 - `mature_senpai_retopo_v3.glb`: previous automated production-structure asset with 11 named skinned submeshes, `Blink`, `WarmSmile`, and `Surprised` morph targets on the face mesh, refreshed rule-painted weights, and secondary hair/skirt bones.
-- `mature_senpai_mcp_polish_v2.glb`: previous Hunyuan-based BlenderMCP polish, retained as visual fallback.
 - `mature_senpai_mcp_retouch_v1.glb`: previous Hunyuan-based BlenderMCP retouch, retained as runtime fallback.
 - `mature_senpai_rigged_v1.glb`: 60k triangle auto-rigged web preview with `idle`, `walk`, and `talk` clips.
 - `mature_senpai_production_v1.glb`: disabled procedural Blender template export; useful for bone, morph, and modular-part reference, but not visually close enough to replace the Hunyuan mesh.
@@ -69,27 +69,30 @@ Local inspection exports not intended for the runtime commit:
 
 ## Current Gate
 
-The commercial v11 Hunyuan output is the active runtime preview because it keeps
-the more lively AI-generated v7 likeness, v8
-retopo/partition/morph/weight/secondary-bone engineering layer, v9 close-up
-hand polish, and v10 visible face state while replacing the hard-coded visible
-face overlay with a transparent mesh-anchored audit layer. It includes named
-skinned submeshes, six facial morph targets, explicit per-part weight profiles,
-source-normal seam cleanup, visible strap/pendant details, hair-tip and
-skirt-tip secondary bone hooks, rounded segmented fingers, a tighter thumb
-pose, soft nail surfaces, subtle knuckle shade planes, and reportable face
-mesh bounds/surface-profile anchors. The procedural Blender template has
-cleaner authored separation and morph hooks, but it is too schematic to become
-the default visual model.
+The `mature_senpai_mcp_polish_v2.glb` Hunyuan output is the active runtime
+preview because it currently preserves the most natural visible v7 likeness:
+face, arms, body proportions, hair volume, outfit shape, and overall JRPG
+silhouette are closer to the reference than the current automated split-part
+experiments. The commercial v11 asset remains important as the engineered
+reference because it has named skinned submeshes, six facial morph targets,
+explicit per-part weight profiles, source-normal seam cleanup, visible
+strap/pendant details, hair-tip and skirt-tip secondary bone hooks, rounded
+segmented fingers, and reportable face mesh bounds/surface-profile anchors.
+The next real production pass should merge the two: preserve the
+`mcp_polish_v2` visible source while rebuilding commercial-v11-style topology,
+weights, morphs, and secondary hooks.
 
 Remaining production blockers:
 
-- The topology is split from Hunyuan triangles and UVs, not hand-drawn quad
-  retopology.
-- Skin weights are explicit profile weights generated by Blender Python, not
+- The current runtime default is a single Hunyuan mesh with preview weights; it
+  is visually better but does not have commercial v11's split topology or face
+  morph layer.
+- The current runtime default has no facial morph targets; commercial v11 has
+  generated morphs, but its visible split mesh is less natural.
+- Skin weights on the current visual default are generated preview weights, not
   artist brush-painted final weights.
-- Facial morphs are subtle generated shape keys, not sculpted expression
-  blendshapes.
+- The final topology still needs hand-authored quad retopology that preserves
+  the `mcp_polish_v2` visible likeness.
 - The v11 face audit layer is transparent because the Hunyuan mesh does not
   expose stable semantic facial landmarks; final face quality still needs
   actual UV/texture repaint, landmark detection, or sculpted eyelid/mouth
@@ -103,20 +106,20 @@ Remaining production blockers:
   expression sculpting before it should be treated as final mainstream
   JRPG-quality runtime art.
 
-The `mature_senpai_commercial_v11.glb` file is the current in-game animated
-preview NPC. It preserves the v10 visible state, adds transparent face-anchor
-audit data on top of the v9 hand polish and current
-retopo/partition/morph/weight/secondary bone layer, but it should not be
-considered final until artist retopology, brush-painted weights, sculpted
-expression blendshapes, and final material polish are complete. The next
-production pass should preserve the Hunyuan model's likeness instead of
-replacing it with the procedural template's simplified silhouette.
+The `mature_senpai_mcp_polish_v2.glb` file is the current in-game animated
+preview NPC. It restores the better Hunyuan v7 visible source while keeping
+idle, walk, and talk clips, but it should not be considered final until artist
+retopology, brush-painted weights, sculpted expression blendshapes, and final
+material polish are complete. The next production pass should preserve this
+visible source instead of replacing it with the procedural template's
+simplified silhouette or the current split-part artifacts.
 
 ## Next Production Step
 
-1. Replace the automated Hunyuan-triangle split with artist-authored quad
-   topology while preserving the v7 likeness.
-2. Brush-paint final deformation weights over the generated rule weights.
+1. Rebuild commercial-v11-style split topology from the
+   `mature_senpai_mcp_polish_v2.glb` visual source instead of the degraded
+   generated split mesh.
+2. Brush-paint final deformation weights over the generated preview weights.
 3. Sculpt final expression blendshapes for blink, smile, teasing, surprised,
    and thoughtful.
 4. Tune secondary-motion bones for long hair, skirt panels, straps, and pendant
