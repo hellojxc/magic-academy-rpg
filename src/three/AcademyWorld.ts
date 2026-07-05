@@ -42,6 +42,9 @@ interface DistanceShadowObject {
   object: THREE.Object3D;
   shadowDistanceSq: number;
   shadowsEnabled: boolean | null;
+  dynamicPosition: boolean;
+  worldX: number;
+  worldZ: number;
 }
 
 interface RegionUpdateGroup {
@@ -352,9 +355,15 @@ export class AcademyWorld {
     this.lastDynamicShadowUpdateX = px;
     this.lastDynamicShadowUpdateZ = pz;
     for (const entry of this.distanceShadowObjects) {
-      entry.object.getWorldPosition(this.distanceShadowWorldPosition);
-      const dx = px - this.distanceShadowWorldPosition.x;
-      const dz = pz - this.distanceShadowWorldPosition.z;
+      let worldX = entry.worldX;
+      let worldZ = entry.worldZ;
+      if (entry.dynamicPosition) {
+        entry.object.getWorldPosition(this.distanceShadowWorldPosition);
+        worldX = this.distanceShadowWorldPosition.x;
+        worldZ = this.distanceShadowWorldPosition.z;
+      }
+      const dx = px - worldX;
+      const dz = pz - worldZ;
       const enabled = dx * dx + dz * dz <= entry.shadowDistanceSq;
       if (entry.shadowsEnabled === enabled) continue;
 
@@ -490,14 +499,15 @@ export class AcademyWorld {
   private markRuntimeDynamicWithDistanceShadows(object: THREE.Object3D | undefined): void {
     if (!object) return;
     this.markRuntimeDynamic(object);
-    this.registerDistanceShadowObject(object, DYNAMIC_OBJECT_SHADOW_DISTANCE_SQ);
+    this.registerDistanceShadowObject(object, DYNAMIC_OBJECT_SHADOW_DISTANCE_SQ, true);
   }
 
   private registerStaticDistanceShadowObjects(): void {
+    this.scene.updateMatrixWorld(true);
     const visit = (object: THREE.Object3D, dynamicAncestor: boolean): void => {
       const dynamicSubtree = dynamicAncestor || object.userData[RUNTIME_DYNAMIC_OBJECT] === true;
       if (!dynamicSubtree && object instanceof THREE.Mesh && object.castShadow) {
-        this.registerDistanceShadowObject(object, STATIC_OBJECT_SHADOW_DISTANCE_SQ);
+        this.registerDistanceShadowObject(object, STATIC_OBJECT_SHADOW_DISTANCE_SQ, false);
       }
 
       for (const child of object.children) visit(child, dynamicSubtree);
@@ -506,13 +516,33 @@ export class AcademyWorld {
     visit(this.scene, false);
   }
 
-  private registerDistanceShadowObject(object: THREE.Object3D, shadowDistanceSq: number): void {
+  private registerDistanceShadowObject(
+    object: THREE.Object3D,
+    shadowDistanceSq: number,
+    dynamicPosition: boolean
+  ): void {
     if (this.distanceShadowObjectSet.has(object)) return;
     this.distanceShadowObjectSet.add(object);
+    if (dynamicPosition) {
+      this.distanceShadowObjects.push({
+        object,
+        shadowDistanceSq,
+        shadowsEnabled: null,
+        dynamicPosition,
+        worldX: 0,
+        worldZ: 0,
+      });
+      return;
+    }
+
+    object.getWorldPosition(this.distanceShadowWorldPosition);
     this.distanceShadowObjects.push({
       object,
       shadowDistanceSq,
       shadowsEnabled: null,
+      dynamicPosition,
+      worldX: this.distanceShadowWorldPosition.x,
+      worldZ: this.distanceShadowWorldPosition.z,
     });
   }
 
