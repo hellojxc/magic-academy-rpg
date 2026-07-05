@@ -8,6 +8,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
+import { flushSync } from 'react-dom';
 import { createRoot, type Root } from 'react-dom/client';
 import * as THREE from 'three';
 import { Canvas, useFrame, useLoader, useThree } from '@react-three/fiber';
@@ -1740,7 +1741,7 @@ function ThirdPartyAssetGroup({
       });
   }, [lodAnchor, placements, source, template]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (template) {
       const culledCount = placements.length - objects.length;
       const state = objects.length > 0
@@ -1868,6 +1869,9 @@ function shouldCastShadowForThirdPartyPlacement(
 }
 
 function getThirdPartyGlbLoadPriority(placements: readonly ThirdPartyWorldPropPlacement[]): GlbLoadPriority {
+  if (placements.some((placement) => defaultThirdPartyWorldGlbPlacementIds.has(placement.id))) {
+    return 'critical';
+  }
   if (placements.some((placement) => (
     placement.chunkId === 'lake-grotto'
     || placement.chunkId === 'moonlit-lawn'
@@ -9474,8 +9478,10 @@ function useOptionalGlb(
             object.receiveShadow = true;
           }
         });
+        flushSync(() => {
+          setScene(clone);
+        });
         setAssetLoadState(url, 'loaded');
-        setScene(clone);
         if (enhanceWorldMaterials) {
           cancelEnhancement = scheduleAuthoredWorldMaterialEnhancement(clone, lightmapUrl);
         }
